@@ -37,127 +37,139 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
-  const handlePlaceOrder = async () => {
-    if (!selectedAddress) {
-      alert('Please select a delivery address');
+const handlePlaceOrder = async () => {
+  if (!selectedAddress) {
+    alert('Please select a delivery address');
+    return;
+  }
+
+  // Validate address
+  if (!selectedAddress.name || !selectedAddress.phone || !selectedAddress.street || 
+      !selectedAddress.city || !selectedAddress.state || !selectedAddress.pincode) {
+    alert('Selected address is incomplete. Please update your address.');
+    return;
+  }
+
+  console.log('🛒 Starting order placement...');
+  console.log('Selected address:', selectedAddress);
+
+  setLoading(true);
+
+  try {
+    const orderData = {
+      items: items.map(item => ({
+        product: item.product._id,
+        title: item.product.title,
+        image: item.product.images[0]?.url || '',
+        quantity: item.quantity,
+        price: item.price,
+        variant: item.variant || ''
+      })),
+      totalPrice,
+      discount,
+      finalPrice: totalPrice - discount,
+      shippingAddress: {
+        name: selectedAddress.name,
+        phone: selectedAddress.phone,
+        street: selectedAddress.street,
+        city: selectedAddress.city,
+        state: selectedAddress.state,
+        pincode: selectedAddress.pincode,
+        landmark: selectedAddress.landmark || '',
+        type: selectedAddress.type || 'home'
+      },
+      paymentMode,
+      couponCode
+    };
+
+    console.log('📦 Order ', orderData);
+
+    const res = await fetch('/api/orders/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData)
+    });
+
+    const data = await res.json();
+    console.log('📨 API Response:', data);
+
+    if (!res.ok) {
+      console.error('❌ Order creation failed:', data);
+      alert(data.error || 'Failed to create order');
+      setLoading(false);
       return;
     }
 
-    if (paymentMode === 'online' && !razorpayLoaded) {
-      alert('Payment gateway is loading. Please wait...');
-      return;
-    }
+    if (paymentMode === 'online') {
+      // Razorpay payment
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: data.amount * 100,
+        currency: 'INR',
+        name: 'NatureMedica',
+        description: `Order #${data.orderId}`,
+        order_id: data.razorpayOrderId,
+        handler: async function (response) {
+          try {
+            console.log('💳 Payment success, verifying...');
 
-    setLoading(true);
+            const verifyRes = await fetch('/api/orders/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+                orderData: data.orderData
+              })
+            });
 
-    try {
-      const orderData = {
-        items: items.map(item => ({
-          product: item.product._id,
-          title: item.product.title,
-          image: item.product.images[0]?.url,
-          quantity: item.quantity,
-          price: item.price,
-          variant: item.variant
-        })),
-        totalPrice,
-        discount,
-        finalPrice: totalPrice - discount,
-        shippingAddress: selectedAddress,
-        paymentMode,
-        couponCode
+            const verifyData = await verifyRes.json();
+            console.log('✅ Verification response:', verifyData);
+
+            if (verifyRes.ok) {
+              dispatch(clearCart());
+              router.push(`/order-success?orderId=${verifyData.orderId}`);
+            } else {
+              alert(`Payment verification failed: ${verifyData.error}. Payment ID: ${response.razorpay_payment_id}`);
+              setLoading(false);
+            }
+          } catch (error) {
+            console.error('❌ Verification error:', error);
+            alert(`Payment verification error. Payment ID: ${response.razorpay_payment_id}`);
+            setLoading(false);
+          }
+        },
+        prefill: {
+          name: user.name,
+          email: user.email,
+          contact: selectedAddress.phone
+        },
+        theme: {
+          color: '#415f2d'
+        },
+        modal: {
+          ondismiss: function() {
+            setLoading(false);
+          }
+        }
       };
 
-      const res = await fetch('/api/orders/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.error || 'Failed to create order');
-        setLoading(false);
-        return;
-      }
-
-      if (paymentMode === 'online') {
-        // Initialize Razorpay payment
-        const options = {
-          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-          amount: data.amount * 100,
-          currency: 'INR',
-          name: 'NatureMedica',
-          description: `Order #${data.orderId}`,
-          order_id: data.razorpayOrderId,
-          handler: async function (response) {
-            // Payment successful - Verify and create order
-            try {
-              const verifyRes = await fetch('/api/orders/verify-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  razorpayOrderId: response.razorpay_order_id,
-                  razorpayPaymentId: response.razorpay_payment_id,
-                  razorpaySignature: response.razorpay_signature,
-                  orderData: data.orderData
-                })
-              });
-
-              const verifyData = await verifyRes.json();
-
-              if (verifyRes.ok) {
-                // Clear cart and redirect to success page
-                dispatch(clearCart());
-                router.push(`/order-success?orderId=${verifyData.orderId}`);
-              } else {
-                alert('Payment verification failed. Please contact support with payment ID: ' + response.razorpay_payment_id);
-                setLoading(false);
-              }
-            } catch (error) {
-              alert('Payment verification error. Please contact support.');
-              setLoading(false);
-            }
-          },
-          prefill: {
-            name: user.name,
-            email: user.email,
-            contact: selectedAddress.phone
-          },
-          notes: {
-            orderId: data.orderId
-          },
-          theme: {
-            color: '#415f2d'
-          },
-          modal: {
-            ondismiss: function() {
-              setLoading(false);
-              alert('Payment cancelled. Your order was not placed.');
-            }
-          }
-        };
-
-        const razorpay = new window.Razorpay(options);
-        
-        razorpay.on('payment.failed', function (response) {
-          alert(`Payment failed: ${response.error.description}`);
-          setLoading(false);
-        });
-
-        razorpay.open();
-      } else {
-        // COD order - Order already created, clear cart and redirect
-        dispatch(clearCart());
-        router.push(`/order-success?orderId=${data.order.orderId}`);
-      }
-    } catch (error) {
-      console.error('Order error:', error);
-      alert('Failed to place order. Please try again.');
-      setLoading(false);
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } else {
+      // COD
+      console.log('✅ COD Order placed:', data.order.orderId);
+      dispatch(clearCart());
+      router.push(`/order-success?orderId=${data.order.orderId}`);
     }
-  };
+  } catch (error) {
+    console.error('❌ Order error:', error);
+    alert('Failed to place order. Please try again.');
+    setLoading(false);
+  }
+};
+
 
   if (!user || items.length === 0) {
     return null;

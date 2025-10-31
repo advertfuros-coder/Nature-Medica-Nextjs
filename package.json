@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.9.1",
+    "axios": "^1.13.1",
     "bcryptjs": "^3.0.2",
     "chart.js": "^4.5.1",
     "cloudinary": "^2.8.0",

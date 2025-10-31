@@ -83,6 +83,7 @@ export default function Header() {
 
   const categories = [
     { name: 'Shop All', href: '/products', icon: Home },
+    { name: 'Beauty & Personal Care', href: '/products?category=supplements', icon: Pill },
     { name: 'Supplements', href: '/products?category=supplements', icon: Pill },
     { name: 'Vitamins', href: '/products?category=vitamins', icon: Apple },
     { name: 'Organic Foods', href: '/products?category=organic-foods', icon: Apple },

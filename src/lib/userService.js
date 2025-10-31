@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 
 const MONGODB_URI = process.env.MONGO_URI;
@@ -10,11 +10,9 @@ export class UserService {
     const usersCollection = db.collection('users');
 
     try {
-      // Hash password
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(userData.password, salt);
 
-      // Create user document
       const userDoc = {
         name: userData.name,
         email: userData.email.toLowerCase(),
@@ -23,6 +21,7 @@ export class UserService {
         isEmailVerified: false,
         emailVerificationOTP: userData.otp,
         emailVerificationOTPExpires: userData.otpExpiry,
+        addresses: [], // Initialize empty addresses array
         role: 'customer',
         isActive: true,
         createdAt: new Date(),
@@ -63,21 +62,123 @@ export class UserService {
 
     try {
       updates.updatedAt = new Date();
-      
-      console.log('Updating user:', userId, 'with:', {
-        ...updates,
-        password: updates.password ? '***hashed***' : undefined
-      });
+      const _id = typeof userId === 'string' ? new ObjectId(userId) : userId;
 
       const result = await usersCollection.updateOne(
-        { _id: userId },
+        { _id },
         { $set: updates }
       );
 
-      console.log('Update result:', {
-        matched: result.matchedCount,
-        modified: result.modifiedCount
-      });
+      return result.modifiedCount > 0;
+    } finally {
+      await client.close();
+    }
+  }
+
+  // Add new address
+  static async addAddress(userId, addressData) {
+    const client = await MongoClient.connect(MONGODB_URI);
+    const db = client.db();
+    const usersCollection = db.collection('users');
+
+    try {
+      const _id = typeof userId === 'string' ? new ObjectId(userId) : userId;
+      
+      const newAddress = {
+        _id: new ObjectId(),
+        type: addressData.type || 'home',
+        name: addressData.name,
+        phone: addressData.phone,
+        street: addressData.street,
+        city: addressData.city,
+        state: addressData.state,
+        pincode: addressData.pincode,
+        landmark: addressData.landmark || '',
+        isDefault: addressData.isDefault || false,
+        createdAt: new Date()
+      };
+
+      // If this is set as default, unset other defaults
+      if (newAddress.isDefault) {
+        await usersCollection.updateOne(
+          { _id },
+          { $set: { 'addresses.$[].isDefault': false } }
+        );
+      }
+
+      const result = await usersCollection.updateOne(
+        { _id },
+        { 
+          $push: { addresses: newAddress },
+          $set: { updatedAt: new Date() }
+        }
+      );
+
+      return result.modifiedCount > 0 ? newAddress : null;
+    } finally {
+      await client.close();
+    }
+  }
+
+  // Update existing address
+  static async updateAddress(userId, addressId, updates) {
+    const client = await MongoClient.connect(MONGODB_URI);
+    const db = client.db();
+    const usersCollection = db.collection('users');
+
+    try {
+      const _id = typeof userId === 'string' ? new ObjectId(userId) : userId;
+      const addrId = typeof addressId === 'string' ? new ObjectId(addressId) : addressId;
+
+      // If setting as default, unset other defaults first
+      if (updates.isDefault) {
+        await usersCollection.updateOne(
+          { _id },
+          { $set: { 'addresses.$[].isDefault': false } }
+        );
+      }
+
+      const result = await usersCollection.updateOne(
+        { _id, 'addresses._id': addrId },
+        { 
+          $set: {
+            'addresses.$.type': updates.type,
+            'addresses.$.name': updates.name,
+            'addresses.$.phone': updates.phone,
+            'addresses.$.street': updates.street,
+            'addresses.$.city': updates.city,
+            'addresses.$.state': updates.state,
+            'addresses.$.pincode': updates.pincode,
+            'addresses.$.landmark': updates.landmark,
+            'addresses.$.isDefault': updates.isDefault || false,
+            updatedAt: new Date()
+          }
+        }
+      );
+
+      return result.modifiedCount > 0;
+    } finally {
+      await client.close();
+    }
+  }
+
+  // Delete address
+  static async deleteAddress(userId, addressId) {
+    const client = await MongoClient.connect(MONGODB_URI);
+    const db = client.db();
+    const usersCollection = db.collection('users');
+
+    try {
+      const _id = typeof userId === 'string' ? new ObjectId(userId) : userId;
+      const addrId = typeof addressId === 'string' ? new ObjectId(addressId) : addressId;
+
+      const result = await usersCollection.updateOne(
+        { _id },
+        { 
+          $pull: { addresses: { _id: addrId } },
+          $set: { updatedAt: new Date() }
+        }
+      );
 
       return result.modifiedCount > 0;
     } finally {
@@ -87,10 +188,6 @@ export class UserService {
 
   static async verifyPassword(plainPassword, hashedPassword) {
     if (!plainPassword || !hashedPassword) {
-      console.error('Missing password for comparison:', {
-        hasPlain: !!plainPassword,
-        hasHashed: !!hashedPassword
-      });
       return false;
     }
     return await bcrypt.compare(plainPassword, hashedPassword);
@@ -98,27 +195,5 @@ export class UserService {
 
   static generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
-  }
-
-  // Helper to check password without hashing (for debugging)
-  static async debugPassword(userId, plainPassword) {
-    const client = await MongoClient.connect(MONGODB_URI);
-    const db = client.db();
-    
-    try {
-      const user = await db.collection('users').findOne({ _id: userId });
-      
-      if (!user) return { error: 'User not found' };
-      
-      const isValid = await bcrypt.compare(plainPassword, user.password);
-      
-      return {
-        hasPassword: !!user.password,
-        passwordHash: user.password?.substring(0, 20) + '...',
-        isValid
-      };
-    } finally {
-      await client.close();
-    }
   }
 }

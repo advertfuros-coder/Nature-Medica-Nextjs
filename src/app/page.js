@@ -13,6 +13,7 @@ import WhyChooseNatureMedica from "@/components/customer/WhyChooseNatureMedica";
 import TrustedBySection from "@/components/customer/TrustedBySection";
 import CustomerReviews from "@/components/customer/CustomerReviews";
 import Link from "next/link";
+import HomeBlogCarousel from "@/components/customer/HomeBlogCarousel";
 
 export default async function HomePage() {
   await connectDB();
@@ -78,6 +79,9 @@ export default async function HomePage() {
           <CustomerReviews />
         </div>
       </section>
+
+      {/* <HomeBlogCarousel/> */}
+
 
       {/* FAQ Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">

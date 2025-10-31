@@ -1,39 +1,37 @@
-import { verifyToken } from '@/lib/jwt';
 import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
 
 export async function authenticate(req) {
-  const cookieStore = cookies();
-  const token = cookieStore.get('token')?.value;
+  try {
+    // ✅ AWAIT cookies() in Next.js 15
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
 
-  if (!token) {
+    if (!token) {
+      return { authenticated: false, user: null };
+    }
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return { authenticated: true, user: decoded };
+  } catch (error) {
+    console.error('Auth error:', error.message);
     return { authenticated: false, user: null };
   }
-
-  const decoded = verifyToken(token);
-  
-  if (!decoded) {
-    return { authenticated: false, user: null };
-  }
-
-  return { authenticated: true, user: decoded };
 }
 
 export async function requireAuth(req) {
   const auth = await authenticate(req);
-  
   if (!auth.authenticated) {
     throw new Error('Authentication required');
   }
-
   return auth.user;
 }
 
 export async function requireAdmin(req) {
   const user = await requireAuth(req);
-  
   if (user.role !== 'admin') {
     throw new Error('Admin access required');
   }
-
   return user;
 }
