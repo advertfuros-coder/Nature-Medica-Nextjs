@@ -85,7 +85,7 @@ export default function ProductCard({ product }) {
     >
       <div className={`bg-white rounded-xl shadow-md transition-transform duration-300 ease-in-out flex flex-col h-full hover:shadow-lg hover:-translate-y-1`}>
         {/* Image Container */}
-        <div className="relative w-full aspect-[4/5] overflow-hidden rounded-t-xl bg-gray-50">
+        <div className="relative w-full aspect-[2/2] overflow-hidden rounded-t-xl bg-gray-50">
           <img
             loader={hasCloudinaryImage && !imageError ? cloudinaryLoader : undefined}
             src={hasCloudinaryImage && !imageError ? getCloudinaryPublicId(imageUrl) : imageUrl}
@@ -112,7 +112,7 @@ export default function ProductCard({ product }) {
           {product.stock === 0 && (
             <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-20 rounded-t-xl">
               <div className="text-center px-4">
-                <p className="font-bold text-[11px] text-gray-800 mb-1">Out of Stock</p>
+                <p className="font-semibold text-[11px] text-gray-800 mb-1">Out of Stock</p>
                 <p className="text-[11px] text-gray-500">Notify when available</p>
               </div>
             </div>
@@ -137,13 +137,13 @@ export default function ProductCard({ product }) {
           </div>
 
           {/* Title */}
-          <h3 className="font-semibold text-sm text-gray-900 mb-2 line-clamp-2 leading-snug">
+          <h3 className="font-medium text-sm text-gray-900 mb- line-clamp-2 leading-snug">
             {product.title}
           </h3>
 
           {/* Rating */}
           {product.reviewCount > 0 && (
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-1">
               <div className="flex items-center gap-1 bg-[#415f2d] px-2 py-0.5 rounded-md">
                 <FiStar className="w-4 h-4 text-white" />
                 <span className="text-[11px] font-semibold text-white">
@@ -157,9 +157,9 @@ export default function ProductCard({ product }) {
           )}
 
           {/* Price and Delivery */}
-          <div className="mb-4">
+          <div className="mb-2">
             <div className="flex items-baseline gap-2">
-              <span className="text-lg font-bold text-gray-900">
+              <span className="text-lg font-semibold text-gray-900">
                 ₹{product.price.toLocaleString('en-IN')}
               </span>
               {product.mrp > product.price && (
@@ -168,20 +168,20 @@ export default function ProductCard({ product }) {
                 </span>
               )}
             </div>
-            {product.price >= 999 && (
+            {/* {product.price >= 999 && (
               <div className="flex items-center gap-1 text-[11px] font-semibold text-green-600 mt-1">
                 <FiTruck className="w-4 h-4" />
                 Free delivery
               </div>
-            )}
+            )} */}
           </div>
 
           {/* Buttons */}
-          <div className="flex  gap-2 mt-auto">
+          <div className="flex flex-col  gap-2 ">
             <button
               onClick={handleQuickBuy}
               disabled={quickBuying}
-              className="flex-1 bg-gradient-to-r from-[#FF8914] to-[#FF6B00] text-white py-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1 shadow-md hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="flex-1 bg-gradient-to-r from-[#FF8914] to-[#FF6B00] text-white py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center gap-1 shadow-md hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {quickBuying ? (
                 <>
@@ -202,7 +202,7 @@ export default function ProductCard({ product }) {
             <button
               onClick={handleAddToCart}
               disabled={adding || product.stock === 0}
-              className={`flex-1 py-3 rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all ${
+              className={`flex-1 py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center gap-2 transition-all ${
                 adding
                   ? 'bg-green-600 text-white shadow-md'
                   : product.stock === 0

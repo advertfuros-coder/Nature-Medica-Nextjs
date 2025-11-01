@@ -45,10 +45,10 @@ export default function BestSellerSection({ products }) {
         {/* Section Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+            <h2 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-1">
               🔥 Best Sellers
             </h2>
-            <p className="text-gray-600">Our most loved products by customers</p>
+            <p className="text-gray-600 text-sm">Our most loved products by customers</p>
           </div>
 
           {/* Desktop Navigation Arrows */}
@@ -93,9 +93,10 @@ export default function BestSellerSection({ products }) {
             }}
           >
             {products.map((product) => (
-              <div
+              <div 
+              
                 key={product._id}
-                className="flex-shrink-0 w-[280px] sm:w-[300px]"
+                className="flex-shrink-0 w-60"
               >
                 <ProductCard product={product} />
               </div>
@@ -113,16 +114,7 @@ export default function BestSellerSection({ products }) {
           </div>
         </div>
 
-        {/* View All Link */}
-        <div className="mt-8 text-center">
-          <a
-            href="/shop?filter=bestSeller"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-[#415f2d] text-[#415f2d] font-bold rounded-lg hover:bg-[#415f2d] hover:text-white transition-all shadow-md hover:shadow-lg"
-          >
-            View All Best Sellers
-            <FiChevronRight className="w-5 h-5" />
-          </a>
-        </div>
+
       </div>
 
       <style jsx>{`

@@ -55,7 +55,7 @@ export default function HeroBanner({ banners }) {
 
   return (
     <div 
-      className="relative w-full h-[200px] md:h-[400px] overflow-hidden bg-gray-200"
+      className="relative w-full h-[100px] md:h-[400px] overflow-hidden bg-gray-200"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

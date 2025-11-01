@@ -45,10 +45,10 @@ export default function NewArrivalSection({ products }) {
         {/* Section Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+            <h2 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-1">
               ✨ New Arrivals
             </h2>
-            <p className="text-gray-600">Fresh additions to our wellness collection</p>
+            <p className="text-gray-600 text-sm">Fresh additions to our wellness collection</p>
           </div>
 
           {/* Desktop Navigation Arrows */}
@@ -93,7 +93,7 @@ export default function NewArrivalSection({ products }) {
             {products.map((product) => (
               <div
                 key={product._id}
-                className="flex-shrink-0 w-[280px] sm:w-[300px]"
+                className="flex-shrink-0 w-60"
               >
                 <ProductCard product={product} />
               </div>
@@ -101,16 +101,7 @@ export default function NewArrivalSection({ products }) {
           </div>
         </div>
 
-        {/* View All Link */}
-        <div className="mt-8 text-center">
-          <a
-            href="/shop?filter=newArrival"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-blue-600 text-blue-600 font-bold rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-md hover:shadow-lg"
-          >
-            View All New Arrivals
-            <FiChevronRight className="w-5 h-5" />
-          </a>
-        </div>
+          
       </div>
 
       <style jsx>{`

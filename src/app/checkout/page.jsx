@@ -257,7 +257,7 @@ const handlePlaceOrder = async () => {
                   )}
 
                   {!showAddressForm && (
-                    <div className="space-y-2">
+                    <div className="space-y-2"> 
                       {user.addresses?.length === 0 ? (
                         <div className="text-center py-4">
                           <FiMapPin className="mx-auto text-2xl text-gray-300 mb-1" />
@@ -342,7 +342,7 @@ const handlePlaceOrder = async () => {
                   <label 
                     className={`block p-2 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
                       paymentMode === 'online' 
-                        ? 'border-[#415f2d] bg-[#415f2d2a] bg-opacity-5 shadow-sm' 
+                        ? 'border-[#415f2d] bg-[#415f2d1c] bg-opacity-5 shadow-sm' 
                         : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                     }`}
                   >
@@ -370,8 +370,8 @@ const handlePlaceOrder = async () => {
                             <p className="font-semibold text-gray-900 mb-0.5 text-[10px]">Online Payment</p>
                             <p className="text-[10px] text-gray-600">Pay using UPI, Cards, Net Banking, Wallets</p>
                           </div>
-                          <div className="flex items-center gap-1 bg-blue-50 px-1.5 py-0.5 rounded-md">
-                            <span className="text-[8px] text-gray-600">Powered by</span>
+                          <div className="flex items-center gap-1   rounded-md">
+                            {/* <span className="text-[8px] text-gray-600">Powered by</span> */}
                             <span className="text-[10px] text-blue-600 font-bold">Razorpay</span>
                           </div>
                         </div>
@@ -387,7 +387,7 @@ const handlePlaceOrder = async () => {
                   <label 
                     className={`block p-2 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
                       paymentMode === 'cod' 
-                        ? 'border-[#415f2d] bg-[#415f2d3c] bg-opacity-5 shadow-sm' 
+                        ? 'border-[#415f2d] bg-[#415f2d1c] bg-opacity-5 shadow-sm' 
                         : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                     }`}
                   >
@@ -444,20 +444,16 @@ const handlePlaceOrder = async () => {
                             alt={item.product.title}
                             className="w-full h-full object-cover"
                           />
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#415f2d] text-white rounded-full flex items-center justify-center text-[8px] font-medium">
-                            {item.quantity}
-                          </div>
+                          
                         </div>
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1  ">
                           <h4 className="text-[10px] font-medium text-gray-900 line-clamp-1">
                             {item.product.title}
                           </h4>
                           {item.variant && (
                             <p className="text-[8px] text-gray-500">{item.variant}</p>
                           )}
-                          <p className="text-[10px] font-semibold text-gray-900 mt-0.5">
-                            ₹{(item.price * item.quantity).toLocaleString('en-IN')}
-                          </p>
+                           
                         </div>
                       </div>
                     ))}

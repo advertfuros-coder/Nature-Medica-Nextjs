@@ -48,7 +48,7 @@ export default async function HomePage() {
       </section>
 
       {/* Shop by Category */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ">
         <div className="text-center mb-6">
           <h2 className="text-xl lg:text-2xl font-semibold text-gray-900 tracking-tight mb-1">
             Shop by Category

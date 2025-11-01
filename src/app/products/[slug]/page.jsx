@@ -49,31 +49,31 @@ export default async function ProductDetailPage({ params }) {
       {/* Breadcrumb */}
       <div className="bg-gray-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <nav className="flex items-center gap-2 text-sm">
-            <Link href="/" className="text-gray-500 hover:text-[#415f2d] transition-colors flex items-center gap-1">
-              <FiHome className="w-4 h-4" />
+          <nav className="flex items-center gap-2 text-xs">
+            <Link href="/" className="text-gray-500 hover:text-[#415f2d] transition-colors flex items-center gap-1 text-[11px]">
+              <FiHome className="w-3.5 h-3.5" />
               Home
             </Link>
-            <FiChevronRight className="w-4 h-4 text-gray-400" />
-            <Link href="/products" className="text-gray-500 hover:text-[#415f2d] transition-colors">
+            <FiChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            <Link href="/products" className="text-gray-500 hover:text-[#415f2d] transition-colors text-[11px]">
               Products
             </Link>
-            <FiChevronRight className="w-4 h-4 text-gray-400" />
-            <Link 
+            <FiChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            {/* <Link 
               href={`/products?category=${product.category.slug}`} 
-              className="text-gray-500 hover:text-[#415f2d] transition-colors"
+              className="text-gray-500 hover:text-[#415f2d] transition-colors text-[11px]"
             >
               {product.category.name}
             </Link>
-            <FiChevronRight className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-900 font-medium line-clamp-1">{product.title}</span>
+            <FiChevronRight className="w-3.5 h-3.5 text-gray-400" /> */}
+            <span className="text-gray-900 font-medium line-clamp-1 text-[11px]">{product.title}</span>
           </nav>
         </div>
       </div>
 
       {/* Product Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-1">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-8">
           <ProductImages 
             images={serializedProduct.images} 
             title={serializedProduct.title} 
@@ -82,7 +82,7 @@ export default async function ProductDetailPage({ params }) {
         </div>
 
         {/* Product Details Tabs */}
-        <div className="mb-16">
+        <div className="mb-6">
           <ProductTabs
             description={serializedProduct.description}
             ingredients={serializedProduct.ingredients}
@@ -91,7 +91,7 @@ export default async function ProductDetailPage({ params }) {
         </div>
 
         {/* Reviews Section */}
-        <div className="mb-16">
+        <div className="mb-8">
           <ReviewSection
             productId={serializedProduct._id}
             reviews={serializedReviews}
@@ -128,29 +128,29 @@ export default async function ProductDetailPage({ params }) {
       </div>
 
       {/* Trust Section */}
-      <div className="bg-gradient-to-br from-[#415f2d] to-[#344b24] py-12">
+      <div className="bg-gradient-to-br from-[#415f2d] to-[#344b24] py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center text-white">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center text-white opacity-90">
             <div className="flex flex-col items-center">
-              <svg className="w-12 h-12 mb-4 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 mb-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <h3 className="text-lg font-semibold mb-2">100% Authentic</h3>
-              <p className="text-sm opacity-90">Guaranteed genuine products</p>
+              <h3 className="text-sm font-semibold mb-1 leading-tight">100% Authentic</h3>
+              <p className="text-[12px] opacity-80 leading-tight">Guaranteed genuine products</p>
             </div>
             <div className="flex flex-col items-center">
-              <svg className="w-12 h-12 mb-4 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 mb-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              <h3 className="text-lg font-semibold mb-2">Free Shipping</h3>
-              <p className="text-sm opacity-90">On orders above ₹999</p>
+              <h3 className="text-sm font-semibold mb-1 leading-tight">Free Shipping</h3>
+              <p className="text-[12px] opacity-80 leading-tight">On orders above ₹999</p>
             </div>
             <div className="flex flex-col items-center">
-              <svg className="w-12 h-12 mb-4 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 mb-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              <h3 className="text-lg font-semibold mb-2">Easy Returns</h3>
-              <p className="text-sm opacity-90">30-day return policy</p>
+              <h3 className="text-sm font-semibold mb-1 leading-tight">Easy Returns</h3>
+              <p className="text-[12px] opacity-80 leading-tight">30-day return policy</p>
             </div>
           </div>
         </div>

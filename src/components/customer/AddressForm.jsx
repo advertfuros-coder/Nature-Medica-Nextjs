@@ -68,20 +68,20 @@ export default function AddressForm({ existingAddress, onSuccess, onCancel }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-3">
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+        <div className="p-2.5 bg-red-50 border border-red-200 rounded-md text-red-600 text-[11px]">
           {error}
         </div>
       )}
 
       {/* Address Type */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
           Address Type *
         </label>
         <div className="grid grid-cols-3 gap-2">
-          <label className={`flex items-center justify-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all ${
+          <label className={`flex items-center justify-center gap-2 p-2.5 border-2 rounded-md cursor-pointer transition-all hover:shadow-md ${
             formData.type === 'home' ? 'border-[#3a5d1e] bg-green-50' : 'border-gray-200 hover:border-gray-300'
           }`}>
             <input
@@ -92,11 +92,11 @@ export default function AddressForm({ existingAddress, onSuccess, onCancel }) {
               onChange={handleInputChange}
               className="sr-only"
             />
-            <FiHome className="w-5 h-5" />
-            <span className="text-sm font-medium">Home</span>
+            <FiHome className="w-4 h-4" />
+            <span className="text-[11px] font-medium">Home</span>
           </label>
 
-          <label className={`flex items-center justify-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all ${
+          <label className={`flex items-center justify-center gap-2 p-2.5 border-2 rounded-md cursor-pointer transition-all hover:shadow-md ${
             formData.type === 'work' ? 'border-[#3a5d1e] bg-green-50' : 'border-gray-200 hover:border-gray-300'
           }`}>
             <input
@@ -107,11 +107,11 @@ export default function AddressForm({ existingAddress, onSuccess, onCancel }) {
               onChange={handleInputChange}
               className="sr-only"
             />
-            <FiBriefcase className="w-5 h-5" />
-            <span className="text-sm font-medium">Work</span>
+            <FiBriefcase className="w-4 h-4" />
+            <span className="text-[11px] font-medium">Work</span>
           </label>
 
-          <label className={`flex items-center justify-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all ${
+          <label className={`flex items-center justify-center gap-2 p-2.5 border-2 rounded-md cursor-pointer transition-all hover:shadow-md ${
             formData.type === 'other' ? 'border-[#3a5d1e] bg-green-50' : 'border-gray-200 hover:border-gray-300'
           }`}>
             <input
@@ -122,16 +122,16 @@ export default function AddressForm({ existingAddress, onSuccess, onCancel }) {
               onChange={handleInputChange}
               className="sr-only"
             />
-            <FiMapPin className="w-5 h-5" />
-            <span className="text-sm font-medium">Other</span>
+            <FiMapPin className="w-4 h-4" />
+            <span className="text-[11px] font-medium">Other</span>
           </label>
         </div>
       </div>
 
       {/* Name and Phone */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
             Full Name *
           </label>
           <input
@@ -140,12 +140,12 @@ export default function AddressForm({ existingAddress, onSuccess, onCancel }) {
             value={formData.name}
             onChange={handleInputChange}
             required
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#3a5d1e] focus:outline-none"
+            className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-md focus:border-[#3a5d1e] focus:outline-none text-[12px]"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
             Phone Number *
           </label>
           <input
@@ -155,14 +155,14 @@ export default function AddressForm({ existingAddress, onSuccess, onCancel }) {
             onChange={handleInputChange}
             required
             pattern="[0-9]{10}"
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#3a5d1e] focus:outline-none"
+            className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-md focus:border-[#3a5d1e] focus:outline-none text-[12px]"
           />
         </div>
       </div>
 
       {/* Street Address */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
           Street Address *
         </label>
         <textarea
@@ -171,39 +171,39 @@ export default function AddressForm({ existingAddress, onSuccess, onCancel }) {
           onChange={handleInputChange}
           required
           rows={2}
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#3a5d1e] focus:outline-none"
+          className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-md focus:border-[#3a5d1e] focus:outline-none text-[12px]"
           placeholder="House No., Building, Street"
         />
       </div>
 
       {/* City, State, Pincode */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">City *</label>
+          <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">City *</label>
           <input
             type="text"
             name="city"
             value={formData.city}
             onChange={handleInputChange}
             required
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#3a5d1e] focus:outline-none"
+            className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-md focus:border-[#3a5d1e] focus:outline-none text-[12px]"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">State *</label>
+          <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">State *</label>
           <input
             type="text"
             name="state"
             value={formData.state}
             onChange={handleInputChange}
             required
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#3a5d1e] focus:outline-none"
+            className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-md focus:border-[#3a5d1e] focus:outline-none text-[12px]"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Pincode *</label>
+          <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">Pincode *</label>
           <input
             type="text"
             name="pincode"
@@ -211,20 +211,20 @@ export default function AddressForm({ existingAddress, onSuccess, onCancel }) {
             onChange={handleInputChange}
             required
             pattern="[0-9]{6}"
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#3a5d1e] focus:outline-none"
+            className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-md focus:border-[#3a5d1e] focus:outline-none text-[12px]"
           />
         </div>
       </div>
 
       {/* Landmark */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Landmark</label>
+        <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">Landmark</label>
         <input
           type="text"
           name="landmark"
           value={formData.landmark}
           onChange={handleInputChange}
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#3a5d1e] focus:outline-none"
+          className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-md focus:border-[#3a5d1e] focus:outline-none text-[12px]"
           placeholder="Optional"
         />
       </div>
@@ -239,17 +239,17 @@ export default function AddressForm({ existingAddress, onSuccess, onCancel }) {
             onChange={handleInputChange}
             className="w-4 h-4 text-[#3a5d1e] border-gray-300 rounded focus:ring-[#3a5d1e]"
           />
-          <span className="text-sm font-medium text-gray-700">Set as default address</span>
+          <span className="text-[11px] font-medium text-gray-700">Set as default address</span>
         </label>
       </div>
 
       {/* Buttons */}
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-all"
+            className="flex-1 border-2 border-gray-300 text-gray-700 py-2.5 rounded-md font-semibold text-[13px] hover:bg-gray-50 transition-all hover:shadow-md"
           >
             Cancel
           </button>
@@ -257,7 +257,7 @@ export default function AddressForm({ existingAddress, onSuccess, onCancel }) {
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 bg-gradient-to-r from-[#3a5d1e] to-[#5a7f3d] text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+          className="flex-1 bg-gradient-to-r from-[#3a5d1e] to-[#5a7f3d] text-white py-2.5 rounded-md font-semibold text-[13px] hover:shadow-md transition-all disabled:opacity-50"
         >
           {loading ? 'Saving...' : existingAddress ? 'Update Address' : 'Add Address'}
         </button>

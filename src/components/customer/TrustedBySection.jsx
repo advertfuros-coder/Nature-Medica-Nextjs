@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function TrustedBySection() {
   return (
-    <section className="bg-gradient-to-r from-white to-gray-50 py-20 px-6">
+    <section className="bg-gradient-to-r from-white to-gray-50 md:py-20 px-6">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         {/* Left - Customer Grid */}
         <div className="relative w-full h-80 sm:h-96 md:h-[28rem] rounded-2xl overflow-hidden shadow-md bg-white">
@@ -15,8 +15,8 @@ export default function TrustedBySection() {
         </div>
 
         {/* Right - Trust Info */}
-        <div className="bg-white p-10 rounded-2xl shadow-md hover:shadow-xl border border-gray-100 transition-all duration-300">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#3C5D27] mb-6">
+        <div className="md:bg-white md:p-10 md:rounded-2xl md:shadow-md md:shadow-xl md:border md:border-gray-100 transition-all duration-300">
+          <h2 className="text-xl md:text-2xl font-bold text-[#3C5D27] mb-6">
             Trusted by 70 Lac+ consumers
           </h2>
 

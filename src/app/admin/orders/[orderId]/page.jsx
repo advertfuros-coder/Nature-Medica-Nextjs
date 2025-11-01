@@ -857,7 +857,7 @@ export default function AdminOrderDetailsPage() {
 
         {/* Courier Selection Modal */}
         {showCourierModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Create Shipment</h2>
@@ -985,7 +985,7 @@ export default function AdminOrderDetailsPage() {
 
         {/* Status Update Modal */}
         {showStatusModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl p-6 max-w-md w-full">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Update Order Status</h2>
@@ -1044,7 +1044,7 @@ export default function AdminOrderDetailsPage() {
 
         {/* Manual Shipment Modal */}
         {showManualShipmentModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset- bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl p-6 max-w-md w-full">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Manual Shipment Entry</h2>

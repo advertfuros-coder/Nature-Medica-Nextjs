@@ -168,31 +168,31 @@ export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5
   };
 
   const getColorForRating = (rating) => {
-    if (rating >= 4.5) return 'text-green-600';
+    if (rating >= 4.5) return 'text-[#3A5D1E]';
     if (rating >= 3.5) return 'text-yellow-600';
     return 'text-orange-600';
   };
 
   return (
-    <div className="bg-gradient-to-b from-white to-gray-50 rounded-2xl shadow-xl p-6 md:p-10">
+    <div className="bg-gradient-to-b from-white to-gray-50 rounded-2xl shadow-xl p-4 sm:p-6 md:p-8">
       {/* Header with Stats */}
       <div className="border-b pb-6 mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex-1">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 bg-gradient-to-r from-[#3A5D1E] to-green-800 bg-clip-text text-transparent text-center sm:text-left">
               Customer Reviews
             </h2>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 text-center sm:text-left">
+              <div className="flex items-center gap-3 justify-center sm:justify-start">
                 <div className="flex flex-col items-center bg-white rounded-xl shadow-lg p-4">
-                  <span className={`text-5xl font-bold ${getColorForRating(actualRatingAvg)}`}>
+                  <span className={`text-3xl sm:text-4xl font-bold ${getColorForRating(actualRatingAvg)}`}>
                     {actualRatingAvg.toFixed(1)}
                   </span>
                   {renderStars(Math.round(actualRatingAvg))}
                 </div>
                 <div>
-                  <p className="text-gray-600 text-lg">Based on</p>
-                  <p className="font-bold text-2xl text-gray-800">{actualReviewCount} reviews</p>
+                  <p className="text-gray-600 text-sm sm:text-base">Based on</p>
+                  <p className="font-bold text-sm sm:text-lg text-gray-800">{actualReviewCount} reviews</p>
                 </div>
               </div>
             </div>
@@ -201,7 +201,7 @@ export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5
           {isAuthenticated && !showForm && (
             <button
               onClick={() => setShowForm(true)}
-              className="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-4 rounded-xl hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold flex items-center gap-2 whitespace-nowrap"
+              className="bg-gradient-to-r from-[#3A5D1E] to-green-700 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold flex items-center gap-2 whitespace-nowrap text-[12px] sm:text-sm"
             >
               <FiStar className="w-5 h-5" />
               Write a Review
@@ -212,33 +212,33 @@ export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5
 
       {/* Rating Distribution */}
       {actualReviewCount > 0 && (
-        <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-          <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-8">
+          <h3 className="font-bold text-sm sm:text-base mb-4 flex items-center gap-2">
             <span>Rating Breakdown</span>
-            <span className="text-sm text-gray-500 font-normal">({actualReviewCount} total)</span>
+            <span className="text-xs sm:text-sm text-gray-500 font-normal">({actualReviewCount} total)</span>
           </h3>
-          <div className="space-y-3">
+          <div className="flex flex-col gap-2">
             {ratingDistribution.map(({ star, count, percentage }) => (
               <button
                 key={star}
                 onClick={() => setFilterRating(filterRating === star.toString() ? 'all' : star.toString())}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
+                className={`w-full flex items-center gap-3 p-2 sm:p-3 rounded-lg transition-all ${
                   filterRating === star.toString() 
                     ? 'bg-green-50 ring-2 ring-green-500 shadow-md' 
                     : 'hover:bg-gray-50'
                 }`}
               >
-                <div className="flex items-center gap-1 w-20">
+                <div className="flex items-center gap-1 w-16 sm:w-20">
                   <span className="font-semibold">{star}</span>
-                  <FiStar className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <FiStar className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
                 </div>
-                <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div className="flex-1 bg-gray-200 rounded-full h-2.5 sm:h-3 overflow-hidden">
                   <div
                     className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-full transition-all duration-500"
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
-                <span className="text-sm text-gray-600 w-16 text-right font-medium">
+                <span className="text-[11px] sm:text-xs text-gray-600 w-14 sm:w-16 text-right font-medium">
                   {count} {count === 1 ? 'review' : 'reviews'}
                 </span>
               </button>
@@ -247,7 +247,7 @@ export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5
           {filterRating !== 'all' && (
             <button
               onClick={() => setFilterRating('all')}
-              className="mt-4 text-sm text-green-600 hover:text-green-700 font-semibold flex items-center gap-1"
+              className="mt-4 text-sm text-[#3A5D1E] hover:text-green-700 font-semibold flex items-center gap-1"
             >
               ✕ Clear Filter
             </button>
@@ -256,14 +256,14 @@ export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5
       )}
 
       {/* Sort Options */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="font-bold text-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <h3 className="font-semibold text-sm sm:text-base">
           {filteredReviews.length} {filteredReviews.length === 1 ? 'Review' : 'Reviews'}
         </h3>
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500 transition"
+          className="border-2 border-gray-300 rounded-lg px-3 py-1.5 text-[12px] focus:outline-none focus:border-green-500 transition"
         >
           <option value="recent">Most Recent</option>
           <option value="helpful">Most Helpful</option>
@@ -274,9 +274,9 @@ export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5
 
       {/* Write Review Form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 mb-8 border-2 border-green-300 shadow-lg">
+        <form onSubmit={handleSubmit} className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 sm:p-6 mb-8 border-2 border-green-300 shadow-lg">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-xl text-green-800">Write Your Review</h3>
+            <h3 className="font-bold text-base sm:text-lg text-green-800">Write Your Review</h3>
             <button
               type="button"
               onClick={() => setShowForm(false)}
@@ -287,31 +287,31 @@ export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5
           </div>
           
           <div className="mb-4">
-            <label className="block font-semibold mb-2 text-gray-800">Your Rating *</label>
+            <label className="block text-[12px] font-medium mb-2">Your Rating *</label>
             {renderStars(rating, true, 'w-10 h-10')}
           </div>
 
           <div className="mb-4">
-            <label className="block font-semibold mb-2 text-gray-800">Your Review *</label>
+            <label className="block text-[12px] font-medium mb-2">Your Review *</label>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               required
               minLength={10}
               rows={5}
-              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition"
+              className="w-full border-2 border-gray-300 rounded-xl px-3.5 py-2.5 text-[12px] focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition"
               placeholder="Share your experience with this product... (minimum 10 characters)"
             />
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-[11px] text-gray-600 mt-2">
               {text.length} / 500 characters
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             <button
               type="submit"
               disabled={submitting || text.trim().length < 10}
-              className="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-3 rounded-xl hover:from-green-700 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition shadow-md"
+              className="bg-gradient-to-r from-[#3A5D1E] to-green-700 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl hover:from-green-700 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition shadow-md text-[12px]"
             >
               {submitting ? 'Submitting...' : 'Submit Review'}
             </button>
@@ -322,7 +322,7 @@ export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5
                 setText('');
                 setRating(5);
               }}
-              className="bg-gray-300 text-gray-700 px-8 py-3 rounded-xl hover:bg-gray-400 font-semibold transition"
+              className="bg-gray-300 text-gray-700 px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl hover:bg-gray-400 font-semibold transition text-[12px]"
             >
               Cancel
             </button>
@@ -331,7 +331,7 @@ export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5
       )}
 
       {/* Reviews List */}
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {filteredReviews.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-xl shadow-md">
             <div className="text-7xl mb-4">📝</div>
@@ -345,23 +345,23 @@ export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5
           filteredReviews.map((review, index) => (
             <div 
               key={review._id} 
-              className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all border border-gray-100"
+              className="bg-white rounded-xl p-4 sm:p-5 shadow-md hover:shadow-xl transition-all border border-gray-100"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3 sm:gap-4 flex-wrap">
                 {/* User Avatar */}
                 <div className="flex-shrink-0">
-                  <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#3A5D1E] to-[#3A5D1E] rounded-full flex items-center justify-center text-white font-bold text-lg sm:text-xl shadow-lg">
                     {review.user?.name?.charAt(0)?.toUpperCase() || <FiUser />}
                   </div>
                 </div>
 
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   {/* Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-bold text-gray-800 text-lg">{review.user?.name || 'Anonymous'}</p>
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <p className="font-bold text-gray-800 text-sm sm:text-base">{review.user?.name || 'Anonymous'}</p>
                         {review.verified && (
                           <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">
                             <FiShield className="w-3 h-3" />
@@ -369,9 +369,9 @@ export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
                         {renderStars(review.rating, false, 'w-4 h-4')}
-                        <span className="text-sm text-gray-500">
+                        <span className="text-xs sm:text-sm text-gray-500">
                           {format(new Date(review.createdAt), 'MMM dd, yyyy')}
                         </span>
                       </div>
@@ -379,10 +379,10 @@ export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5
                   </div>
 
                   {/* Review Text */}
-                  <p className="text-gray-700 leading-relaxed mb-4 text-base">{review.text}</p>
+                  <p className="text-gray-700 leading-relaxed mb-3 text-[12px] sm:text-sm">{review.text}</p>
 
                   {/* Helpful Button */}
-                  <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-600 transition font-medium">
+                  <button className="flex items-center gap-2 text-[11px] sm:text-[12px] text-gray-600 hover:text-[#3A5D1E] transition font-medium">
                     <FiThumbsUp className="w-4 h-4" />
                     <span>Helpful ({review.helpful || 0})</span>
                   </button>

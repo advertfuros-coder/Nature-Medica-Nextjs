@@ -81,7 +81,7 @@ export default function WhyChooseUs() {
                 </div>
 
                 {/* Value with Gradient */}
-                <h3 className={`text-xl lg:text-2xl font-bold bg-gradient-to-r ${stat.accentColor} bg-clip-text text-transparent mb-3`}>
+                <h3 className={`text-xl lg:text-2xl font-bold bg-gradient-to-r ${stat.accentColor} bg-clip-text text-transparent `}>
                   {stat.value}
                 </h3>
 

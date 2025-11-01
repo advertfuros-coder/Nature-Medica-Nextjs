@@ -86,7 +86,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="md:min-h-screen bg-gradient-to-br from-gray-50 via-white-50 to-teal-50 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Decorative Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-[#3A5D1E]/5 rounded-full blur-3xl" />

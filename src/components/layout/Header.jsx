@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useSelector, useDispatch } from 'react-redux';
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { 
   ShoppingBag, 
   UserCircle2, 
@@ -26,6 +26,7 @@ import Image from 'next/image';
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const dispatch = useDispatch();
   
   // Safe Redux selectors with defaults
@@ -153,9 +154,9 @@ export default function Header() {
                           <Link href="/orders" className="block px-4 py-2 hover:bg-gray-100 text-gray-700" onClick={() => setShowUserMenu(false)}>
                             Your Orders
                           </Link>
-                          <Link href="/wishlist" className="block px-4 py-2 hover:bg-gray-100 text-gray-700" onClick={() => setShowUserMenu(false)}>
+                          {/* <Link href="/wishlist" className="block px-4 py-2 hover:bg-gray-100 text-gray-700" onClick={() => setShowUserMenu(false)}>
                             Your Wish List
-                          </Link>
+                          </Link> */}
                           <button onClick={handleLogout} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600">
                             Sign Out
                           </button>
@@ -214,11 +215,13 @@ export default function Header() {
         {/* Top Bar */}
         <div className="bg-white shadow-sm px-3 py-2">
           <div className="flex items-center justify-between mb-2">
-            <button onClick={() => setShowMobileMenu(true)} className="p-2 text-gray-900">
+            {/* Uncomment if you want to keep the menu button for future use */}
+            {/* <button onClick={() => setShowMobileMenu(true)} className="p-2 text-gray-900">
               <Menu className="w-6 h-6" />
-            </button>
-            <Link href="/" className="flex-shrink-0">
-              <Image src={logo} alt="Nature Medica" className="h-10 w-auto" />
+            </button> */}
+            <div className="w-10 h-10 rounded-full overflow-hidden" />
+            <Link href="/" className="f">
+              <Image src={logo} alt="Nature Medica" className="w-22" />
             </Link>
             <Link href="/cart" className="relative p-2 text-gray-900">
               <ShoppingBag className="w-6 h-6" />
@@ -229,7 +232,6 @@ export default function Header() {
               )}
             </Link>
           </div>
-
           {/* Search Bar */}
           <form onSubmit={handleSearch}>
             <div className="flex items-center bg-gray-100 rounded-lg overflow-hidden border border-gray-300">
@@ -239,13 +241,13 @@ export default function Header() {
                 placeholder="Search NatureMedica"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 px-3 py-2 text-sm text-gray-900 bg-gray-100 focus:outline-none"
+                className="flex-1 px-3 py-2 text-xs text-gray-900 bg-gray-100 focus:outline-none"
               />
             </div>
           </form>
         </div>
-
-        {/* Category Bar */}
+        {/* Category Bar and Mobile Menu Drawer removed for bottom nav */}
+        {/* 
         <div className="bg-[#3a5d1e] text-white px-3 py-2 overflow-x-auto">
           <div className="flex items-center gap-4 text-sm whitespace-nowrap">
             {categories.map((category) => (
@@ -255,77 +257,62 @@ export default function Header() {
             ))}
           </div>
         </div>
+        */}
       </div>
 
-      {/* Mobile Menu Drawer */}
-      {showMobileMenu && (
-        <>
-          <div className="fixed inset-0 bg-black/50 z-50 lg:hidden" onClick={() => setShowMobileMenu(false)} />
-          <div className="fixed left-0 top-0 bottom-0 w-4/5 max-w-sm bg-white z-50 overflow-y-auto lg:hidden">
-            {/* Drawer Header */}
-            <div className="bg-[#3a5d1e] text-white p-4">
-              <div className="flex items-center justify-between">
-                {isAuthenticated && user ? (
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#3a5d1e] font-bold">
-                      {user.name?.charAt(0).toUpperCase() || 'U'}
-                    </div>
-                    <span className="font-bold">Hello, {user.name?.split(' ')[0] || 'User'}</span>
-                  </div>
-                ) : (
-                  <Link href="/auth" className="font-bold" onClick={() => setShowMobileMenu(false)}>
-                    Hello, Sign in
-                  </Link>
-                )}
-                <button onClick={() => setShowMobileMenu(false)}>
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
-
-            {/* Menu Content */}
-            <div className="p-4">
-              <h3 className="font-bold text-lg mb-3 text-gray-900">Shop by Category</h3>
-              <ul className="space-y-2">
-                {categories.map((category) => (
-                  <li key={category.name}>
-                    <Link
-                      href={category.href}
-                      className="block py-2 hover:bg-gray-100 rounded px-2 text-gray-900"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      {category.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-
-              {isAuthenticated && user && (
-                <>
-                  <h3 className="font-bold text-lg mt-6 mb-3 text-gray-900">Your Account</h3>
-                  <ul className="space-y-2">
-                    <li>
-                      <Link href="/orders" className="block py-2 hover:bg-gray-100 rounded px-2 text-gray-900" onClick={() => setShowMobileMenu(false)}>
-                        Your Orders
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/wishlist" className="block py-2 hover:bg-gray-100 rounded px-2 text-gray-900" onClick={() => setShowMobileMenu(false)}>
-                        Your Wish List
-                      </Link>
-                    </li>
-                    <li>
-                      <button onClick={handleLogout} className="block w-full text-left py-2 hover:bg-gray-100 rounded px-2 text-red-600">
-                        Sign Out
-                      </button>
-                    </li>
-                  </ul>
-                </>
-              )}
-            </div>
-          </div>
-        </>
-      )}
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white shadow-t border-t border-gray-200">
+        <div className="flex justify-around items-center h-14">
+          {[
+            {
+              label: 'Home',
+              href: '/',
+              icon: Home,
+              isActive: pathname === '/',
+            },
+            {
+              label: 'Shop',
+              href: '/products',
+              icon: ShoppingBag,
+              isActive: pathname.startsWith('/products'),
+            },
+            // {
+            //   label: 'Wishlist',
+            //   href: '/wishlist',
+            //   icon: Heart,
+            //   isActive: pathname.startsWith('/wishlist'),
+            // },
+            {
+              label: 'Orders',
+              href: '/orders',
+              icon: Package2,
+              isActive: pathname.startsWith('/orders'),
+            },
+            // {
+            //   label: 'Account',
+            //   href: isAuthenticated && user ? '/profile' : '/auth',
+            //   icon: UserCircle2,
+            //   isActive:
+            //     (isAuthenticated && user && pathname.startsWith('/profile')) ||
+            //     (!isAuthenticated && pathname.startsWith('/auth')),
+            // },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`flex flex-col items-center justify-center flex-1 py-1 group transition-colors ${
+                  item.isActive ? 'text-[#3a5d1e] font-semibold' : 'text-gray-500'
+                } hover:text-[#3a5d1e]`}
+              >
+                <Icon className="w-5 h-5 mb-0.5" />
+                <span className="text-[11px] leading-tight">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
     </header>
   );
 }
