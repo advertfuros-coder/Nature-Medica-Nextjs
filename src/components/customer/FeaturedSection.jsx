@@ -39,15 +39,15 @@ export default function FeaturedSection({ products }) {
   }
 
   return (
-    <section className="bg-gradient-to-b from-gray-50 to-white py-12 lg:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="bg-[#F8F6F3]">
+      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-1">
-              ⭐ Featured Products
+            <h2 className="text-base lg:text-xl font- text-gray-900">
+              Featured Products
             </h2>
-            <p className="text-gray-600 text-sm">Handpicked wellness essentials for you</p>
+            <p className="text-gray-600 text-xs">Handpicked wellness essentials for you</p>
           </div>
 
           {/* Desktop Navigation Arrows */}
@@ -90,7 +90,7 @@ export default function FeaturedSection({ products }) {
             }}
           >
             {products.map((product) => (
-              <div key={product._id} className="flex-shrink-0 w-60">
+              <div key={product._id} className="flex-shrink-0 w-44 md:w-72 ">
                 <ProductCard product={product} />
               </div>
             ))}

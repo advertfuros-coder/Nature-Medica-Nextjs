@@ -40,15 +40,15 @@ export default function BestSellerSection({ products }) {
   }
 
   return (
-    <section className="bg-gradient-to-b from-white to-gray-50 py-12 lg:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="bg-[#F8F6F3] ">
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-1">
-              🔥 Best Sellers
+            <h2 className="text-base lg:text-xl font-  text-gray-900 mb-">
+              Best Sellers
             </h2>
-            <p className="text-gray-600 text-sm">Our most loved products by customers</p>
+            <p className="text-gray-600 text-xs">Our most loved products by customers</p>
           </div>
 
           {/* Desktop Navigation Arrows */}
@@ -85,7 +85,7 @@ export default function BestSellerSection({ products }) {
           <div
             ref={scrollContainerRef}
             onScroll={checkScrollability}
-            className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+            className="flex gap-4 rounded-2xl overflow-x-auto scrollbar-hide scroll-smooth pb-4"
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
@@ -96,7 +96,7 @@ export default function BestSellerSection({ products }) {
               <div 
               
                 key={product._id}
-                className="flex-shrink-0 w-60"
+                className="flex-shrink-0  w-44 md:w-72 "
               >
                 <ProductCard product={product} />
               </div>
@@ -104,14 +104,7 @@ export default function BestSellerSection({ products }) {
           </div>
 
           {/* Mobile Scroll Indicators */}
-          <div className="flex lg:hidden justify-center gap-2 mt-4">
-            {canScrollLeft && (
-              <div className="h-1 w-8 bg-[#415f2d] rounded-full"></div>
-            )}
-            {canScrollRight && (
-              <div className="h-1 w-8 bg-gray-300 rounded-full"></div>
-            )}
-          </div>
+         
         </div>
 
 

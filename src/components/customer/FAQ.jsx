@@ -2,132 +2,133 @@
 
 import { useState } from 'react';
 import { 
-  FiChevronDown, 
-  FiHelpCircle, 
-  FiCreditCard, 
-  FiTruck, 
-  FiRefreshCw,
-  FiShield,
-  FiGift,
-  FiPackage,
-  FiAlertCircle,
-  FiPhone,
-  FiUsers,
-  FiClock
-} from 'react-icons/fi';
+  ChevronRight, 
+  CreditCard, 
+  Truck, 
+  RefreshCw,
+  Shield,
+  Gift,
+  Package,
+  AlertCircle,
+  Phone,
+  Clock
+} from 'lucide-react';
 
-const faqsWithIcons = [
+const faqs = [
   {
-    icon: FiCreditCard,
+    icon: CreditCard,
     question: "What payment methods do you accept?",
-    answer: "We accept multiple payment options including Credit/Debit Cards, UPI, Net Banking, and Wallets through our secure Razorpay payment gateway. We also offer Cash on Delivery (COD) for select locations."
+    answer: "We accept Credit/Debit Cards, UPI, Net Banking, Wallets, and Cash on Delivery (COD).",
   },
   {
-    icon: FiTruck,
+    icon: Truck,
     question: "How long does shipping take?",
-    answer: "We typically process orders within 24-48 hours. Standard delivery takes 3-5 business days, while express shipping is available in 1-2 business days for metro cities. You'll receive tracking information once your order is shipped."
+    answer: "Standard delivery: 3-5 days. Express shipping: 1-2 days for metro cities.",
   },
   {
-    icon: FiRefreshCw,
-    question: "What is your return and refund policy?",
-    answer: "We offer a 7-day return policy for unopened products. If you receive a damaged or incorrect item, please contact us within 48 hours of delivery. Refunds are processed within 5-7 business days after we receive the returned product."
+    icon: RefreshCw,
+    question: "What is your return policy?",
+    answer: "7-day return policy for unopened products. Contact within 48 hours for damaged items.",
   },
   {
-    icon: FiShield,
-    question: "Are your products certified and safe?",
-    answer: "Yes, all our products are 100% natural, lab-tested, and certified by relevant authorities. We ensure the highest quality standards and follow strict manufacturing practices."
+    icon: Shield,
+    question: "Are products certified?",
+    answer: "Yes, all products are 100% natural, lab-tested, and certified.",
   },
   {
-    icon: FiGift,
+    icon: Gift,
     question: "Do you offer free shipping?",
-    answer: "Yes! We offer free shipping on all orders above ₹499. For orders below this amount, a nominal shipping fee of ₹50 applies."
+    answer: "Yes! Free shipping on orders above ₹499.",
   },
   {
-    icon: FiPackage,
-    question: "How can I track my order?",
-    answer: "Once your order is shipped, you'll receive a tracking number via email and SMS. You can also track your order by logging into your account and visiting the 'My Orders' section."
+    icon: Package,
+    question: "How to track my order?",
+    answer: "Tracking number sent via email/SMS. Check 'My Orders' section.",
   },
   {
-    icon: FiAlertCircle,
-    question: "Are there any side effects to your products?",
-    answer: "Our products are made from natural ingredients and are generally safe. However, we recommend consulting with a healthcare professional before starting any new supplement."
+    icon: AlertCircle,
+    question: "Any side effects?",
+    answer: "Natural ingredients, generally safe. Consult doctor before use.",
   },
   {
-    icon: FiClock,
-    question: "Can I cancel or modify my order?",
-    answer: "You can cancel or modify your order within 2 hours of placing it by contacting our customer support."
+    icon: Clock,
+    question: "Can I cancel my order?",
+    answer: "Cancel within 2 hours by contacting support.",
   },
   {
-    icon: FiGift,
-    question: "Do you offer discounts or coupons?",
-    answer: "Yes! We regularly offer promotional discounts and exclusive coupon codes. First-time customers get 10% off with code WELCOME10."
+    icon: Gift,
+    question: "Any discounts available?",
+    answer: "Yes! First-time customers get 10% off with code WELCOME10.",
   },
   {
-    icon: FiPhone,
-    question: "How do I contact customer support?",
-    answer: "You can reach us via email at support@naturemedica.com or call us at +91-XXXXXXXXXX (Mon-Sat, 9 AM - 6 PM IST)."
+    icon: Phone,
+    question: "How to contact support?",
+    answer: "Email: support@naturemedica.com or call +91-XXXXXXXXXX.",
   }
 ];
 
-export default function FAQStyled() {
+export default function FAQCompactList() {
   const [openIndex, setOpenIndex] = useState(null);
 
-  const toggleFAQ = (index) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
-
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="grid md:grid-cols-2 gap-6">
-        {faqsWithIcons.map((faq, index) => {
-          const Icon = faq.icon;
-          const isOpen = openIndex === index;
+    <section className="py-8 bg-white">
+      <div className="max-w-3xl mx-auto px-4">
+        <div className="mb-5">
+          <h2 className="text-sm font-semibold text-gray-900 mb-1">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-[10px] text-gray-500">Find quick answers below</p>
+        </div>
 
-          return (
-            <div
-              key={index}
-              className={`bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 ${
-                isOpen ? 'shadow-xl ring-2 ring-green-500' : 'hover:shadow-lg'
-              }`}
-            >
-              <button
-                onClick={() => toggleFAQ(index)}
-                className="w-full p-5 flex items-start gap-4 text-left focus:outline-none"
+        <div className="space-y-1">
+          {faqs.map((faq, index) => {
+            const Icon = faq.icon;
+            const isOpen = openIndex === index;
+
+            return (
+              <div
+                key={index}
+                className={`rounded-lg transition-all duration-300 ${
+                  isOpen ? 'bg-gray-50' : 'bg-white hover:bg-gray-50'
+                }`}
               >
-                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                  isOpen ? 'bg-green-600 text-white' : 'bg-green-100 text-green-600'
-                }`}>
-                  <Icon className="w-5 h-5" />
-                </div>
-
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-800 mb-1">
-                    {faq.question}
-                  </h3>
-                  
-                  <div
-                    className={`transition-all duration-300 ease-in-out ${
-                      isOpen
-                        ? 'max-h-96 opacity-100 mt-2'
-                        : 'max-h-0 opacity-0'
-                    } overflow-hidden`}
-                  >
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {faq.answer}
-                    </p>
+                <button
+                  onClick={() => setOpenIndex(isOpen ? null : index)}
+                  className="w-full p-2.5 flex items-center gap-3 text-left"
+                >
+                  <div className={`flex-shrink-0 w-6 h-6 rounded flex items-center justify-center ${
+                    isOpen ? 'bg-[#415f2d]/10' : 'bg-gray-100'
+                  }`}>
+                    <Icon className={`w-3 h-3 ${
+                      isOpen ? 'text-[#415f2d]' : 'text-gray-600'
+                    }`} />
                   </div>
-                </div>
 
-                <FiChevronDown
-                  className={`flex-shrink-0 w-5 h-5 text-gray-400 transition-transform duration-300 ${
-                    isOpen ? 'transform rotate-180' : ''
+                  <span className="flex-1 text-[11px] font-medium text-gray-900">
+                    {faq.question}
+                  </span>
+
+                  <ChevronRight
+                    className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-300 flex-shrink-0 ${
+                      isOpen ? 'rotate-90 text-[#415f2d]' : ''
+                    }`}
+                  />
+                </button>
+
+                <div
+                  className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                    isOpen ? 'max-h-96 pb-2.5' : 'max-h-0'
                   }`}
-                />
-              </button>
-            </div>
-          );
-        })}
+                >
+                  <p className="text-[10px] text-gray-600 leading-relaxed px-2.5 pl-11">
+                    {faq.answer}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -31,7 +31,7 @@ export default function Footer() {
                   <FiMapPin className="w-4 h-4 text-[#ffffff]" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 mb-1 text-sm sm:text-base">Visit Our Store</p>
+                  <p className="font-light text-gray-900 mb-1 text-sm sm:text-base">Visit Our Store</p>
                   <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                     1st Floor, LHPS Building, Friends Colony, Sector-7,<br />
                     Kamla Nehru Nagar, Vikas Nagar,<br />
@@ -45,8 +45,8 @@ export default function Footer() {
                   <FiPhone className="w-4 h-4 text-[#ffffff]" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 mb-1 text-sm sm:text-base">Call Us</p>
-                  <a href="tel:8400043322" className="text-sm sm:text-base font-bold text-[#415f2d] hover:text-[#344b24]">
+                  <p className="font-light text-gray-900 mb-1 text-sm sm:text-base">Call Us</p>
+                  <a href="tel:8400043322" className="text-sm sm:text-base font-light text-[#415f2d] hover:text-[#344b24]">
                     +91 8400043322
                   </a>
                 </div>
@@ -57,7 +57,7 @@ export default function Footer() {
                   <FiMail className="w-4 h-4 text-[#ffffff]" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 mb-1 text-sm sm:text-base">Email Us</p>
+                  <p className="font-light text-gray-900 mb-1 text-sm sm:text-base">Email Us</p>
                   <a href="mailto:support@naturemedica.com" className="text-[#415f2d] hover:text-[#344b24] font-medium text-xs sm:text-sm">
                     support@naturemedica.com
                   </a>
@@ -71,7 +71,7 @@ export default function Footer() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-8">
               {/* Shop */}
               <div>
-                <h4 className="font-bold text-gray-900 text-sm sm:text-base mb-2 sm:mb-3 border-b-2 border-[#415f2d] inline-block pb-2">
+                <h4 className="font-light text-gray-900 text-sm sm:text-base mb-2 sm:mb-3 border-b-2 border-[#415f2d] inline-block pb-2">
                   Shop
                 </h4>
                 <ul className="space-y-3 mt-3 sm:mt-4 text-xs sm:text-sm">
@@ -104,7 +104,7 @@ export default function Footer() {
 
               {/* Support */}
               <div>
-                <h4 className="font-bold text-gray-900 text-sm sm:text-base mb-2 sm:mb-3 border-b-2 border-[#415f2d] inline-block pb-2">
+                <h4 className="font-light text-gray-900 text-sm sm:text-base mb-2 sm:mb-3 border-b-2 border-[#415f2d] inline-block pb-2">
                   Support
                 </h4>
                 <ul className="space-y-3 mt-3 sm:mt-4 text-xs sm:text-sm">
@@ -137,7 +137,7 @@ export default function Footer() {
 
               {/* Legal */}
               <div>
-                <h4 className="font-bold text-gray-900 text-sm sm:text-base mb-2 sm:mb-3 border-b-2 border-[#415f2d] inline-block pb-2">
+                <h4 className="font-light text-gray-900 text-sm sm:text-base mb-2 sm:mb-3 border-b-2 border-[#415f2d] inline-block pb-2">
                   Legal
                 </h4>
                 <ul className="space-y-3 mt-3 sm:mt-4 text-xs sm:text-sm">
@@ -178,7 +178,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
             {/* Copyright */}
             <p className="text-gray-600 text-center md:text-left text-xs sm:text-sm">
-              © {new Date().getFullYear()} <span className="font-semibold text-gray-900">NatureMedica</span>. All rights reserved.
+              © {new Date().getFullYear()} <span className="font-light text-gray-900">NatureMedica</span>. All rights reserved.
             </p>
 
             {/* Social Media */}
@@ -220,13 +220,13 @@ export default function Footer() {
             <div className="flex items-center gap-2 sm:gap-3">
               <span className="text-gray-600 text-xs sm:text-sm font-medium">Payment:</span>
               <div className="flex gap-2">
-                <div className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-700">
+                <div className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-light text-gray-700">
                   UPI
                 </div>
-                <div className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-700">
+                <div className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-light text-gray-700">
                   Cards
                 </div>
-                <div className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-700">
+                <div className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-light text-gray-700">
                   COD
                 </div>
               </div>

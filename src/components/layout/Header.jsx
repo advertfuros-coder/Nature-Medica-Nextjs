@@ -3,43 +3,28 @@
 import Link from 'next/link';
 import { useSelector, useDispatch } from 'react-redux';
 import { useState, useRef, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { 
-  ShoppingBag, 
-  UserCircle2, 
-  Search, 
-  LogOut, 
-  Package2, 
-  Heart,
-  Menu,
-  X,
-  ChevronDown,
-  MapPin,
-  Home,
-  Pill,
-  Apple
-} from 'lucide-react';
-import { logout } from '@/store/slices/userSlice'; // Changed from clearUser
+import { useRouter } from 'next/navigation';
+import { Search, ShoppingBag, Package, Sparkles, ChevronDown, LogOut, User } from 'lucide-react';
+import { logout } from '@/store/slices/userSlice';
 import { clearCart } from '@/store/slices/cartSlice';
-import logo from '@/assets/logor.webp';
 import Image from 'next/image';
+import logo from '@/assets/logor.webp';
+import PromoStripSimple from '../customer/PromoStripSimple';
 
-export default function Header() {
+export default function SearchFirstHeader() {
   const router = useRouter();
-  const pathname = usePathname();
   const dispatch = useDispatch();
-  
-  // Safe Redux selectors with defaults
-  const cartState = useSelector((state) => state.cart || { items: [], total: 0 });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  const cartState = useSelector((state) => state.cart || { items: [] });
   const totalItems = cartState.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
   
   const userState = useSelector((state) => state.user || { user: null, isAuthenticated: false });
-  const { user = null, isAuthenticated = false } = userState;
-  
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const menuRef = useRef(null);
+  const { user, isAuthenticated } = userState;
+
+  const quickLinks = ['Vitamin C', 'Protein Powder', 'Omega-3', 'Collagen'];
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -51,17 +36,6 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    if (showMobileMenu) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [showMobileMenu]);
-
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -72,247 +46,221 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
-      dispatch(logout()); // Use logout instead of clearUser
+      dispatch(logout());
       dispatch(clearCart());
       setShowUserMenu(false);
-      setShowMobileMenu(false);
       router.push('/');
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
 
-  const categories = [
-    { name: 'Shop All', href: '/products', icon: Home },
-    { name: 'Beauty & Personal Care', href: '/products?category=supplements', icon: Pill },
-    { name: 'Supplements', href: '/products?category=supplements', icon: Pill },
-    { name: 'Vitamins', href: '/products?category=vitamins', icon: Apple },
-    { name: 'Organic Foods', href: '/products?category=organic-foods', icon: Apple },
-  ];
+  // Get first name from user
+  const firstName = user?.name?.split(' ')[0] || 'User';
 
   return (
-    <header className="sticky top-0 z-50">
-      {/* Desktop View - Amazon Style */}
-      <div className="hidden lg:block">
-        {/* Main Header - Light Background */}
-        <div className="bg-white shadow-sm">
-          <div className="max-w-[1500px] mx-auto px-4">
-            <div className="flex items-center gap-5 py-2">
-              {/* Logo */}
-              <Link href="/" className="flex-shrink-0 border border-transparent hover:border-gray-300 rounded px-2 py-1 transition-colors">
-                <Image src={logo} alt="Nature Medica" className="h-10 w-auto" />
-              </Link>
-
-              {/* Search Bar */}
-              <form onSubmit={handleSearch} className="flex-1 max-w-3xl">
-                <div className="flex items-center bg-white rounded-lg overflow-hidden border-2 border-gray-300 focus-within:border-[#3a5d1e]">
-                  <select className="bg-gray-100 border-none px-3 py-2.5 text-sm text-gray-700 focus:outline-none hover:bg-gray-200 cursor-pointer">
-                    <option>All</option>
-                    <option>Supplements</option>
-                    <option>Vitamins</option>
-                    <option>Organic Foods</option>
-                  </select>
-                  <input
-                    type="text"
-                    placeholder="Search NatureMedica"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="flex-1 px-4 py-2.5 text-sm text-gray-900 focus:outline-none"
-                  />
-                  <button
-                    type="submit"
-                    className="bg-[#3a5d1e] px-6 py-2.5 hover:bg-[#2d4818] transition-colors"
-                  >
-                    <Search className="w-5 h-5 text-white" />
-                  </button>
-                </div>
-              </form>
-
-              {/* Right Side Actions */}
-              <div className="flex items-center gap-3">
-                {/* Account & Lists */}
-                {isAuthenticated && user ? (
-                  <div className="relative" ref={menuRef}>
-                    <button
-                      onClick={() => setShowUserMenu(!showUserMenu)}
-                      className="text-gray-900 border border-transparent hover:border-gray-300 rounded px-2 py-1 transition-colors"
-                    >
-                      <p className="text-xs text-gray-600">Hello, {user.name?.split(' ')[0] || 'User'}</p>
-                      <p className="font-bold text-sm flex items-center gap-1">
-                        Account & Lists
-                        <ChevronDown className="w-3 h-3" />
-                      </p>
-                    </button>
-
-                    {showUserMenu && (
-                      <div className="absolute right-0 mt-2 w-64 bg-white rounded shadow-2xl border border-gray-200 overflow-hidden">
-                        <div className="p-4 border-b">
-                          <p className="font-bold text-gray-900">{user.name}</p>
-                          <p className="text-sm text-gray-600">{user.email}</p>
-                        </div>
-                        <div className="py-2">
-                          <Link href="/orders" className="block px-4 py-2 hover:bg-gray-100 text-gray-700" onClick={() => setShowUserMenu(false)}>
-                            Your Orders
-                          </Link>
-                          {/* <Link href="/wishlist" className="block px-4 py-2 hover:bg-gray-100 text-gray-700" onClick={() => setShowUserMenu(false)}>
-                            Your Wish List
-                          </Link> */}
-                          <button onClick={handleLogout} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600">
-                            Sign Out
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <Link href="/auth" className="text-gray-900 border border-transparent hover:border-gray-300 rounded px-2 py-1 transition-colors">
-                    <p className="text-xs text-gray-600">Hello, sign in</p>
-                    <p className="font-bold text-sm">Account & Lists</p>
-                  </Link>
-                )}
-
-                {/* Returns & Orders */}
-                <Link href="/orders" className="text-gray-900 border border-transparent hover:border-gray-300 rounded px-2 py-1 transition-colors">
-                  <p className="text-xs text-gray-600">Returns</p>
-                  <p className="font-bold text-sm">& Orders</p>
-                </Link>
-
-                {/* Cart */}
-                <Link href="/cart" className="relative text-gray-900 border border-transparent hover:border-gray-300 rounded px-3 py-1 transition-colors flex items-center gap-2">
-                  <div className="relative">
-                    <ShoppingBag className="w-8 h-8" />
-                    {totalItems > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-[#FF8914] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                        {totalItems > 9 ? '9+' : totalItems}
-                      </span>
-                    )}
-                  </div>
-                  <span className="font-bold text-sm">Cart</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation Bar */}
-        <div className="bg-[#3a5d1e] text-white">
-          <div className="max-w-[1500px] mx-auto px-4">
-            <ul className="flex items-center gap-5 py-2 text-sm">
-              {categories.map((category) => (
-                <li key={category.name}>
-                  <Link href={category.href} className="hover:border hover:border-white rounded px-2 py-1 transition-colors">
-                    {category.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile View */}
-      <div className="lg:hidden">
-        {/* Top Bar */}
-        <div className="bg-white shadow-sm px-3 py-2">
-          <div className="flex items-center justify-between mb-2">
-            {/* Uncomment if you want to keep the menu button for future use */}
-            {/* <button onClick={() => setShowMobileMenu(true)} className="p-2 text-gray-900">
-              <Menu className="w-6 h-6" />
-            </button> */}
-            <div className="w-10 h-10 rounded-full overflow-hidden" />
-            <Link href="/" className="f">
-              <Image src={logo} alt="Nature Medica" className="w-22" />
+    <header className="sticky top-0 z-50 bg-white shadow-sm">
+<PromoStripSimple />
+      <div className="max-w-6xl mx-auto px-4 py-4">
+        {/* Top Row */}
+        <div className="flex items-center justify-between mb-4">
+          {/* Logo */}
+          <Link href="/" className="flex-shrink-0">
+            <Image src={logo} alt="Nature Medica" className="h-10 w-auto" />
+          </Link>
+          
+          {/* Right Actions */}
+          <div className="flex items-center gap-3">
+            {/* Orders Link */}
+            <Link 
+              href="/orders" 
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors group"
+            >
+              <Package className="w-5 h-5 text-gray-600 group-hover:text-[#3a5d1e]" />
+              <span className="text-sm font-medium text-gray-700 group-hover:text-[#3a5d1e]">Orders</span>
             </Link>
-            <Link href="/cart" className="relative p-2 text-gray-900">
-              <ShoppingBag className="w-6 h-6" />
+
+            {/* User Menu */}
+            {isAuthenticated && user ? (
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="w-8 h-8 bg-gradient-to-br from-[#3a5d1e] to-[#4a7d2e] rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                    {firstName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="hidden sm:block text-left">
+                    <p className="text-xs text-gray-500">Hello,</p>
+                    <p className="text-sm font-semibold text-gray-900 flex items-center gap-1">
+                      {firstName}
+                      <ChevronDown className="w-3 h-3" />
+                    </p>
+                  </div>
+                </button>
+
+                {/* Dropdown Menu */}
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden animate-slideDown">
+                    {/* User Info */}
+                    <div className="p-4 bg-gradient-to-br from-[#3a5d1e] to-[#4a7d2e] text-white">
+                      <p className="font-bold text-sm">{user.name}</p>
+                      <p className="text-xs opacity-90 mt-1">{user.email}</p>
+                    </div>
+
+                    {/* Menu Items */}
+                    <div className="py-2">
+                      <Link 
+                        href="/profile" 
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <User className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm text-gray-700">My Profile</span>
+                      </Link>
+
+                      <Link 
+                        href="/orders" 
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <Package className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm text-gray-700">My Orders</span>
+                      </Link>
+
+                      <div className="border-t border-gray-200 my-2"></div>
+
+                      <button 
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors w-full text-left"
+                      >
+                        <LogOut className="w-4 h-4 text-red-600" />
+                        <span className="text-sm text-red-600 font-medium">Sign Out</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link 
+                href="/auth" 
+                className="px-4 py-2 bg-[#3a5d1e] text-white rounded-lg font-medium hover:bg-[#2d4818] transition-colors text-sm"
+              >
+                Sign In
+              </Link>
+            )}
+
+            {/* Cart */}
+            <Link 
+              href="/cart" 
+              className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ShoppingBag className="w-6 h-6 text-gray-700" />
               {totalItems > 0 && (
-                <span className="absolute top-0 right-0 bg-[#FF8914] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-[#3a5d1e] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {totalItems > 9 ? '9+' : totalItems}
                 </span>
               )}
             </Link>
           </div>
-          {/* Search Bar */}
-          <form onSubmit={handleSearch}>
-            <div className="flex items-center bg-gray-100 rounded-lg overflow-hidden border border-gray-300">
-              <Search className="w-5 h-5 text-gray-400 ml-3" />
+        </div>
+
+        {/* Search Bar */}
+        <form onSubmit={handleSearch}>
+          <div className="relative">
+            <div className="flex items-center bg-gray-100 rounded-full px-6 py-3 hover:shadow-md transition-shadow focus-within:shadow-md focus-within:bg-white focus-within:ring-2 focus-within:ring-[#3a5d1e]/20">
+              <Search className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
               <input
                 type="text"
-                placeholder="Search NatureMedica"
+                placeholder="Search for supplements, vitamins, wellness products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 px-3 py-2 text-xs text-gray-900 bg-gray-100 focus:outline-none"
+                className="flex-1 bg-transparent focus:outline-none text-sm text-gray-900 placeholder:text-gray-500"
               />
+              <button type="submit" className="ml-3 flex-shrink-0">
+                <Sparkles className="w-5 h-5 text-yellow-500 hover:text-yellow-600 transition-colors" />
+              </button>
             </div>
-          </form>
-        </div>
-        {/* Category Bar and Mobile Menu Drawer removed for bottom nav */}
-        {/* 
-        <div className="bg-[#3a5d1e] text-white px-3 py-2 overflow-x-auto">
-          <div className="flex items-center gap-4 text-sm whitespace-nowrap">
-            {categories.map((category) => (
-              <Link key={category.name} href={category.href} className="hover:underline">
-                {category.name}
-              </Link>
-            ))}
+
+            {/* Quick Links */}
+            <div className="flex items-center gap-3 mt-3 text-xs text-gray-600 flex-wrap">
+              <span className="font-medium">Popular:</span>
+              {quickLinks.map((link) => (
+                <Link
+                  key={link}
+                  href={`/products?search=${encodeURIComponent(link)}`}
+                  className="px-3 py-1 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors hover:text-[#3a5d1e]"
+                >
+                  {link}
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-        */}
+        </form>
       </div>
 
-      {/* Mobile Bottom Navigation Bar */}
+      {/* Mobile Bottom Navigation */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white shadow-t border-t border-gray-200">
-        <div className="flex justify-around items-center h-14">
-          {[
-            {
-              label: 'Home',
-              href: '/',
-              icon: Home,
-              isActive: pathname === '/',
-            },
-            {
-              label: 'Shop',
-              href: '/products',
-              icon: ShoppingBag,
-              isActive: pathname.startsWith('/products'),
-            },
-            // {
-            //   label: 'Wishlist',
-            //   href: '/wishlist',
-            //   icon: Heart,
-            //   isActive: pathname.startsWith('/wishlist'),
-            // },
-            {
-              label: 'Orders',
-              href: '/orders',
-              icon: Package2,
-              isActive: pathname.startsWith('/orders'),
-            },
-            // {
-            //   label: 'Account',
-            //   href: isAuthenticated && user ? '/profile' : '/auth',
-            //   icon: UserCircle2,
-            //   isActive:
-            //     (isAuthenticated && user && pathname.startsWith('/profile')) ||
-            //     (!isAuthenticated && pathname.startsWith('/auth')),
-            // },
-          ].map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={`flex flex-col items-center justify-center flex-1 py-1 group transition-colors ${
-                  item.isActive ? 'text-[#3a5d1e] font-semibold' : 'text-gray-500'
-                } hover:text-[#3a5d1e]`}
-              >
-                <Icon className="w-5 h-5 mb-0.5" />
-                <span className="text-[11px] leading-tight">{item.label}</span>
-              </Link>
-            );
-          })}
+        <div className="flex justify-around items-center h-16">
+          <Link href="/" className="flex flex-col items-center justify-center flex-1 group">
+            <div className="p-2">
+              <Image src={logo} alt="Home" className="w-6 h-6" />
+            </div>
+            <span className="text-[10px] text-gray-600 group-hover:text-[#3a5d1e]">Home</span>
+          </Link>
+
+          <Link href="/products" className="flex flex-col items-center justify-center flex-1 group">
+            <Search className="w-5 h-5 text-gray-600 group-hover:text-[#3a5d1e]" />
+            <span className="text-[10px] text-gray-600 group-hover:text-[#3a5d1e] mt-1">Search</span>
+          </Link>
+
+          <Link href="/orders" className="flex flex-col items-center justify-center flex-1 group">
+            <Package className="w-5 h-5 text-gray-600 group-hover:text-[#3a5d1e]" />
+            <span className="text-[10px] text-gray-600 group-hover:text-[#3a5d1e] mt-1">Orders</span>
+          </Link>
+
+          <Link href="/cart" className="flex flex-col items-center justify-center flex-1 group relative">
+            <ShoppingBag className="w-5 h-5 text-gray-600 group-hover:text-[#3a5d1e]" />
+            {totalItems > 0 && (
+              <span className="absolute top-0 right-1/4 bg-[#3a5d1e] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                {totalItems}
+              </span>
+            )}
+            <span className="text-[10px] text-gray-600 group-hover:text-[#3a5d1e] mt-1">Cart</span>
+          </Link>
+
+          {isAuthenticated && user ? (
+            <Link href="/profile" className="flex flex-col items-center justify-center flex-1 group">
+              <div className="w-6 h-6 bg-gradient-to-br from-[#3a5d1e] to-[#4a7d2e] rounded-full flex items-center justify-center text-white font-semibold text-[10px]">
+                {firstName.charAt(0).toUpperCase()}
+              </div>
+              <span className="text-[10px] text-gray-600 group-hover:text-[#3a5d1e] mt-1">{firstName}</span>
+            </Link>
+          ) : (
+            <Link href="/auth" className="flex flex-col items-center justify-center flex-1 group">
+              <User className="w-5 h-5 text-gray-600 group-hover:text-[#3a5d1e]" />
+              <span className="text-[10px] text-gray-600 group-hover:text-[#3a5d1e] mt-1">Account</span>
+            </Link>
+          )}
         </div>
       </nav>
+
+      {/* Add animation styles */}
+      <style jsx>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-slideDown {
+          animation: slideDown 0.2s ease-out;
+        }
+      `}</style>
     </header>
   );
 }

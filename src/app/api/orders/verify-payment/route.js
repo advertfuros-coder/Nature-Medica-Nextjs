@@ -11,7 +11,6 @@ export async function POST(req) {
     const authData = await requireAuth(req);
     await connectDB();
 
-    // Get user info
     const user = await User.findById(authData.userId).lean();
 
     const {
@@ -55,7 +54,7 @@ export async function POST(req) {
       });
     }
 
-    // Create order with user details
+    // Create order
     const order = await Order.create({
       orderId: orderData.orderId,
       user: user._id,
@@ -102,10 +101,7 @@ export async function POST(req) {
   } catch (error) {
     console.error('❌ Payment verification error:', error);
     return NextResponse.json(
-      { 
-        error: 'Payment verification failed',
-        details: error.message 
-      },
+      { error: 'Payment verification failed', details: error.message },
       { status: 500 }
     );
   }

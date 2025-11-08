@@ -1,282 +1,163 @@
-const SHIPROCKET_API = 'https://apiv2.shiprocket.in/v1/external';
-
-let cachedToken = null;
-let tokenExpiry = null;
-
 class ShiprocketService {
-  static async getToken() {
-    if (cachedToken && tokenExpiry && Date.now() < tokenExpiry) {
-      return cachedToken;
-    }
-
-    try {
-      const response = await fetch(`${SHIPROCKET_API}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: "genforgestudio@gmail.com",
-          password: "aRak8jMQLmY*Ll^f",
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(`Shiprocket auth failed: ${data.message || JSON.stringify(data)}`);
-      }
-
-      cachedToken = data.token;
-      tokenExpiry = Date.now() + (10 * 24 * 60 * 60 * 1000);
-
-      console.log('✅ Shiprocket authenticated');
-      return cachedToken;
-    } catch (error) {
-      console.error('❌ Shiprocket auth error:', error);
-      throw error;
-    }
+  constructor() {
+    this.baseURL = 'https://apiv2.shiprocket.in/v1/external';
+    this.token = null;
+    this.tokenExpiry = null;
   }
 
-  static async createOrder(orderData) {
+  async getToken() {
+    if (this.token && this.tokenExpiry && Date.now() < this.tokenExpiry) {
+      return this.token;
+    }
+
     try {
-      const token = await this.getToken();
-
-      console.log('📦 Creating Shiprocket order:', orderData.order_id);
-
-      const response = await fetch(`${SHIPROCKET_API}/orders/create/adhoc`, {
+      console.log('🔑 Authenticating with Shiprocket...');
+      
+      const response = await fetch(`${this.baseURL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(orderData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error('❌ Shiprocket order creation failed:', data);
-        throw new Error(data.message || JSON.stringify(data.errors || data));
-      }
-
-      console.log('✅ Shiprocket order created:', data.order_id);
-      return data;
-    } catch (error) {
-      console.error('❌ Shiprocket order error:', error);
-      throw error;
-    }
-  }
-
-  static async getCourierServiceability(pickupPincode, deliveryPincode, weight, cod, orderValue) {
-    try {
-      const token = await this.getToken();
-
-      const params = new URLSearchParams({
-        pickup_postcode: pickupPincode,
-        delivery_postcode: deliveryPincode,
-        weight: weight,
-        cod: cod ? '1' : '0',
-        declared_value: orderValue
-      });
-
-      const response = await fetch(`${SHIPROCKET_API}/courier/serviceability?${params}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to get courier serviceability');
-      }
-
-      return data.data;
-    } catch (error) {
-      console.error('❌ Failed to get courier serviceability:', error);
-      throw error;
-    }
-  }
-
-  static async generateAWB(shipmentId, courierId) {
-    try {
-      const token = await this.getToken();
-
-      const response = await fetch(`${SHIPROCKET_API}/courier/assign/awb`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          shipment_id: shipmentId,
-          courier_id: courierId
-        }),
+          email: "harshrao724@gmail.com",
+          password: "3^sIgyjr@Nfn8@Jg"
+        })
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to generate AWB');
+      if (!response.ok || !data.token) {
+        throw new Error(data.message || 'Authentication failed');
       }
 
-      console.log('✅ AWB generated:', data);
-      return data;
+      this.token = data.token;
+      this.tokenExpiry = Date.now() + (240 * 60 * 60 * 1000); // 10 days
+
+      console.log('✅ Shiprocket authenticated successfully');
+      return this.token;
     } catch (error) {
-      console.error('❌ Failed to generate AWB:', error);
+      console.error('❌ Shiprocket auth error:', error.message);
       throw error;
     }
   }
 
-  static async schedulePickup(shipmentId) {
-    try {
-      const token = await this.getToken();
+  async makeRequest(endpoint, options = {}) {
+    const token = await this.getToken();
 
-      const response = await fetch(`${SHIPROCKET_API}/courier/generate/pickup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ shipment_id: [shipmentId] }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to schedule pickup');
+    const response = await fetch(`${this.baseURL}${endpoint}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        ...options.headers
       }
+    });
 
-      console.log('✅ Pickup scheduled:', data);
-      return data;
-    } catch (error) {
-      console.error('❌ Failed to schedule pickup:', error);
-      throw error;
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Request failed');
     }
+
+    return data;
   }
 
-  static async getShippingLabel(shipmentIds) {
-    try {
-      const token = await this.getToken();
-
-      const response = await fetch(`${SHIPROCKET_API}/courier/generate/label`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          shipment_id: Array.isArray(shipmentIds) ? shipmentIds : [shipmentIds]
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to get shipping label');
-      }
-
-      return data;
-    } catch (error) {
-      console.error('❌ Failed to get shipping label:', error);
-      throw error;
-    }
+  // Create order
+  async createOrder(orderData) {
+    return await this.makeRequest('/orders/create/adhoc', {
+      method: 'POST',
+      body: JSON.stringify(orderData)
+    });
   }
 
-  static async trackShipment(awb) {
-    try {
-      const token = await this.getToken();
+  // Get courier serviceability
+  async getCourierServiceability(pickupPincode, deliveryPincode, weight, cod = 0) {
+    const params = new URLSearchParams({
+      pickup_postcode: pickupPincode,
+      delivery_postcode: deliveryPincode,
+      weight: weight,
+      cod: cod
+    });
 
-      const response = await fetch(`${SHIPROCKET_API}/courier/track/awb/${awb}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to track shipment');
-      }
-
-      return data;
-    } catch (error) {
-      console.error('❌ Failed to track shipment:', error);
-      throw error;
-    }
+    return await this.makeRequest(`/courier/serviceability/?${params}`);
   }
 
-  static async cancelShipment(awbs) {
-    try {
-      const token = await this.getToken();
-
-      const response = await fetch(`${SHIPROCKET_API}/orders/cancel/shipment/awbs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          awbs: Array.isArray(awbs) ? awbs : [awbs]
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to cancel shipment');
-      }
-
-      return data;
-    } catch (error) {
-      console.error('❌ Failed to cancel shipment:', error);
-      throw error;
-    }
+  // Assign AWB
+  async assignAWB(shipmentId, courierId) {
+    return await this.makeRequest('/courier/assign/awb', {
+      method: 'POST',
+      body: JSON.stringify({
+        shipment_id: shipmentId,
+        courier_id: courierId
+      })
+    });
   }
 
-  static async createReturn(returnData) {
-    try {
-      const token = await this.getToken();
-
-      const response = await fetch(`${SHIPROCKET_API}/orders/create/return`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(returnData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to create return');
-      }
-
-      return data;
-    } catch (error) {
-      console.error('❌ Failed to create return:', error);
-      throw error;
-    }
+  // Generate pickup
+  async generatePickup(shipmentId) {
+    return await this.makeRequest('/courier/generate/pickup', {
+      method: 'POST',
+      body: JSON.stringify({
+        shipment_id: [shipmentId]
+      })
+    });
   }
 
-  static async getShipments(page = 1, perPage = 20) {
-    try {
-      const token = await this.getToken();
+  // Generate label
+  async generateLabel(shipmentId) {
+    return await this.makeRequest('/courier/generate/label', {
+      method: 'POST',
+      body: JSON.stringify({
+        shipment_id: [shipmentId]
+      })
+    });
+  }
 
-      const params = new URLSearchParams({ page, per_page: perPage });
+  // Track shipment
+  async trackShipment(awbCode) {
+    return await this.makeRequest(`/courier/track/awb/${awbCode}`);
+  }
 
-      const response = await fetch(`${SHIPROCKET_API}/shipments?${params}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+  // Cancel order
+  async cancelOrder(orderId) {
+    return await this.makeRequest('/orders/cancel', {
+      method: 'POST',
+      body: JSON.stringify({
+        ids: [orderId]
+      })
+    });
+  }
 
-      const data = await response.json();
+  // Generate manifest
+  async generateManifest(shipmentId) {
+    return await this.makeRequest('/manifests/generate', {
+      method: 'POST',
+      body: JSON.stringify({
+        shipment_id: [shipmentId]
+      })
+    });
+  }
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to get shipments');
-      }
+  // Print manifest
+  async printManifest(orderId) {
+    return await this.makeRequest('/manifests/print', {
+      method: 'POST',
+      body: JSON.stringify({
+        order_ids: [orderId]
+      })
+    });
+  }
 
-      return data;
-    } catch (error) {
-      console.error('❌ Failed to get shipments:', error);
-      throw error;
-    }
+  // Print invoice
+  async printInvoice(orderId) {
+    return await this.makeRequest('/orders/print/invoice', {
+      method: 'POST',
+      body: JSON.stringify({
+        ids: [orderId]
+      })
+    });
   }
 }
 
-export default ShiprocketService;
+const shiprocketService = new ShiprocketService();
+export default shiprocketService;

@@ -1,61 +1,64 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Order from '@/models/Order';
-import ShiprocketService from '@/lib/shiprocket';
-import { requireAdmin } from '@/middleware/auth';
+import shiprocketService from '@/lib/shiprocket';
 
 export async function POST(req) {
   try {
-    await requireAdmin(req);
     await connectDB();
-
     const { orderId, weight } = await req.json();
 
     const order = await Order.findOne({ orderId });
-
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    // Get courier serviceability
-    const couriers = await ShiprocketService.getCourierServiceability(
-      process.env.SHIPROCKET_PICKUP_PINCODE,
-      order.shippingAddress.pincode,
+    const pickupPincode = process.env.SHIPROCKET_PICKUP_PINCODE || '226001';
+    const deliveryPincode = order.shippingAddress.pincode;
+    const isCOD = order.paymentMode === 'cod' ? 1 : 0;
+
+    // Get available couriers
+    const response = await shiprocketService.getCourierServiceability(
+      pickupPincode,
+      deliveryPincode,
       weight || 0.5,
-      order.paymentMode === 'cod',
-      order.finalPrice
+      isCOD
     );
 
-    // Filter and sort couriers by price
-    const availableCouriers = couriers.available_courier_companies
-      .filter(courier => courier.is_surface) // Filter surface shipping only
-      .sort((a, b) => a.rate - b.rate) // Sort by price (cheapest first)
-      .map(courier => ({
-        courierId: courier.courier_company_id,
-        courierName: courier.courier_name,
-        rate: courier.rate,
-        estimatedDeliveryDays: courier.etd,
-        codCharges: courier.cod_charges,
-        totalCharges: courier.rate + (order.paymentMode === 'cod' ? courier.cod_charges : 0),
-        recommended: courier.recommendation_score || 0
-      }));
+    if (!response.data || !response.data.available_courier_companies) {
+      return NextResponse.json({
+        error: 'No couriers available for this location'
+      }, { status: 400 });
+    }
+
+    const couriers = response.data.available_courier_companies.map(courier => ({
+      courierId: courier.courier_company_id,
+      courierName: courier.courier_name,
+      freight: courier.freight_charge,
+      codCharges: courier.cod_charges || 0,
+      totalCharge: courier.rate,
+      estimatedDeliveryDays: courier.estimated_delivery_days,
+      recommended: courier.recommendation_score || 0
+    }));
+
+    // Find cheapest courier
+    const cheapest = couriers.reduce((min, courier) => 
+      courier.totalCharge < min.totalCharge ? courier : min
+    );
 
     return NextResponse.json({
       success: true,
-      couriers: availableCouriers,
-      cheapest: availableCouriers[0],
-      order: {
-        orderId: order.orderId,
-        pincode: order.shippingAddress.pincode,
-        isCOD: order.paymentMode === 'cod',
-        orderValue: order.finalPrice
-      }
+      couriers,
+      cheapest,
+      pickupPincode,
+      deliveryPincode
     });
 
   } catch (error) {
     console.error('Get couriers error:', error);
-    return NextResponse.json({ 
-      error: error.message || 'Failed to get courier rates' 
+    return NextResponse.json({
+      error: 'Failed to fetch couriers',
+      details: error.message
     }, { status: 500 });
   }
 }

@@ -15,7 +15,8 @@ import {
   RotateCcw,
   Layers,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Contact2
 } from 'lucide-react';
 import logo from '@/assets/logor.webp';
 import Image from 'next/image';
@@ -29,7 +30,8 @@ const menuItems = [
   { href: '/admin/categories', label: 'Categories', icon: Grid3x3 },
   { href: '/admin/coupons', label: 'Coupons', icon: Tag },
   { href: '/admin/reviews', label: 'Reviews', icon: Star },
-  { href: '/admin/banners', label: 'Banners', icon: ImageIcon },
+  // { href: '/admin/banners', label: 'Banners', icon: ImageIcon },
+  { href: '/admin/contacts', label: 'Customer Inquiry', icon: Contact2 },
  ];
 
 export default function AdminSidebar() {

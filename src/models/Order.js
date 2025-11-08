@@ -72,6 +72,16 @@ const OrderSchema = new mongoose.Schema(
     trackingId: String,
     estimatedDelivery: Date,
     delhiveryWaybill: String,
+    phonePeTransactionId: String,
+phonePePaymentId: String,
+ekartReferenceId: {
+  type: String,
+  default: null
+},
+ekartTrackingId: {
+  type: String,
+  default: null
+},
 
     // Generic shipping fields
     shippingProvider: {

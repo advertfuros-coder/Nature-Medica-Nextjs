@@ -16,18 +16,13 @@ export async function POST(req) {
     const authData = await requireAuth(req);
     await connectDB();
 
-    // Get complete user info from database
     const user = await User.findById(authData.userId).lean();
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    console.log('📦 Creating order for user:', {
-      userId: user._id.toString(),
-      name: user.name,
-      email: user.email
-    });
+    console.log('📦 Creating order for user:', user.email);
 
     const {
       items,
@@ -39,15 +34,6 @@ export async function POST(req) {
       couponCode
     } = await req.json();
 
-    console.log('📦 Order data received:', {
-      itemsCount: items?.length,
-      totalPrice,
-      finalPrice,
-      paymentMode,
-      hasShippingAddress: !!shippingAddress,
-      shippingAddressFields: shippingAddress ? Object.keys(shippingAddress) : []
-    });
-
     // Validate items
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'No items in order' }, { status: 400 });
@@ -58,12 +44,11 @@ export async function POST(req) {
         !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || 
         !shippingAddress.pincode) {
       return NextResponse.json({ 
-        error: 'Complete shipping address is required',
-        received: shippingAddress 
+        error: 'Complete shipping address is required'
       }, { status: 400 });
     }
 
-    // Validate stock availability
+    // Validate stock
     for (const item of items) {
       const product = await Product.findById(item.product);
       if (!product) {
@@ -115,15 +100,7 @@ export async function POST(req) {
       couponCode: couponCode || null
     };
 
-    console.log('📦 Order base data prepared:', {
-      orderId: orderBaseData.orderId,
-      userName: orderBaseData.userName,
-      userEmail: orderBaseData.userEmail,
-      itemsCount: orderBaseData.items.length,
-      shippingCity: orderBaseData.shippingAddress.city
-    });
-
-    // For ONLINE payment
+    // For ONLINE payment (Razorpay)
     if (paymentMode === 'online') {
       const razorpayOrder = await razorpay.orders.create({
         amount: finalPrice * 100,
@@ -160,10 +137,7 @@ export async function POST(req) {
         }]
       });
 
-      console.log('✅ COD Order created successfully:', {
-        orderId: order.orderId,
-        _id: order._id.toString()
-      });
+      console.log('✅ COD Order created:', order.orderId);
 
       // Update product stock
       for (const item of items) {
@@ -172,8 +146,6 @@ export async function POST(req) {
           { $inc: { stock: -item.quantity } }
         );
       }
-
-      console.log('✅ Stock updated');
 
       return NextResponse.json({
         success: true,
@@ -187,16 +159,8 @@ export async function POST(req) {
 
   } catch (error) {
     console.error('❌ Create order error:', error);
-    console.error('Error stack:', error.stack);
-    
     return NextResponse.json(
-      { 
-        error: error.message || 'Failed to create order',
-        details: error.errors ? Object.keys(error.errors).map(key => ({
-          field: key,
-          message: error.errors[key].message
-        })) : null
-      },
+      { error: error.message || 'Failed to create order' },
       { status: 500 }
     );
   }

@@ -1,21 +1,28 @@
 import { NextResponse } from 'next/server';
-import DelhiveryService from '@/lib/delhivery';
+import delhiveryService from '@/lib/delhivery';
 
-export async function GET(req, { params }) {
+export async function GET(req) {
   try {
-    const { waybill } = params;
+    const { searchParams } = new URL(req.url);
+    const waybill = searchParams.get('waybill');
 
-    const trackingData = await DelhiveryService.trackShipment(waybill);
+    if (!waybill) {
+      return NextResponse.json({ error: 'Waybill is required' }, { status: 400 });
+    }
+
+    const tracking = await delhiveryService.trackShipment(waybill);
 
     return NextResponse.json({
       success: true,
-      tracking: trackingData
+      waybill,
+      tracking: tracking.ShipmentData || tracking
     });
 
   } catch (error) {
-    console.error('Track error:', error);
-    return NextResponse.json({ 
-      error: error.message || 'Failed to track shipment' 
+    console.error('Delhivery tracking error:', error);
+    return NextResponse.json({
+      error: 'Failed to track shipment',
+      details: error.message
     }, { status: 500 });
   }
 }

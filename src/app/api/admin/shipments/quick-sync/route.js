@@ -1,55 +1,45 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Order from '@/models/Order';
-import ShiprocketService from '@/lib/shiprocket';
-import { requireAdmin } from '@/middleware/auth';
+import shiprocketService from '@/lib/shiprocket';
 
 export async function POST(req) {
   try {
-    await requireAdmin(req);
     await connectDB();
-
     const { orderId } = await req.json();
 
     const order = await Order.findOne({ orderId });
-
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
+    // Check if already synced
     if (order.shiprocketOrderId) {
-      return NextResponse.json({ 
-        error: 'Order already synced to Shiprocket',
+      return NextResponse.json({
+        message: 'Order already synced to Shiprocket',
         shiprocketOrderId: order.shiprocketOrderId,
-        message: 'This order is already in Shiprocket dashboard'
-      }, { status: 400 });
+        dashboardUrl: `https://app.shiprocket.in/seller/orders/details/${order.shiprocketOrderId}`
+      });
     }
 
-    console.log('🚀 Quick syncing order to Shiprocket:', orderId);
-
     // Prepare Shiprocket order data
-    const shiprocketOrderData = {
+    const shiprocketData = {
       order_id: order.orderId,
-      order_date: order.createdAt.toISOString().split('T')[0],
-      pickup_location: "Primary", // Must match your Shiprocket pickup location name
-      channel_id: "",
-      comment: "NatureMedica Order",
-      
-      // Billing = Customer address
+      order_date: new Date(order.createdAt).toISOString().split('T')[0],
+      pickup_location: 'Primary',
+      channel_id: '',
+      comment: 'Order from Nature Medica',
       billing_customer_name: order.shippingAddress.name,
-      billing_last_name: "",
+      billing_last_name: '',
       billing_address: order.shippingAddress.street,
-      billing_address_2: order.shippingAddress.landmark || "",
+      billing_address_2: order.shippingAddress.landmark || '',
       billing_city: order.shippingAddress.city,
       billing_pincode: order.shippingAddress.pincode,
       billing_state: order.shippingAddress.state,
-      billing_country: "India",
+      billing_country: 'India',
       billing_email: order.userEmail,
       billing_phone: order.shippingAddress.phone,
-      
-      // Shipping same as billing
       shipping_is_billing: true,
-      
       order_items: order.items.map(item => ({
         name: item.title,
         sku: item.product.toString(),
@@ -57,9 +47,8 @@ export async function POST(req) {
         selling_price: item.price,
         discount: 0,
         tax: 0,
-        hsn: ""
+        hsn: ''
       })),
-      
       payment_method: order.paymentMode === 'cod' ? 'COD' : 'Prepaid',
       shipping_charges: 0,
       giftwrap_charges: 0,
@@ -73,36 +62,35 @@ export async function POST(req) {
     };
 
     // Create order in Shiprocket
-    const shiprocketResponse = await ShiprocketService.createOrder(shiprocketOrderData);
+    const response = await shiprocketService.createOrder(shiprocketData);
 
-    // Update order with Shiprocket details
-    order.shiprocketOrderId = shiprocketResponse.order_id;
-    order.shiprocketShipmentId = shiprocketResponse.shipment_id;
-    
-    if (!order.statusHistory) order.statusHistory = [];
-    order.statusHistory.push({
-      status: order.orderStatus,
-      updatedAt: new Date(),
-      note: 'Order synced to Shiprocket dashboard'
+    // Update order in database
+    await Order.findByIdAndUpdate(order._id, {
+      shiprocketOrderId: response.order_id,
+      shiprocketShipmentId: response.shipment_id,
+      $push: {
+        statusHistory: {
+          status: 'Synced to Shiprocket',
+          updatedAt: new Date(),
+          note: `Shiprocket Order ID: ${response.order_id}`
+        }
+      }
     });
-
-    await order.save();
-
-    console.log('✅ Order synced to Shiprocket:', shiprocketResponse.order_id);
 
     return NextResponse.json({
       success: true,
-      message: 'Order successfully synced to Shiprocket!',
-      shiprocketOrderId: shiprocketResponse.order_id,
-      shiprocketShipmentId: shiprocketResponse.shipment_id,
-      dashboardUrl: `https://app.shiprocket.in/seller/orders/details/${shiprocketResponse.order_id}`
+      message: '✅ Order synced to Shiprocket successfully',
+      shiprocketOrderId: response.order_id,
+      shiprocketShipmentId: response.shipment_id,
+      dashboardUrl: `https://app.shiprocket.in/seller/orders/details/${response.order_id}`
     });
 
   } catch (error) {
-    console.error('❌ Quick sync error:', error);
-    return NextResponse.json({ 
-      error: error.message || 'Failed to sync order to Shiprocket',
-      suggestion: 'You can use manual entry or try again later'
+    console.error('Quick sync error:', error);
+    return NextResponse.json({
+      error: 'Failed to sync order to Shiprocket',
+      details: error.message,
+      suggestion: 'You can manually create the order in Shiprocket dashboard'
     }, { status: 500 });
   }
 }

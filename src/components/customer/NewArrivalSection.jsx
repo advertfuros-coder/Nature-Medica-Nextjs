@@ -40,15 +40,15 @@ export default function NewArrivalSection({ products }) {
   }
 
   return (
-    <section className="bg-white py-12 lg:py-16">
+    <section className="bg-white mt-5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-1">
-              ✨ New Arrivals
+            <h2 className="text-base lg:text-xl font- bg-yellow-00  text-gray-900 mb-">
+             New Arrivals
             </h2>
-            <p className="text-gray-600 text-sm">Fresh additions to our wellness collection</p>
+            <p className="text-gray-600 text-[12px]">Fresh additions to our wellness collection</p>
           </div>
 
           {/* Desktop Navigation Arrows */}
@@ -83,7 +83,7 @@ export default function NewArrivalSection({ products }) {
           <div
             ref={scrollContainerRef}
             onScroll={checkScrollability}
-            className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+            className="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
@@ -93,7 +93,7 @@ export default function NewArrivalSection({ products }) {
             {products.map((product) => (
               <div
                 key={product._id}
-                className="flex-shrink-0 w-60"
+                className="flex-shrink-0 w-44 md:w-72 "
               >
                 <ProductCard product={product} />
               </div>

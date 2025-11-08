@@ -3,42 +3,54 @@ import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import { requireAuth } from '@/middleware/auth';
 
+// Get all addresses
+export async function GET(req) {
+  try {
+    const authData = await requireAuth(req);
+    await connectDB();
+
+    const user = await User.findById(authData.userId).select('addresses');
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ addresses: user.addresses || [] });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+// Add new address
 export async function POST(req) {
   try {
-    const user = await requireAuth(req);
+    const authData = await requireAuth(req);
     await connectDB();
 
     const addressData = await req.json();
 
-    const dbUser = await User.findById(user.userId);
+    const user = await User.findById(authData.userId);
 
-    if (!dbUser) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // If this is default address, unset other default addresses
-    if (addressData.isDefault) {
-      dbUser.addresses.forEach(addr => {
+    // If this is the first address or marked as default, set it as default
+    if (user.addresses.length === 0 || addressData.isDefault) {
+      // Remove default from other addresses
+      user.addresses.forEach(addr => {
         addr.isDefault = false;
       });
     }
 
-    dbUser.addresses.push(addressData);
-    await dbUser.save();
+    user.addresses.push(addressData);
+    await user.save();
 
     return NextResponse.json({
-      success: true,
-      addresses: dbUser.addresses
+      message: 'Address added successfully',
+      addresses: user.addresses
     });
-
   } catch (error) {
-    console.error('Add address error:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to add address' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

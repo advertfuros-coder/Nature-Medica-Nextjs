@@ -1,37 +1,29 @@
 import { NextResponse } from 'next/server';
-import ShiprocketService from '@/lib/shiprocket';
-import { requireAdmin } from '@/middleware/auth';
+import shiprocketService from '@/lib/shiprocket';
 
-export async function GET(req) {
+export async function GET() {
   try {
-    await requireAdmin(req);
-
-    try {
-      await ShiprocketService.getToken();
-      
-      return NextResponse.json({
-        status: 'active',
-        message: 'Shiprocket API is available',
-        color: 'green'
-      });
-    } catch (error) {
-      const isBlocked = error.message.includes('blocked') || error.message.includes('User blocked');
-      
-      return NextResponse.json({
-        status: isBlocked ? 'blocked' : 'error',
-        message: isBlocked 
-          ? 'Account temporarily blocked. Use manual entry or wait 30 minutes.'
-          : 'Shiprocket API error. Use manual entry.',
-        error: error.message,
-        color: 'red'
-      });
-    }
-
+    const token = await shiprocketService.getToken();
+    
+    return NextResponse.json({
+      status: 'active',
+      message: 'Shiprocket API is working properly',
+      tokenExists: !!token
+    });
   } catch (error) {
-    return NextResponse.json({ 
-      status: 'error',
-      message: 'Failed to check status',
-      color: 'gray'
+    console.error('Shiprocket status check failed:', error);
+    
+    const isBlocked = error.message?.includes('blocked') || 
+                     error.message?.includes('failed login') ||
+                     error.message?.includes('Invalid credentials');
+    
+    return NextResponse.json({
+      status: isBlocked ? 'blocked' : 'error',
+      message: isBlocked 
+        ? 'Account blocked or invalid credentials. Check your API user settings.'
+        : 'Shiprocket API connection error.',
+      suggestion: 'Use Delhivery or Manual Entry for shipments.',
+      error: error.message
     }, { status: 500 });
   }
 }
