@@ -200,7 +200,7 @@ export default function AuthPage() {
                 {!isLogin && (
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Full Name
+                      Full Name<span className='text-red-500'>*</span>
                     </label>
                     <div className="relative group">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 group-focus-within:text-[#3A5D1E] transition-colors" />
@@ -219,7 +219,7 @@ export default function AuthPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Email Address
+                    Email Address<span className='text-red-500'>*</span>
                   </label>
                   <div className="relative group">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 group-focus-within:text-[#3A5D1E] transition-colors" />
@@ -238,7 +238,7 @@ export default function AuthPage() {
                 {!isLogin && (
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Phone Number
+                      Phone Number<span className='text-red-500'>*</span>
                     </label>
                     <div className="relative group">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 group-focus-within:text-[#3A5D1E] transition-colors" />
