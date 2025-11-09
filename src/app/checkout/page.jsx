@@ -201,7 +201,7 @@ export default function CheckoutPage() {
 
               if (verifyRes.ok) {
                 dispatch(clearCart());
-                router.push(`/order-success?orderId=${verifyData.orderId}`);
+                router.push('/thankyou');
               } else {
                 alert(`Payment verification failed: ${verifyData.error}`);
                 setLoading(false);

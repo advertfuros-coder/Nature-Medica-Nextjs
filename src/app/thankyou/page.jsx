@@ -1,59 +1,57 @@
-'use client';
+"use client";
+import Image from "next/image";
+import React, { useEffect, useRef, useState } from "react";
+import { ConfettiButton } from "@/components/ui/confetti";
 
-import React, { useCallback, useEffect, useRef } from 'react';
-import ReactCanvasConfetti from 'react-canvas-confetti';
-
-export default function ThankYouPage() {
-  const refAnimationInstance = useRef(null);
-
-  const getInstance = useCallback(instance => {
-    refAnimationInstance.current = instance;
-  }, []);
-
-  const makeShot = useCallback((particleRatio, opts) => {
-    refAnimationInstance.current &&
-      refAnimationInstance.current({
-        ...opts,
-        origin: { y: 0.7 },
-        particleCount: Math.floor(200 * particleRatio)
-      });
-  }, []);
-
-  const fire = useCallback(() => {
-    makeShot(0.25, { spread: 26, startVelocity: 55 });
-    makeShot(0.2, { spread: 60 });
-    makeShot(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-    makeShot(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-    makeShot(0.1, { spread: 120, startVelocity: 45 });
-  }, [makeShot]);
+const page = () => {
+  const confettiRef = useRef(null);
+  const [showMessage, setShowMessage] = useState(false);
 
   useEffect(() => {
-    fire();
-  }, [fire]);
+    if (confettiRef.current) {
+      let count = 0;
+      const interval = setInterval(() => {
+        confettiRef.current.click();
+        count++;
+        if (count >= 4) {
+          clearInterval(interval);
+          setShowMessage(true);
+        }
+      }, 400); // slightly faster icntervals for livelier effect
+    }
+  }, []);
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center bg-white px-4">
-      <h1 className="text-4xl font-bold text-[#415f2d] mb-4">Thank You for Your Order!</h1>
-      <p className="text-lg text-gray-700 mb-8">Your order has been successfully placed at Nature Medica.</p>
-      <button
-        className="px-6 py-3 rounded-lg bg-[#415f2d] text-white font-semibold hover:bg-[#344b24] transition-colors"
-        onClick={() => window.location.href = '/'}
-      >
-        Continue Shopping
-      </button>
-
-      <ReactCanvasConfetti
-        refConfetti={getInstance}
-        style={{
-          position: 'fixed',
-          pointerEvents: 'none',
-          width: '100%',
-          height: '100%',
-          top: 0,
-          left: 0,
-          zIndex: 9999
-        }}
+    <div className="min-h-sc reen pt-24 pb-24 flex flex-col items-center justify-center text-center space-y-8 bg-gradient-to-b from-white to-green-50">
+      <Image
+        src="/logo.png"
+        alt="Nature Medica Logo"
+        width={180}
+        height={180}
+        className="mb-4 drop-shadow-md animate-bounce"
+        priority
       />
+      <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
+        Thank You for Shopping with{" "}
+        <span className="text-[#415f2d] underline decoration-[#a3b18a]">Nature Medica!</span>
+      </h1>
+      {showMessage ? (
+        <p className="text-lg max-w-xl text-gray-700 animate-fadeIn">
+          We appreciate your order and hope our wellness products bring you great health and happiness!
+        </p>
+      ) : (
+        <p className="text-lg max-w-xl text-gray-500 italic opacity-70">Celebrating your purchase...</p>
+      )}
+
+      <ConfettiButton
+        ref={confettiRef}
+        className="mt-2 rounded-md bg-[#415f2d] px-8 py-4 text-white font-semibold hover:bg-[#344b24] transition-transform transform hover:scale-105 active:scale-95 shadow-lg shadow-green-400/50"
+        aria-label="Celebrate Your Order"
+      >
+        Celebrate!
+      </ConfettiButton>
     </div>
   );
-}
+};
+
+export default page;
