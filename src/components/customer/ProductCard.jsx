@@ -55,10 +55,14 @@ export default function ProductCardGlass({ product }) {
     >
       <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
         <div className="relative w-full aspect-square overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
-          <img
+          <Image
             loader={hasCloudinaryImage && !imageError ? cloudinaryLoader : undefined}
             src={hasCloudinaryImage && !imageError ? getCloudinaryPublicId(imageUrl) : imageUrl}
             alt={product.title}
+             width={100}
+            height={100}
+              quality={50}
+  priority={false} 
             className="w-full  h-full object-cover transition-transform duration-700 scale-100"
             onError={() => setImageError(true)}
           />
