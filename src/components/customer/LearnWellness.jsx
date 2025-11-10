@@ -41,7 +41,7 @@ export default function LearnWellnessOverlay() {
         </h2>
 
         <div className="overflow-hidden">
-          <div className="flex whitespace-nowrap animate-marquee">
+          <div className="flex  animate-marquee">
             {duplicatedCategories.map((category, index) => (
               <div
                 key={`${category.id}-${index}`}

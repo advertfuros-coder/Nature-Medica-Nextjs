@@ -5,7 +5,7 @@ import logo from '@/assets/logo.webp';
 
 export default function Footer() {
   return (
-    <footer className="bg-white border-t border-gray-200">
+    <footer className="bg-white border-t  border-gray-200">
      
 
       {/* Main Footer Content */}
@@ -71,7 +71,7 @@ export default function Footer() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-8">
               {/* Shop */}
               <div>
-                <h4 className="font-light text-gray-900 text-sm sm:text-base mb-2 sm:mb-3 border-b-2 border-[#415f2d] inline-block pb-2">
+                <h4 className="font-semibold text-gray-900 text-sm sm:text-base mb-2 sm:mb-3 border-b-2 border-[#415f2d] inline-block pb-2">
                   Shop
                 </h4>
                 <ul className="space-y-3 mt-3 sm:mt-4 text-xs sm:text-sm">
@@ -104,7 +104,7 @@ export default function Footer() {
 
               {/* Support */}
               <div>
-                <h4 className="font-light text-gray-900 text-sm sm:text-base mb-2 sm:mb-3 border-b-2 border-[#415f2d] inline-block pb-2">
+                <h4 className="font-semibold text-gray-900 text-sm sm:text-base mb-2 sm:mb-3 border-b-2 border-[#415f2d] inline-block pb-2">
                   Support
                 </h4>
                 <ul className="space-y-3 mt-3 sm:mt-4 text-xs sm:text-sm">
@@ -137,7 +137,7 @@ export default function Footer() {
 
               {/* Legal */}
               <div>
-                <h4 className="font-light text-gray-900 text-sm sm:text-base mb-2 sm:mb-3 border-b-2 border-[#415f2d] inline-block pb-2">
+                <h4 className="font-semibold text-gray-900 text-sm sm:text-base mb-2 sm:mb-3 border-b-2 border-[#415f2d] inline-block pb-2">
                   Legal
                 </h4>
                 <ul className="space-y-3 mt-3 sm:mt-4 text-xs sm:text-sm">
@@ -173,17 +173,17 @@ export default function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-gray-200 bg-gray-50">
+      <div className="border-t pb-16 md:pb-0 border-gray-200 bg-gradient-to-r from-[#415F2D] to-[#5A8240]">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
             {/* Copyright */}
-            <p className="text-gray-600 text-center md:text-left text-xs sm:text-sm">
-              © {new Date().getFullYear()} <span className="font-light text-gray-900">NatureMedica</span>. All rights reserved.
+            <p className="text-gray-50 text-center md:text-left text-xs sm:text-sm">
+              © {new Date().getFullYear()} <span className="font-light text-gray-50">NatureMedica</span>. All rights reserved.
             </p>
 
             {/* Social Media */}
             <div className="flex items-center gap-3">
-              <span className="text-gray-600 font-medium text-xs sm:text-sm">Follow Us:</span>
+              <span className="text-gray-50 font-medium text-xs sm:text-sm">Follow Us:</span>
               <div className="flex gap-2">
                 <a 
                   href="#" 
@@ -218,7 +218,7 @@ export default function Footer() {
 
             {/* Payment Methods */}
             <div className="flex items-center gap-2 sm:gap-3">
-              <span className="text-gray-600 text-xs sm:text-sm font-medium">Payment:</span>
+              <span className="text-gray-50 text-xs sm:text-sm font-medium">Payment:</span>
               <div className="flex gap-2">
                 <div className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-light text-gray-700">
                   UPI

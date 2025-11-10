@@ -7,8 +7,8 @@ export default function InfoStrip() {
       description: 'Order before 10pm for delivery within 3 working days.',
     },
     {
-      title: 'Nature Medica App Offer',
-      description: 'Get an extra 20% off your first order when you shop on the Nature Medica App.',
+      title: 'Nature Medica Offer',
+      description: 'Get an extra 20% off your first order when you shop on the Nature Medica.',
     },
     {
       title: 'Rewards for Life',

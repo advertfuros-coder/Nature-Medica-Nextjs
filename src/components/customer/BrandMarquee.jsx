@@ -2,14 +2,27 @@
 
 export default function BrandMarquee() {
   const brands = [
-    'GRAZIA',
-    'The Telegraph',
-    'VOGUE',
-    "Women's Health",
-    'GRAZIA',
-    'The Telegraph',
-    'VOGUE',
-    "Women's Health",
+    "Face Wash",
+    "Gold Face Serum",
+    "Cold Cream",
+    "Aloe Vera Night Gel",
+    "Toothpaste",
+    "Tooth Brush",
+    "Sanitary Pads",
+    "Shampoo",
+    "Veda Piles Cure",
+    "Veda Sugar Cure",
+    "Girls Perfume",
+    "Glutathione Effervescent Tablets",
+    "Calcium Effervescent Tablets",
+    "Anti Cold Effervescent Tablets",
+    "Green Tea Effervescent Tablets",
+    "Gas Effervescent Tablets",
+    "Multivitamin Gummies",
+    "Sleepwell Gummies",
+    "Pregnancy Kit",
+    "Japanese Matcha Green Tea",
+    "Moringa Powder"
   ];
 
   return (
@@ -22,7 +35,7 @@ export default function BrandMarquee() {
             {brands.map((brand, index) => (
               <span
                 key={index}
-                className="text-gray-50 font-serif text-lg md:text-xl tracking-wide"
+                className="text-gray-50 font- text-base  d:text-xl tracking-wide"
               >
                 {brand}
               </span>
@@ -34,7 +47,7 @@ export default function BrandMarquee() {
             {brands.map((brand, index) => (
               <span
                 key={`dup-${index}`}
-                className="text-gray-800 font-serif text-lg md:text-xl tracking-wide"
+                className="text-gray-800 font- text-base  d:text-xl tracking-wide"
               >
                 {brand}
               </span>
@@ -61,11 +74,11 @@ export default function BrandMarquee() {
           }
         }
         .animate-marquee {
-          animation: marquee 20s linear infinite;
+          animation: marquee 80s linear infinite;
           width: max-content;
         }
         .animate-marquee2 {
-          animation: marquee2 20s linear infinite;
+          animation: marquee2 80s linear infinite;
           width: max-content;
         }
       `}</style>

@@ -24,7 +24,7 @@ export default function SearchFirstHeader() {
   const userState = useSelector((state) => state.user || { user: null, isAuthenticated: false });
   const { user, isAuthenticated } = userState;
 
-  const quickLinks = ['Cold Cream',  'Alovera Gel', 'Serum', "Facewash", "Sanitary"];
+  const quickLinks = ['Cold Cream',  'Alovera Gel', 'Serum', "Facewash", "Sanitary", "Oral"];
 
   // Typing animation state
   const [placeholder, setPlaceholder] = useState('');
