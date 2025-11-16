@@ -99,9 +99,9 @@ export default function ReviewList({ reviews, currentPage, totalPages }) {
                 <td className="px-6 py-4">
                   <p className="font-semibold">{review.product.title}</p>
                 </td>
-                <td className="px-6 py-4">
+                {/* <td className="px-6 py-4">
                   {review.user.name}
-                </td>
+                </td> */}
                 <td className="px-6 py-4">
                   <div className="flex items-center">
                     <span className="text-yellow-500 mr-1">★</span>
