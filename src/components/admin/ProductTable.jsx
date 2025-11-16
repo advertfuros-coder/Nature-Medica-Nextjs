@@ -60,9 +60,9 @@ export default function ProductTable({ products, currentPage, totalPages }) {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Product
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Category
-              </th>
+              </th> */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Price
               </th>
@@ -97,9 +97,10 @@ export default function ProductTable({ products, currentPage, totalPages }) {
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-sm">
+                {/* <td className="px-6 py-4 text-sm">
                   {product.category.name}
-                </td>
+                  {console.log(product)}
+                </td> */}
                 <td className="px-6 py-4 text-sm font-semibold">
                   ₹{product.price}
                 </td>

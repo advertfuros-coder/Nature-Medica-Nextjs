@@ -36,7 +36,7 @@ const menuItems = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
     <aside className={`${isCollapsed ? 'w-20' : 'w-72'} bg-white border-r border-gray-200 flex-shrink-0 shadow-lg h-screen sticky top-0 overflow-hidden transition-all duration-300 flex flex-col`}>

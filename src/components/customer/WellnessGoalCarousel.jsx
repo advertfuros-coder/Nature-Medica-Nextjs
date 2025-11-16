@@ -70,9 +70,9 @@ export default function WellnessGoalCarousel() {
             <Link 
               key={goal.id} 
               href={goal.href}
-              className="flex-shrink-0 w-44 md:w-54 cursor-pointer group"
+              className="flex-shrink-0 w-40 md:w-54 cursor-pointer group"
             >
-              <div className="relative rounded-2xl overflow-hidden h-80 md:h-80 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="relative rounded-2xl overflow-hidden h-60 md:h-80 shadow-lg hover:shadow-xl transition-all duration-300">
                 <video
                   src={videoPaths[index % videoPaths.length]}
                   autoPlay

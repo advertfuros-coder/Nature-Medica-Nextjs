@@ -9,8 +9,7 @@ export default async function AdminCategoriesPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-8">Categories</h1>
-      <CategoryList categories={JSON.parse(JSON.stringify(categories))} />
+       <CategoryList categories={JSON.parse(JSON.stringify(categories))} />
     </div>
   );
 }

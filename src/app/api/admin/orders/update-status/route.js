@@ -41,7 +41,7 @@ export async function POST(req) {
         const shiprocketOrderData = {
           order_id: order.orderId,
           order_date: order.createdAt.toISOString().split('T')[0],
-          pickup_location: process.env.SHIPROCKET_PICKUP_NAME,
+pickup_location: 'Home',
           billing_customer_name: order.shippingAddress.name,
           billing_last_name: "",
           billing_address: order.shippingAddress.street,

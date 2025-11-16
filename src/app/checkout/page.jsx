@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -6,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { clearCart } from '@/store/slices/cartSlice';
-import { Check, MapPin, Plus, Shield, Truck, Package, X, CreditCard } from 'lucide-react';
+import { Check, MapPin, Plus, Shield, Truck, Package, X, CreditCard, Loader2 } from 'lucide-react';
 
 // Utility to get default or first address id
 function chooseDefaultAddressId(addresses) {
@@ -21,13 +20,15 @@ export default function CheckoutPage() {
   const { items, totalPrice, discount, couponCode } = useSelector((state) => state.cart);
   const { user, isAuthenticated } = useSelector((state) => state.user);
 
-  // Local address list from API, not redux
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [paymentMode, setPaymentMode] = useState('online');
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [pincodeError, setPincodeError] = useState('');
+  const [areaOptions, setAreaOptions] = useState([]);
 
   const [newAddress, setNewAddress] = useState({
     name: '',
@@ -39,6 +40,82 @@ export default function CheckoutPage() {
     landmark: '',
     type: 'home'
   });
+
+  // Fetch pincode details using internal API route
+  const fetchPincodeDetails = async (pincode) => {
+    if (!pincode || pincode.length !== 6) {
+      setPincodeError('');
+      setAreaOptions([]);
+      return;
+    }
+
+    setPincodeLoading(true);
+    setPincodeError('');
+    setAreaOptions([]);
+
+    try {
+      // Call internal Next.js API route instead of external API directly
+      const response = await fetch(`/api/pincode?pincode=${pincode}`);
+      const data = await response.json();
+
+      if (response.ok && data[0]?.Status === 'Success' && data[0]?.PostOffice && data[0].PostOffice.length > 0) {
+        const postOffices = data[0].PostOffice;
+        
+        // Set state and city from first result
+        const firstOffice = postOffices[0];
+        setNewAddress(prev => ({
+          ...prev,
+          state: firstOffice.State || '',
+          city: firstOffice.District || ''
+        }));
+
+        // Store all area options for user selection
+        setAreaOptions(postOffices.map(office => ({
+          name: office.Name,
+          taluka: office.Block,
+          division: office.Division
+        })));
+
+        setPincodeError('');
+      } else {
+        setPincodeError('Invalid pincode or no data found');
+        setNewAddress(prev => ({
+          ...prev,
+          state: '',
+          city: ''
+        }));
+      }
+    } catch (error) {
+      setPincodeError('Failed to fetch pincode details');
+      setNewAddress(prev => ({
+        ...prev,
+        state: '',
+        city: ''
+      }));
+    } finally {
+      setPincodeLoading(false);
+    }
+  };
+
+  // Debounced pincode lookup
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (newAddress.pincode && newAddress.pincode.length === 6) {
+        fetchPincodeDetails(newAddress.pincode);
+      } else if (newAddress.pincode && newAddress.pincode.length < 6) {
+        // Reset fields if pincode is incomplete
+        setNewAddress(prev => ({
+          ...prev,
+          state: '',
+          city: ''
+        }));
+        setAreaOptions([]);
+        setPincodeError('');
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [newAddress.pincode]);
 
   // Fetch all addresses from your API
   const fetchUserAddresses = async () => {
@@ -84,10 +161,26 @@ export default function CheckoutPage() {
 
   const selectedAddress = addresses.find(addr => addr._id === selectedAddressId);
 
-  const handleAddressInputChange = (e) => {
-    const { name, value } = e.target;
+const handleAddressInputChange = (e) => {
+  const { name, value } = e.target;
+  
+  if (name === 'pincode' || name === 'phone') {
+    const digitsOnly = value.replace(/\D/g, '');
+    
+    // Additional validation for phone - only allow numbers starting with 6,7,8,9
+    if (name === 'phone') {
+      // Only update if empty or starts with valid digit
+      if (digitsOnly.length === 0 || /^[6-9]/.test(digitsOnly)) {
+        setNewAddress(prev => ({ ...prev, [name]: digitsOnly }));
+      }
+    } else {
+      setNewAddress(prev => ({ ...prev, [name]: digitsOnly }));
+    }
+  } else {
     setNewAddress(prev => ({ ...prev, [name]: value }));
-  };
+  }
+};
+
 
   const handleAddAddress = async (e) => {
     e.preventDefault();
@@ -110,6 +203,8 @@ export default function CheckoutPage() {
           landmark: '',
           type: 'home'
         });
+        setAreaOptions([]);
+        setPincodeError('');
       } else {
         const error = await res.json();
         alert(error.error || 'Failed to add address');
@@ -143,7 +238,7 @@ export default function CheckoutPage() {
         })),
         totalPrice,
         discount,
-        finalPrice: totalPrice - discount,
+        finalPrice: totalPrice - discount + 30,
         shippingAddress: {
           name: selectedAddress.name,
           phone: selectedAddress.phone,
@@ -224,8 +319,7 @@ export default function CheckoutPage() {
         razorpay.open();
       } else {
         dispatch(clearCart());
-  router.push('/thankyou');
-        
+        router.push('/thankyou');
       }
     } catch {
       setLoading(false);
@@ -235,7 +329,8 @@ export default function CheckoutPage() {
 
   if (!user || items.length === 0) return null;
 
-  const finalPrice = totalPrice - discount;
+  const deliveryCharge = 30;
+  const finalPrice = totalPrice - discount + deliveryCharge;
 
   return (
     <>
@@ -245,7 +340,6 @@ export default function CheckoutPage() {
       />
 
       <div className="min-h-screen bg-gray-50">
-        {/* ... progress steps ... */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Address section */}
@@ -263,7 +357,7 @@ export default function CheckoutPage() {
                   </div>
                   <button
                     onClick={() => setShowAddressForm(!showAddressForm)}
-                    className="inline-flex items-center gap-1 text-[#415f2d] hover:text-[#344b24] font-medium transition-colors text-[11px]"
+                    className="inline-flex items-center gap-1 text-[#415f2d] hover:text-[#344b24] font-semibold transition-colors text-[11px]"
                   >
                     {showAddressForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                     {showAddressForm ? 'Cancel' : 'Add New'}
@@ -271,25 +365,167 @@ export default function CheckoutPage() {
                 </div>
                 <div className="p-4">
                   {showAddressForm && (
-                    <form onSubmit={handleAddAddress} className="mb-4 p-4 bg-gray-50 rounded-lg">
+                    <form onSubmit={handleAddAddress} className="mb-4  rounded-lg">
                       <h3 className="text-[12px] font-semibold text-gray-900 mb-3">Add New Address</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {/* All address input fields */}
-                        {['name','phone','street','city','state','pincode','landmark','type'].map(field => (
-                          <div key={field} className={field==='street'||field==='landmark'||field==='type'?"sm:col-span-2":""}>
-                            <label className="block text-[10px] font-medium text-gray-700 mb-1 capitalize">{field}</label>
+                        {/* Name */}
+                        <div>
+                          <label className="block text-[10px] font-semibold text-gray-700 mb-1">Name</label>
+                          <input
+                            type="text"
+                            name="name"
+                            value={newAddress.name}
+                            onChange={handleAddressInputChange}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d]"
+                          />
+                        </div>
+
+                      <div>
+  <label className="block text-[10px] font-medium text-gray-700 mb-1">Phone</label>
+  <input
+    type="tel"
+    name="phone"
+    value={newAddress.phone}
+    onChange={handleAddressInputChange}
+    required
+    maxLength={10}
+    pattern="^[6-9][0-9]{9}$"
+    placeholder="98XXXXXXXX"
+    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d]"
+  />
+  <p className="text-[9px] text-gray-500 mt-0.5">Must start with 6, 7, 8, or 9</p>
+</div>
+
+                        {/* Pincode - Smart Autocomplete */}
+                        <div className="sm:col-span-2">
+                          <label className="block text-[10px] font-semibold text-gray-700 mb-1">
+                            Pincode <span className="text-[#415f2d]">*</span>
+                           </label>
+                          <div className="relative">
                             <input
-                              type={field === 'phone' || field === 'pincode' ? 'text' : 'text'}
-                              name={field}
-                              value={newAddress[field]}
+                              type="text"
+                              name="pincode"
+                              value={newAddress.pincode}
                               onChange={handleAddressInputChange}
-                              required={field !== 'landmark'}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d]"
+                              required
+                              maxLength={6}
+                              placeholder="Enter 6-digit pincode"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d]"
                             />
+                            {pincodeLoading && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                <Loader2 className="w-4 h-4 text-[#415f2d] animate-spin" />
+                              </div>
+                            )}
                           </div>
-                        ))}
+                          {pincodeError && (
+                            <div className="mt-1 flex items-center gap-1 text-[9px] text-red-600">
+                              <X className="w-3 h-3" />
+                              <span>{pincodeError}</span>
+                            </div>
+                          )}
+                          {areaOptions.length > 0 && (
+                            <div className="mt-1 p-2 bg-green-50 border border-green-200 rounded-lg flex items-center gap-1">
+                              <Check className="w-3 h-3 text-green-600" />
+                              <span className="text-[9px] text-green-700 font-semibold">
+                                Pincode verified - {areaOptions.length} area(s) found
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* City - Auto-filled */}
+                        <div>
+                          <label className="block text-[10px] font-semibold text-gray-700 mb-1">City/District</label>
+                          <input
+                            type="text"
+                            name="city"
+                            value={newAddress.city}
+                            onChange={handleAddressInputChange}
+                            required
+                            className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d] ${
+                              areaOptions.length > 0 ? 'bg-gray-50 cursor-not-allowed' : ''
+                            }`}
+                            readOnly={areaOptions.length > 0}
+                          />
+                        </div>
+
+                        {/* State - Auto-filled */}
+                        <div>
+                          <label className="block text-[10px] font-semibold text-gray-700 mb-1">State</label>
+                          <input
+                            type="text"
+                            name="state"
+                            value={newAddress.state}
+                            onChange={handleAddressInputChange}
+                            required
+                            className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d] ${
+                              areaOptions.length > 0 ? 'bg-gray-50 cursor-not-allowed' : ''
+                            }`}
+                            readOnly={areaOptions.length > 0}
+                          />
+                        </div>
+
+                        {/* Street Address */}
+                        <div className="sm:col-span-2">
+                          <label className="block text-[10px] font-semibold text-gray-700 mb-1"> Address</label>
+                          <textarea
+                            name="street"
+                            value={newAddress.street}
+                            onChange={handleAddressInputChange}
+                            required
+                            rows={2}
+                            placeholder="House/Flat no, Building name, Street"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d] resize-none"
+                          />
+                        </div>
+
+                        {/* Landmark */}
+                        <div className="sm:col-span-2">
+                          <label className="block text-[10px] font-semibold text-gray-700 mb-1">Landmark (Optional)</label>
+                          <input
+                            type="text"
+                            name="landmark"
+                            value={newAddress.landmark}
+                            onChange={handleAddressInputChange}
+                            placeholder="Near landmark..."
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d]"
+                          />
+                        </div>
+
+                        {/* Address Type */}
+                        <div className="sm:col-span-2">
+                          <label className="block text-[10px] font-semibold text-gray-700 mb-1">Address Type</label>
+                          <div className="grid grid-cols-3 gap-2">
+                            {['home', 'work', 'other'].map((type) => (
+                              <label
+                                key={type}
+                                className={`flex items-center justify-center gap-1 px-3 py-2 border-2 rounded-lg cursor-pointer transition-all text-[11px] font-semibold capitalize ${
+                                  newAddress.type === type
+                                    ? 'border-[#415f2d] bg-[#415f2d]/5 text-[#415f2d]'
+                                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                                }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name="type"
+                                  value={type}
+                                  checked={newAddress.type === type}
+                                  onChange={handleAddressInputChange}
+                                  className="sr-only"
+                                />
+                                {type}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                      <button type="submit" className="mt-4 w-full bg-[#415f2d] text-white py-2 rounded-lg hover:bg-[#344b24] transition-colors text-[11px] font-medium">
+                      <button 
+                        type="submit" 
+                        disabled={pincodeLoading || (newAddress.pincode.length === 6 && !newAddress.city)}
+                        className="mt-4 w-full bg-[#415f2d] text-white py-2.5 rounded-lg hover:bg-[#344b24] disabled:opacity-50 disabled:cursor-not-allowed transition-all text-[11px] font-semibold shadow-sm hover:shadow-md"
+                      >
                         Save Address
                       </button>
                     </form>
@@ -304,7 +540,7 @@ export default function CheckoutPage() {
                           <p className="text-gray-600 mb-3 text-[11px]">No saved addresses</p>
                           <button
                             onClick={() => setShowAddressForm(true)}
-                            className="inline-flex items-center gap-1 bg-[#415f2d] text-white px-4 py-2 rounded-lg hover:bg-[#344b24] transition-all font-medium text-[11px]"
+                            className="inline-flex items-center gap-1 bg-[#415f2d] text-white px-4 py-2 rounded-lg hover:bg-[#344b24] transition-all font-semibold text-[11px]"
                           >
                             <Plus className="w-4 h-4" />
                             Add Address
@@ -326,7 +562,7 @@ export default function CheckoutPage() {
                               <div className="flex items-start justify-between gap-3">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-2">
-                                    <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-medium uppercase ${
+                                    <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-semibold uppercase ${
                                       isSelected
                                         ? 'bg-[#415f2d] text-white'
                                         : 'bg-gray-100 text-gray-700'
@@ -334,16 +570,19 @@ export default function CheckoutPage() {
                                       {address.type || 'home'}
                                     </span>
                                     {address.isDefault && (
-                                      <span className="inline-block px-2 py-0.5 rounded text-[9px] font-medium bg-blue-50 text-blue-700">
+                                      <span className="inline-block px-2 py-0.5 rounded text-[9px] font-semibold bg-blue-50 text-blue-700">
                                         Default
                                       </span>
                                     )}
                                   </div>
-                                  <p className="text-gray-900 font-medium mb-1 text-[11px]">{address.name}</p>
+                                  <p className="text-gray-900 font-semibold mb-1 text-[11px]">{address.name}</p>
                                   <p className="text-gray-700 text-[10px] mb-1">{address.street}</p>
                                   <p className="text-gray-600 text-[10px]">
                                     {address.city}, {address.state} - {address.pincode}
                                   </p>
+                                  {address.landmark && (
+                                    <p className="text-gray-500 text-[10px] mt-0.5">Near: {address.landmark}</p>
+                                  )}
                                   <p className="text-gray-600 text-[10px] mt-1">
                                     Phone: {address.phone}
                                   </p>
@@ -460,7 +699,7 @@ export default function CheckoutPage() {
                   {paymentMode === 'online' && !razorpayLoaded && (
                     <div className="flex items-center gap-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
                       <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
-                      <p className="text-[10px] text-yellow-800 font-medium">Loading payment gateway...</p>
+                      <p className="text-[10px] text-yellow-800 font-semibold">Loading payment gateway...</p>
                     </div>
                   )}
                 </div>
@@ -487,7 +726,7 @@ export default function CheckoutPage() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-[11px] font-medium text-gray-900 line-clamp-1">
+                          <h4 className="text-[11px] font-semibold text-gray-900 line-clamp-1">
                             {item.product.title}
                           </h4>
                           {item.variant && (
@@ -505,19 +744,19 @@ export default function CheckoutPage() {
                   <div className="space-y-2 pt-3 border-t border-gray-100">
                     <div className="flex justify-between text-gray-600 text-[11px]">
                       <span>Subtotal</span>
-                      <span className="font-medium">₹{totalPrice.toLocaleString('en-IN')}</span>
+                      <span className="font-semibold">₹{totalPrice.toLocaleString('en-IN')}</span>
                     </div>
 
                     {discount > 0 && (
                       <div className="flex justify-between text-green-600 text-[11px]">
                         <span>Discount {couponCode && `(${couponCode})`}</span>
-                        <span className="font-medium">-₹{discount.toLocaleString('en-IN')}</span>
+                        <span className="font-semibold">-₹{discount.toLocaleString('en-IN')}</span>
                       </div>
                     )}
 
                     <div className="flex justify-between text-gray-600 text-[11px]">
-                      <span>Shipping</span>
-                      <span className="font-medium text-green-600">FREE</span>
+                      <span>Shipping (₹30)</span>
+                      <span className="font-semibold">₹{deliveryCharge}</span>
                     </div>
 
                     <div className="pt-2 border-t border-gray-200">
@@ -573,5 +812,3 @@ export default function CheckoutPage() {
     </>
   );
 }
-
-

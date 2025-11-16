@@ -101,7 +101,7 @@ export default function ProductCardGlass({ product }) {
               ₹{product.price.toLocaleString('en-IN')}
             </span>
             {product.mrp > product.price && (
-              <span className="text-[11px] text-gray-400 line-through">
+              <span className="text-[13px] text-gray-700 line-through">
                 ₹{product.mrp.toLocaleString('en-IN')}
               </span>
             )}

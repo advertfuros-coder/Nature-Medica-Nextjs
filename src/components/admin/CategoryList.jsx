@@ -49,8 +49,7 @@ export default function CategoryList({ categories }) {
       });
 
       if (res.ok) {
-        alert(`Category ${editingCategory ? 'updated' : 'created'} successfully`);
-        resetForm();
+         resetForm();
         router.refresh();
       } else {
         alert('Failed to save category');
@@ -83,8 +82,7 @@ export default function CategoryList({ categories }) {
       });
 
       if (res.ok) {
-        alert('Category deleted successfully');
-        router.refresh();
+         router.refresh();
       } else {
         alert('Failed to delete category');
       }
@@ -119,11 +117,102 @@ export default function CategoryList({ categories }) {
         </button>
       </div>
 
-      {showForm && (
+      {showForm && editingCategory && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl">
+            <h3 className="font-bold text-xl mb-4">Edit Category</h3>
+
+            <form onSubmit={handleSubmit}>
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block font-semibold mb-2">Category Name *</label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                    className="w-full border rounded-lg px-4 py-2"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold mb-2">Icon (Emoji)</label>
+                  <input
+                    type="text"
+                    value={formData.icon}
+                    onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                    placeholder="🌿"
+                    className="w-full border rounded-lg px-4 py-2"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block font-semibold mb-2">Description</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={3}
+                  className="w-full border rounded-lg px-4 py-2"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block font-semibold mb-2">Category Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="mb-2"
+                />
+                {(imageFile || formData.image?.url) && (
+                  <div className="relative w-32 h-32">
+                    <Image
+                      src={imageFile || formData.image.url}
+                      alt="Preview"
+                      fill
+                      className="object-cover rounded"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.active}
+                    onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                    className="mr-2"
+                  />
+                  <span className="font-semibold">Active</span>
+                </label>
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                >
+                  {submitting ? 'Saving...' : 'Update'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showForm && !editingCategory && (
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 mb-6">
-          <h3 className="font-bold text-xl mb-4">
-            {editingCategory ? 'Edit Category' : 'Add New Category'}
-          </h3>
+          <h3 className="font-bold text-xl mb-4">Add New Category</h3>
 
           <div className="grid md:grid-cols-2 gap-4 mb-4">
             <div>
@@ -197,7 +286,7 @@ export default function CategoryList({ categories }) {
               disabled={submitting}
               className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
             >
-              {submitting ? 'Saving...' : editingCategory ? 'Update' : 'Create'}
+              {submitting ? 'Saving...' : 'Create'}
             </button>
             <button
               type="button"

@@ -187,14 +187,13 @@ export default function AdminOrderDetailsPage() {
         body: JSON.stringify({
           orderId,
           weight,
-          dimensions,
-          courierId: selectedCourier
+          dimensions
         })
       });
 
       const data = await res.json();
       if (res.ok) {
-        alert('✅ Shipment created successfully!');
+        alert('✅ Shiprocket order created. Now generate AWB.');
         setShowCourierModal(false);
         fetchOrder();
       } else {
@@ -214,17 +213,15 @@ export default function AdminOrderDetailsPage() {
       return;
     }
 
-    if (!selectedCourier && couriers.length === 0) {
-      await fetchCouriers();
-      return;
-    }
-
     setActionLoading(true);
     try {
       const res = await fetch('/api/admin/shipments/generate-awb', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, courierId: selectedCourier || couriers[0]?.courierId })
+        body: JSON.stringify({
+          orderId,
+          courierId: selectedCourier || couriers[0]?.courierId
+        })
       });
 
       const data = await res.json();
@@ -978,7 +975,7 @@ export default function AdminOrderDetailsPage() {
                   disabled={actionLoading || !selectedCourier}
                   className="flex-1 px-4 py-3 bg-[#3a5d1e] text-white rounded-lg hover:bg-[#2d4818] disabled:opacity-50 font-medium"
                 >
-                  {actionLoading ? 'Creating...' : 'Create & Generate AWB'}
+                  {actionLoading ? 'Creating...' : 'Create Shipment'}
                 </button>
               </div>
             </div>

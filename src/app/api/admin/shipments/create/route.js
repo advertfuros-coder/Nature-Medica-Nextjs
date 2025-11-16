@@ -1,101 +1,176 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Order from '@/models/Order';
-import shiprocketService from '@/lib/shiprocket';
+import Razorpay from 'razorpay';
+import { formatPhoneForShiprocket, validateIndianMobile } from '@/lib/validators';
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
+});
 
 export async function POST(req) {
   try {
     await connectDB();
-    const { orderId, weight, dimensions, courierId } = await req.json();
 
-    const order = await Order.findOne({ orderId });
-    if (!order) {
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    const {
+      items,
+      totalPrice,
+      discount,
+      deliveryCharge,
+      finalPrice,
+      shippingAddress,
+      paymentMode,
+      couponCode
+    } = await req.json();
+
+    // Validate required fields
+    if (!items || items.length === 0) {
+      return NextResponse.json(
+        { error: 'Cart is empty' },
+        { status: 400 }
+      );
     }
 
-    // If not synced, create order first
-    if (!order.shiprocketOrderId) {
-      const shiprocketData = {
-        order_id: order.orderId,
-        order_date: new Date(order.createdAt).toISOString().split('T')[0],
-        pickup_location: 'Primary',
-        channel_id: '',
-        comment: 'Order from Nature Medica',
-        billing_customer_name: order.shippingAddress.name,
-        billing_last_name: '',
-        billing_address: order.shippingAddress.street,
-        billing_address_2: order.shippingAddress.landmark || '',
-        billing_city: order.shippingAddress.city,
-        billing_pincode: order.shippingAddress.pincode,
-        billing_state: order.shippingAddress.state,
-        billing_country: 'India',
-        billing_email: order.userEmail,
-        billing_phone: order.shippingAddress.phone,
-        shipping_is_billing: true,
-        order_items: order.items.map(item => ({
-          name: item.title,
-          sku: item.product.toString(),
-          units: item.quantity,
-          selling_price: item.price,
-          discount: 0,
-          tax: 0,
-          hsn: ''
-        })),
-        payment_method: order.paymentMode === 'cod' ? 'COD' : 'Prepaid',
-        shipping_charges: 0,
-        giftwrap_charges: 0,
-        transaction_charges: 0,
-        total_discount: order.discount || 0,
-        sub_total: order.totalPrice,
-        length: dimensions?.length || 10,
-        breadth: dimensions?.breadth || 10,
-        height: dimensions?.height || 10,
-        weight: weight || 0.5
-      };
+    if (!shippingAddress || !shippingAddress.name || !shippingAddress.phone) {
+      return NextResponse.json(
+        { error: 'Shipping address is incomplete' },
+        { status: 400 }
+      );
+    }
 
-      const response = await shiprocketService.createOrder(shiprocketData);
+    // ✅ VALIDATE AND FORMAT PHONE NUMBER
+    const cleanPhone = formatPhoneForShiprocket(shippingAddress.phone);
+    
+    if (!cleanPhone) {
+      return NextResponse.json({
+        error: 'Invalid phone number',
+        details: 'Phone number must be 10 digits and start with 6, 7, 8, or 9'
+      }, { status: 400 });
+    }
 
-      await Order.findByIdAndUpdate(order._id, {
-        shiprocketOrderId: response.order_id,
-        shiprocketShipmentId: response.shipment_id
+    // Update shipping address with cleaned phone
+    shippingAddress.phone = cleanPhone;
+
+    // Get user from session/token
+    const user = await getUserFromRequest(req);
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Generate unique order ID
+    const orderId = `NM-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
+    // Create order object
+    const orderData = {
+      orderId,
+      userId: user.id,
+      userEmail: user.email,
+      items,
+      totalPrice,
+      discount: discount || 0,
+      deliveryCharge: deliveryCharge || 0,
+      finalPrice: finalPrice || (totalPrice - (discount || 0) + (deliveryCharge || 0)),
+      shippingAddress, // Now has cleaned phone number
+      paymentMode,
+      paymentStatus: paymentMode === 'online' ? 'pending' : 'pending',
+      orderStatus: 'Pending',
+      couponCode,
+      statusHistory: [{
+        status: 'Pending',
+        updatedAt: new Date(),
+        note: 'Order placed successfully'
+      }]
+    };
+
+    // For online payment, create Razorpay order
+    if (paymentMode === 'online') {
+      const razorpayOrder = await razorpay.orders.create({
+        amount: Math.round(orderData.finalPrice * 100), // Convert to paise
+        currency: 'INR',
+        receipt: orderId,
+        notes: {
+          orderId: orderId,
+          customerEmail: user.email
+        }
       });
 
-      order.shiprocketOrderId = response.order_id;
-      order.shiprocketShipmentId = response.shipment_id;
+      // Save order to database
+      const order = await Order.create(orderData);
+
+      return NextResponse.json({
+        success: true,
+        orderId: order.orderId,
+        amount: orderData.finalPrice,
+        razorpayOrderId: razorpayOrder.id,
+        razorpayKeyId: process.env.RAZORPAY_KEY_ID,
+        orderData: {
+          orderId: order.orderId,
+          finalPrice: order.finalPrice
+        }
+      });
     }
 
-    // Assign AWB
-    const awbResponse = await shiprocketService.assignAWB(
-      order.shiprocketShipmentId,
-      courierId
-    );
-
-    // Update order with tracking info
-    await Order.findByIdAndUpdate(order._id, {
-      trackingId: awbResponse.response.data.awb_code,
-      courierName: awbResponse.response.data.courier_name,
-      orderStatus: 'Shipped',
-      $push: {
-        statusHistory: {
-          status: 'Shipped',
-          updatedAt: new Date(),
-          note: `AWB: ${awbResponse.response.data.awb_code}, Courier: ${awbResponse.response.data.courier_name}`
-        }
-      }
-    });
+    // For COD, save order directly
+    const order = await Order.create(orderData);
 
     return NextResponse.json({
       success: true,
-      message: 'Shipment created successfully',
-      trackingId: awbResponse.response.data.awb_code,
-      courierName: awbResponse.response.data.courier_name
+      message: 'Order placed successfully',
+      orderId: order.orderId,
+      order: {
+        orderId: order.orderId,
+        finalPrice: order.finalPrice,
+        orderStatus: order.orderStatus
+      }
     });
 
   } catch (error) {
-    console.error('Create shipment error:', error);
-    return NextResponse.json({
-      error: 'Failed to create shipment',
-      details: error.message
-    }, { status: 500 });
+    console.error('❌ Create order error:', error);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.keys(error.errors).map(key => ({
+        field: key,
+        message: error.errors[key].message
+      }));
+      
+      return NextResponse.json({
+        error: 'Validation failed',
+        details: validationErrors
+      }, { status: 400 });
+    }
+    
+    return NextResponse.json(
+      { error: error.message || 'Failed to create order' },
+      { status: 500 }
+    );
   }
+}
+
+// Helper function to get user from request (implement based on your auth)
+async function getUserFromRequest(req) {
+  // TODO: Implement your authentication logic
+  // This is a placeholder - replace with your actual auth implementation
+  
+  // Example using session cookie or JWT:
+  const token = req.cookies.get('auth-token')?.value;
+  
+  if (!token) {
+    return null;
+  }
+  
+  // Verify token and get user
+  // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  // const user = await User.findById(decoded.userId);
+  
+  // For now, return mock user (REPLACE THIS)
+  return {
+    id: 'user123',
+    email: 'customer@example.com'
+  };
 }

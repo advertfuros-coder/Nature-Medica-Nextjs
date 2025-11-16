@@ -3,7 +3,7 @@ import Banner from "@/models/Banner";
 import Product from "@/models/Product";
 import Category from "@/models/Category";
 import HeroBanner from "@/components/customer/HeroBanner";
- import BestSellerSectionWrapper from "@/components/customer/BestSellerSectionWrapper";
+import BestSellerSectionWrapper from "@/components/customer/BestSellerSectionWrapper";
 import NewArrivalSectionWrapper from "@/components/customer/NewArrivalSectionWrapper";
 import FeaturedSectionWrapper from "@/components/customer/FeaturedSectionWrapper";
 import FAQ from "@/components/customer/FAQ";
@@ -22,6 +22,7 @@ import WellnessSection from "@/components/customer/WellnessSection";
 import LearnWellness from "@/components/customer/LearnWellness";
 import InfoStrip from "@/components/customer/InfoStrip";
 import PromoStripSimple from "@/components/customer/PromoStripSimple";
+import CategoryGrid from "@/components/customer/CategoryGrid";
 
 export default async function HomePage() {
   await connectDB();
@@ -55,20 +56,21 @@ export default async function HomePage() {
         <HeroBanner banners={JSON.parse(JSON.stringify(homeBanners))} />
       </section>
 
-      <BrandMarquee/>
+      <CategoryGrid/>
 
-            <WellnessGoalCarousel />
+      <BrandMarquee />
 
+      <WellnessGoalCarousel />
 
       {/* Shop by Category */}
-     
+
       <BestSellerSectionWrapper />
-            <FacewashSection/>
+      <FacewashSection />
 
       <NewArrivalSectionWrapper />
       <FeaturedSectionWrapper />
 
-      <WellnessSection/>
+      <WellnessSection />
 
       {/* Why Choose Section */}
       {/* <WhyChooseNatureMedica
@@ -79,7 +81,6 @@ export default async function HomePage() {
       <section className=" bg-white border-y border-gray-100">
         <TrustedBySection />
       </section>
-      
 
       {/* Customer Reviews */}
       <section className="bg-gradient-to-b from-white to-gray-50">
@@ -89,19 +90,17 @@ export default async function HomePage() {
       </section>
 
       {/* <HomeBlogCarousel/> */}
-      <LearnWellness/>
+      <LearnWellness />
       <InfoStrip />
-
 
       {/* FAQ Section */}
       <section className=" ">
-         
         <div className="max-w-3xl mx-auto">
           <FAQ products={JSON.parse(JSON.stringify(hotsellingProducts))} />
         </div>
       </section>
 
-     {/* <CTASection/> */}
+      {/* <CTASection/> */}
     </main>
   );
 }

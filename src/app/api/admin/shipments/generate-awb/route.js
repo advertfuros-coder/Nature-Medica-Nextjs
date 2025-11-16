@@ -17,6 +17,14 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
+    const phone = order.shippingAddress.phone;
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+      return NextResponse.json({
+        error: 'Invalid mobile number. Must be 10 digits and start with 6, 7, 8, or 9.',
+        phone
+      }, { status: 400 });
+    }
+
     if (!order.shiprocketShipmentId) {
       return NextResponse.json({ 
         error: 'Shipment not created yet. Create shipment first.' 
@@ -45,18 +53,27 @@ export async function POST(req) {
       }, { status: 402 }); // 402 = Payment Required
     }
 
-   if (!awbResponse?.response?.data?.awb_code) {
-  console.error('⚠️ Shiprocket AWB assignment failed:', JSON.stringify(awbResponse, null, 2));
-  return NextResponse.json({
-    error: 'Shiprocket did not return a valid AWB. Please try again later or check courier availability.',
-    uiMessage: 'Shiprocket failed to generate an AWB — please check your courier selection or try again later.',
-    rawResponse: awbResponse
-  }, { status: 502 });
-}
+    if (awbResponse?.response?.data?.awb_assign_error) {
+      console.error('⚠️ Shiprocket AWB assignment failed:', JSON.stringify(awbResponse, null, 2));
+      return NextResponse.json({
+        error: awbResponse.response.data.awb_assign_error,
+        rawResponse: awbResponse
+      }, { status: 400 });
+    }
+
+    const awb = awbResponse.response.data.awb_code;
+    const courier = awbResponse.response.data.courier_name;
+
+    if (!awb || !courier) {
+      return NextResponse.json({
+        error: 'AWB missing from Shiprocket response.',
+        rawResponse: awbResponse
+      }, { status: 500 });
+    }
 
     // Update order
-    order.trackingId = awbResponse.response.data.awb_code;
-    order.courierName = awbResponse.response.data.courier_name;
+    order.trackingId = awb;
+    order.courierName = courier;
     order.orderStatus = 'Shipped';
     
     order.statusHistory.push({

@@ -26,7 +26,7 @@ export async function POST(req) {
     const shiprocketData = {
       order_id: order.orderId,
       order_date: new Date(order.createdAt).toISOString().split('T')[0],
-      pickup_location: 'Primary',
+      pickup_location: 'Home',
       channel_id: '',
       comment: 'Order from Nature Medica',
       billing_customer_name: order.shippingAddress.name,
