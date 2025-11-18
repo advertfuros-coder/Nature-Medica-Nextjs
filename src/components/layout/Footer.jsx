@@ -218,7 +218,7 @@ export default function Footer() {
               <span className="text-gray-50 text-xs sm:text-sm font-medium">Payment:</span>
               <div className="flex gap-2">
                 <img
-                  src="https://images.icon-icons.com/2699/PNG/512/upi_logo_icon_169316.png"
+                  src="https://upload.wikimedia.org/wikipedia/commons/f/fa/UPI-Logo.png"
                   alt="UPI Logo"
                   width={40}
                   

@@ -70,9 +70,9 @@ export default function WellnessGoalCarousel() {
             <Link 
               key={goal.id} 
               href={goal.href}
-              className="flex-shrink-0 w-40 md:w-54 cursor-pointer group"
+              className="flex-shrink-0 w-30 md:w-54 cursor-pointer group"
             >
-              <div className="relative rounded-2xl overflow-hidden h-60 md:h-80 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="relative rounded-2xl overflow-hidden h-40 md:h-60 shadow-lg hover:shadow-xl transition-all duration-300">
                 <video
                   src={videoPaths[index % videoPaths.length]}
                   autoPlay
@@ -83,7 +83,7 @@ export default function WellnessGoalCarousel() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
                 <div className="absolute bottom-6 left-6 right-6">
-                  <h3 className=" text-white">{goal.label}</h3>
+                  <h3 className=" text-white text-xs">{goal.label}</h3>
                 </div>
               </div>
             </Link>
