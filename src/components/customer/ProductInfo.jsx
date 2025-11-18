@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '@/store/slices/cartSlice';
-import { FiShoppingCart, FiStar, FiCheck } from 'react-icons/fi';
+import { FiShoppingCart,  FiStar, FiCheck } from 'react-icons/fi';
 
+import { ShoppingCart, Zap, Star } from 'lucide-react';
 export default function ProductInfo({ product }) {
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.user);
@@ -16,6 +17,7 @@ export default function ProductInfo({ product }) {
 
   const currentPrice = selectedVariant?.price || product.price;
   const currentStock = selectedVariant?.stock || product.stock;
+  const [quickBuying, setQuickBuying] = useState(false);
 
   const handleAddToCart = () => {
     setAdding(true);
@@ -25,6 +27,14 @@ export default function ProductInfo({ product }) {
       variant: selectedVariant?.name
     }));
     setTimeout(() => setAdding(false), 1000);
+  };
+
+    const handleQuickBuy = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setQuickBuying(true);
+    dispatch(addToCart({ product, quantity: 1, variant: null }));
+    setTimeout(() => router.push('/checkout'), 500);
   };
 
   return (
@@ -108,7 +118,7 @@ export default function ProductInfo({ product }) {
                 ? 'bg-[#3A5D1E] text-white'
               : currentStock === 0
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-[#3A5D1E] text-white hover:bg-['
+                : 'border-2 border-[#3A5D1E] text-[#3A5D1E] hover:bg-['
           }`}
         >
           {adding ? (
@@ -123,6 +133,15 @@ export default function ProductInfo({ product }) {
             </>
           )}
         </button>
+
+         <button
+                onClick={handleQuickBuy}
+                disabled={quickBuying}
+                className="flex-1 w-full py-2 bg-[#415f2d]  text-white py-3 rounded-lg text-[13px] flex items-center justify-center gap-2 transition-all"
+              >
+                <Zap className="w-4 h-4" />
+                {quickBuying ? 'Processing' : 'Buy Now'}
+              </button>
       </div>
 
       <div className="border-t pt-4">

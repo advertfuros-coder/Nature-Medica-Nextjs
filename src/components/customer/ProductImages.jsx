@@ -20,7 +20,7 @@ export default function ProductImages({ images = [], title }) {
   return (
     <div className="  ">
       {/* Main Image */}
-      <div className="relative aspect-square mb-6 rounded-xl overflow-hidden bg-white shadow-lg transition-shadow duration-300 hover:shadow-2xl">
+      <div className="relative  h-80 mb-6 rounded-xl overflow-hidden bg-white shadow-lg transition-shadow duration-300 hover:shadow-2xl">
         <Image
           src={images[selectedImage]?.url || '/placeholder.png'}
           alt={title}
@@ -33,7 +33,7 @@ export default function ProductImages({ images = [], title }) {
 
       {/* Thumbnail Images */}
       {images.length > 1 && (
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-6 gap-2">
           {images.map((image, index) => (
             <button
               key={index}
@@ -48,7 +48,7 @@ export default function ProductImages({ images = [], title }) {
                 src={image.url}
                 alt={`${title} - View ${index + 1}`}
                 fill
-                className="object-contain p-2"
+                className="object-contain p-1"
                 sizes="(max-width: 768px) 25vw, 15vw"
               />
             </button>

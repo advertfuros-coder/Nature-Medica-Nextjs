@@ -214,18 +214,7 @@ export default function SearchFirstHeader() {
             </div>
 
             {/* Quick Links */}
-            <div className="flex items-center gap-3 mt-3 text-xs text-gray-600 flex-wrap">
-              <span className="font-medium">Popular:</span>
-              {quickLinks.map((link) => (
-                <Link
-                  key={link}
-                  href={`/products?search=${encodeURIComponent(link)}`}
-                  className="px-3 py-1 bg-[#4B6D35] text-white rounded-full hover:bg-gray-200 transition-colors hover:text-[#3a5d1e]"
-                >
-                  {link}
-                </Link>
-              ))}
-            </div>
+            
           </div>
         </form>
       </div>
@@ -290,6 +279,13 @@ export default function SearchFirstHeader() {
         }
         .animate-slideDown {
           animation: slideDown 0.2s ease-out;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </header>
