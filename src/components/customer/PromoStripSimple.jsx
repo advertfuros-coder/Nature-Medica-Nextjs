@@ -18,9 +18,8 @@ export default function PromoStripSimple() {
   return (
     <div className="bg-gradient-to-r from-[#415f2d] to-[#5a8240] text-white py-2 px-4 relative">
       <div className="max-w-6xl mx-auto flex items-center justify-center gap-3 text-center">
-        <Tag className="w-4 h-4 flex-shrink-0" />
-        <p className="text-[11px] sm:text-[12px] font-medium">
-          Use code{' '}
+         <p className="text-[10px] font-medium">
+           
           <button
             onClick={copyCode}
             className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/20 rounded hover:bg-white/30 transition-colors mx-1"

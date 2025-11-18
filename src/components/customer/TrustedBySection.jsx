@@ -27,7 +27,7 @@ export default function TrustedByBanner() {
           <div className="flex-1 text-center lg:text-left">
             <div className="mb-3">
               <h2 className="text-base font-bold text-gray-900 mb-1">
-                Trusted by 70 Lac+ Consumers
+                Trusted by 50K+ Consumers
               </h2>
               <p className="text-[10px] text-gray-500">
                 Join millions who rely on our quality products
@@ -51,12 +51,12 @@ export default function TrustedByBanner() {
           {/* Stats */}
           <div className="flex gap-4 lg:gap-6 flex-shrink-0">
             <div className="text-center">
-              <p className="text-xl font-bold text-gray-900">70L+</p>
+              <p className="text-xl font-bold text-gray-900">50K+</p>
               <p className="text-[9px] text-gray-500">Customers</p>
             </div>
             <div className="w-px bg-gray-300" />
             <div className="text-center">
-              <p className="text-xl font-bold text-gray-900">4.5★</p>
+              <p className="text-xl font-bold text-gray-900">4.9★</p>
               <p className="text-[9px] text-gray-500">Rating</p>
             </div>
             <div className="w-px bg-gray-300" />

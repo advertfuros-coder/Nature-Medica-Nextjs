@@ -20,7 +20,7 @@ export default function ProductImages({ images = [], title }) {
   return (
     <div className="  ">
       {/* Main Image */}
-      <div className="relative  h-80 mb-6 rounded-xl overflow-hidden bg-white shadow-lg transition-shadow duration-300 hover:shadow-2xl">
+      <div className="relative  h-50 mb-3 rounded-xl overflow-hidden bg-white shadow-lg transition-shadow duration-300 hover:shadow-2xl">
         <Image
           src={images[selectedImage]?.url || '/placeholder.png'}
           alt={title}

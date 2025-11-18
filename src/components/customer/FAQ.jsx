@@ -71,7 +71,7 @@ export default function FAQCompactList() {
   const [openIndex, setOpenIndex] = useState(null);
 
   return (
-    <section className="py-8 bg-white">
+    <section className="py-8 bg-[#FFFDF7]">
       <div className="max-w-3xl mx-auto px-4">
         <div className="mb-5">
           <h2 className="text-sm font-semibold text-gray-900 mb-1">

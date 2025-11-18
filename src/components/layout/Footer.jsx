@@ -31,9 +31,9 @@ export default function Footer() {
                   <FiMapPin className="w-4 h-4 text-[#ffffff]" />
                 </div>
                 <div>
-                  <p className="font-light text-gray-900 mb-1 text-sm sm:text-base">Visit Our Store</p>
+                  <p className="font-semibold text-gray-900 mb-1 text-sm sm:text-base">Visit Our Store</p>
                   <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                    1st Floor, LHPS Building, Friends Colony, Sector-7,<br />
+                    1st Floor, LHPS Building, Friends Colony, <br /> Sector-7,
                     Kamla Nehru Nagar, Vikas Nagar,<br />
                     Lucknow, Uttar Pradesh 226022
                   </p>
@@ -45,8 +45,8 @@ export default function Footer() {
                   <FiPhone className="w-4 h-4 text-[#ffffff]" />
                 </div>
                 <div>
-                  <p className="font-light text-gray-900 mb-1 text-sm sm:text-base">Call Us</p>
-                  <a href="tel:8400043322" className="text-sm sm:text-base font-light text-[#415f2d] hover:text-[#344b24]">
+                  <p className="font-semibold text-gray-900 mb-1 text-sm sm:text-base">Call Us</p>
+                  <a href="tel:8400043322" className="text-sm sm:text-base font-light text-[#000000] hover:text-[#344b24]">
                     +91 8400043322
                   </a>
                 </div>
@@ -57,8 +57,8 @@ export default function Footer() {
                   <FiMail className="w-4 h-4 text-[#ffffff]" />
                 </div>
                 <div>
-                  <p className="font-light text-gray-900 mb-1 text-sm sm:text-base">Email Us</p>
-                  <a href="mailto:support@naturemedica.com" className="text-[#415f2d] hover:text-[#344b24] font-medium text-xs sm:text-sm">
+                  <p className="font-semibold text-gray-900 mb-1 text-sm sm:text-base">Email Us</p>
+                  <a href="mailto:support@naturemedica.com" className="text-[#000000] hover:text-[#344b24] font-medium text-xs sm:text-sm">
                     support@naturemedica.com
                   </a>
                 </div>
@@ -175,7 +175,7 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="border-t pb-16 md:pb-0 border-gray-200 bg-gradient-to-r from-[#415F2D] to-[#5A8240]">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
+          <div className="flex  items-center justify-between gap-3 md:gap-4">
  
 
             {/* Social Media */}
@@ -213,6 +213,13 @@ export default function Footer() {
                 />
                 <img
                   src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg"
+                  alt="Visa Logo"
+                  width={40}
+                  
+                  className="object-contain bg-white border border-gray-200 rounded-lg p-1"
+                />
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/2897/2897832.png"
                   alt="Visa Logo"
                   width={40}
                   

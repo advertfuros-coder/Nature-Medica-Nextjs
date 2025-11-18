@@ -76,7 +76,7 @@ export default function HelpCenterPage() {
       {/* FAQs */}
       <div className="px-4 space-y-3">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-          Frequently Asked Questions
+          Frequently A zsked Questions
         </h2>
 
         {filteredFaqs.map((faq) => (

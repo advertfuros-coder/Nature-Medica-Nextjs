@@ -27,7 +27,7 @@ export default function FacewashSection() {
           Enriched with Vitamin C, Kojic Acid & Niacinamide for brighter, clearer skin. Gently cleanses and nourishes while reducing dullness and promoting a radiant glow.
         </p>
         <Link
-          href="/products/facewash"
+          href="https://naturemedica.in/products/nature-medica-glutathione-brightening-foaming-facewash-120ml"
           className="bg-white text-black font-semibold px-4 py-1.5 rounded hover:bg-gray-200 transition"
         >
           Shop Now

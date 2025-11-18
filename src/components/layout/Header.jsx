@@ -10,6 +10,7 @@ import { clearCart } from '@/store/slices/cartSlice';
 import Image from 'next/image';
 import logo from '@/assets/logor.webp';
 import PromoStripSimple from '../customer/PromoStripSimple';
+import NewsletterPopup from '../customer/NewsletterPopup';
 
 export default function SearchFirstHeader() {
   const router = useRouter();
@@ -92,7 +93,7 @@ export default function SearchFirstHeader() {
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
 <PromoStripSimple />
-      <div className="max-w-6xl mx-auto px-4 pb-4">
+      <div className="max-w-6xl mx-auto px-4 pb-2 -my-1">
         {/* Top Row */}
         <div className="flex items-center justify-between ">
           {/* Logo */}
@@ -199,14 +200,14 @@ export default function SearchFirstHeader() {
         {/* Search Bar */}
         <form onSubmit={handleSearch}>
           <div className="relative">
-            <div className="flex items-center bg-gray-100 rounded-full px-6 py-3 hover:shadow-md transition-shadow focus-within:shadow-md focus-within:bg-white focus-within:ring-2 focus-within:ring-[#3a5d1e]/20">
+            <div className="flex items-center bg-gray-100 rounded-full px-6 py-2 hover:shadow-md transition-shadow focus-within:shadow-md focus-within:bg-white focus-within:ring-2 focus-within:ring-[#3a5d1e]/20 text-sm">
               <Search className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
               <input
                 type="text"
                 placeholder={ `Search for ${placeholder}...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 bg-transparent focus:outline-none text-sm text-gray-900 placeholder:text-gray-500"
+                className="flex-1 bg-transparent focus:outline-none text-xs text-gray-900 placeholder:text-gray-500"
               />
               <button type="submit" className="ml-3 flex-shrink-0">
                 <Sparkles className="w-5 h-5 text-yellow-500 hover:text-yellow-600 transition-colors" />
@@ -288,6 +289,7 @@ export default function SearchFirstHeader() {
           scrollbar-width: none;
         }
       `}</style>
+      <NewsletterPopup />
     </header>
   );
 }
