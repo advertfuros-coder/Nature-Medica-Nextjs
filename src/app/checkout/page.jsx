@@ -4,8 +4,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { clearCart, applyCoupon, removeCoupon, removeFromCart } from '@/store/slices/cartSlice';
-import { Check, MapPin, Plus, Shield, Truck, Package, X, CreditCard, Loader2, Tag, Trash2 } from 'lucide-react';
+import { clearCart, applyCoupon, removeCoupon, removeFromCart, updateQuantity } from '@/store/slices/cartSlice';
+import { Check, MapPin, Plus, Shield, Truck, Package, X, CreditCard, Loader2, Tag, Trash2, Minus } from 'lucide-react';
 
 // Utility to get default or first address id
 function chooseDefaultAddressId(addresses) {
@@ -263,6 +263,11 @@ export default function CheckoutPage() {
     dispatch(removeFromCart({ productId, variant }));
   };
 
+  const handleUpdateQuantity = (productId, variant, newQuantity) => {
+    if (newQuantity < 1) return;
+    dispatch(updateQuantity({ productId, variant, quantity: newQuantity }));
+  };
+
   const handlePlaceOrder = async () => {
     // For guest users, validate that they have filled the address form
     if (!isAuthenticated) {
@@ -302,7 +307,6 @@ export default function CheckoutPage() {
           })),
           totalPrice,
           discount,
-          gst: gstAmount,
           finalPrice,
           shippingAddress,
           paymentMode,
@@ -362,10 +366,17 @@ export default function CheckoutPage() {
   if (items.length === 0) return null;
 
   const deliveryCharge = 30;
-  const subtotalAfterDiscount = totalPrice - discount;
-  const gstRate = 0.18; // 18% GST
-  const gstAmount = Math.round(subtotalAfterDiscount * gstRate);
-  const finalPrice = subtotalAfterDiscount + gstAmount + deliveryCharge;
+  
+  // Calculate total MRP and savings
+  const totalMRP = items.reduce((sum, item) => {
+    const mrp = item.product.mrp || item.price; // Fallback to price if MRP not available
+    return sum + (mrp * item.quantity);
+  }, 0);
+  
+  const mrpSavings = totalMRP - totalPrice; // Savings from MRP to selling price
+  const totalSavings = mrpSavings + discount; // Total savings including coupon discount
+  
+  const finalPrice = totalPrice - discount + deliveryCharge;
 
   return (
     <>
@@ -780,9 +791,28 @@ export default function CheckoutPage() {
                           {item.variant && (
                             <p className="text-[9px] text-gray-500">{item.variant}</p>
                           )}
-                          <p className="text-[10px] text-gray-600 mt-0.5">
-                            Qty: {item.quantity} × ₹{item.price.toLocaleString('en-IN')}
-                          </p>
+                          <div className="flex items-center justify-between mt-1">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleUpdateQuantity(item.product._id, item.variant, item.quantity - 1)}
+                                className="w-5 h-5 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                              >
+                                <Minus className="w-3 h-3 text-gray-600" />
+                              </button>
+                              <span className="text-[11px] font-semibold text-gray-900 min-w-[20px] text-center">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() => handleUpdateQuantity(item.product._id, item.variant, item.quantity + 1)}
+                                className="w-5 h-5 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                              >
+                                <Plus className="w-3 h-3 text-gray-600" />
+                              </button>
+                            </div>
+                            <p className="text-[10px] text-gray-600">
+                              ₹{item.price.toLocaleString('en-IN')} each
+                            </p>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -859,13 +889,8 @@ export default function CheckoutPage() {
                     )}
 
                     <div className="flex justify-between text-gray-600 text-[11px]">
-                      <span>GST (18%)</span>
-                      <span className="font-semibold">₹{gstAmount.toLocaleString('en-IN')}</span>
-                    </div>
-
-                    <div className="flex justify-between text-gray-600 text-[11px]">
-                      <span>Shipping</span>
-                      <span className="font-semibold text-green-600">FREE</span>
+                      <span>Delivery Charge</span>
+                      <span className="font-semibold">₹{deliveryCharge.toLocaleString('en-IN')}</span>
                     </div>
 
                     <div className="pt-2 border-t border-gray-200">
@@ -875,6 +900,13 @@ export default function CheckoutPage() {
                           ₹{finalPrice.toLocaleString('en-IN')}
                         </span>
                       </div>
+                      {totalSavings > 0 && (
+                        <div className="mt-2 text-center">
+                          <p className="text-[11px] font-semibold text-green-600">
+                            🎉 You are saving ₹{totalSavings.toLocaleString('en-IN')} on this order!
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 

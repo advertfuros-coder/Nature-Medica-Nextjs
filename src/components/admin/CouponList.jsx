@@ -36,16 +36,30 @@ export default function CouponList({ coupons }) {
         body: JSON.stringify(formData)
       });
 
+      const data = await res.json();
+
       if (res.ok) {
         alert(`Coupon ${editingCoupon ? 'updated' : 'created'} successfully`);
         resetForm();
         router.refresh();
       } else {
-        const data = await res.json();
-        alert(data.error || 'Failed to save coupon');
+        // Display detailed error message
+        const errorMessage = data.details
+          ? `${data.error}\n\nDetails: ${data.details}`
+          : data.error || 'Failed to save coupon';
+
+        console.error('Coupon save error:', {
+          status: res.status,
+          error: data.error,
+          details: data.details,
+          required: data.required
+        });
+
+        alert(errorMessage);
       }
     } catch (error) {
-      alert('Failed to save coupon');
+      console.error('Network or unexpected error:', error);
+      alert(`Failed to save coupon. Network error: ${error.message}`);
     } finally {
       setSubmitting(false);
     }
@@ -74,14 +88,27 @@ export default function CouponList({ coupons }) {
         method: 'DELETE'
       });
 
+      const data = await res.json();
+
       if (res.ok) {
         alert('Coupon deleted successfully');
         router.refresh();
       } else {
-        alert('Failed to delete coupon');
+        const errorMessage = data.details 
+          ? `${data.error}\n\nDetails: ${data.details}`
+          : data.error || 'Failed to delete coupon';
+        
+        console.error('Coupon delete error:', {
+          status: res.status,
+          error: data.error,
+          details: data.details
+        });
+        
+        alert(errorMessage);
       }
     } catch (error) {
-      alert('Failed to delete coupon');
+      console.error('Network or unexpected error:', error);
+      alert(`Failed to delete coupon. Network error: ${error.message}`);
     }
   };
 
@@ -284,11 +311,10 @@ export default function CouponList({ coupons }) {
                   {format(new Date(coupon.expiryDate), 'MMM dd, yyyy')}
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                    coupon.active && new Date(coupon.expiryDate) > new Date()
+                  <span className={`px-2 py-1 rounded text-xs font-semibold ${coupon.active && new Date(coupon.expiryDate) > new Date()
                       ? 'bg-green-100 text-green-700'
                       : 'bg-red-100 text-red-700'
-                  }`}>
+                    }`}>
                     {coupon.active && new Date(coupon.expiryDate) > new Date() ? 'Active' : 'Inactive'}
                   </span>
                 </td>

@@ -1,10 +1,49 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 const videoPaths = ['/all.mp4', '/b3.mp4', '/b4.mp4', '/b1.mp4', ];
+
+// Separate Video component to handle individual video playback
+function Video({ src, isActive }) {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isActive) {
+      // Play the video when it becomes active
+      video.play().catch(error => {
+        console.log('Video autoplay prevented:', error);
+        // Autoplay was prevented, user interaction needed
+      });
+    } else {
+      // Pause and reset when not active
+      video.pause();
+      video.currentTime = 0;
+    }
+  }, [isActive]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      muted
+      playsInline
+      loop
+      preload="auto"
+      className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-700 ${
+        isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
+      }`}
+      onError={(e) => {
+        console.error('Video failed to load:', src, e);
+      }}
+    />
+  );
+}
 
 export default function HeroBanner({ banners }) {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -60,16 +99,10 @@ export default function HeroBanner({ banners }) {
       onMouseLeave={handleMouseLeave}
     >
       {videoPaths.map((video, index) => (
-        <video
+        <Video
           key={index}
           src={video}
-          autoPlay
-          muted
-          playsInline
-          loop
-          className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-700 ${
-            index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-          }`}
+          isActive={index === currentSlide}
         />
       ))}
 

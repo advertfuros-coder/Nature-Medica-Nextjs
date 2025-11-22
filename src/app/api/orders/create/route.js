@@ -12,7 +12,6 @@ export async function POST(req) {
       items,
       totalPrice,
       discount,
-      gst,
       finalPrice,
       shippingAddress,
       paymentMode,
@@ -116,7 +115,6 @@ export async function POST(req) {
       })),
       totalPrice,
       discount: discount || 0,
-      gst: gst || 0,
       finalPrice,
       shippingAddress: {
         name: shippingAddress.name,
