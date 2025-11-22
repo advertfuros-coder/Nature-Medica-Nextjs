@@ -31,7 +31,7 @@ export async function PUT(req, { params }) {
     }
 
     const formData = await req.json();
-    const couponId = params.id;
+    const { id: couponId } = await params;
 
     // Validate required fields
     if (
@@ -136,7 +136,8 @@ export async function DELETE(req, { params }) {
       );
     }
 
-    const couponId = params.id;
+
+    const { id: couponId } = await params;
 
     const coupon = await Coupon.findByIdAndDelete(couponId);
 

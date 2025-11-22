@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import Order from '@/models/Order';
-import { requireAdmin } from '@/middleware/auth';
+import { NextResponse } from "next/server";
+import connectDB from "@/lib/mongodb";
+import Order from "@/models/Order";
+import { requireAdmin } from "@/middleware/auth";
 
 export async function GET(req, { params }) {
   try {
@@ -9,23 +9,26 @@ export async function GET(req, { params }) {
     await requireAdmin(req);
     await connectDB();
 
-    const { orderId } = params;
+    const { orderId } = await params;
 
-    console.log('Fetching order:', orderId);
+    console.log("Fetching order:", orderId);
 
     // Find order by orderId (not _id)
     const order = await Order.findOne({ orderId })
-      .populate('items.product', 'title images')
+      .populate("items.product", "title images")
       .lean();
 
     if (!order) {
-      console.log('Order not found:', orderId);
-      return NextResponse.json({ 
-        error: 'Order not found' 
-      }, { status: 404 });
+      console.log("Order not found:", orderId);
+      return NextResponse.json(
+        {
+          error: "Order not found",
+        },
+        { status: 404 }
+      );
     }
 
-    console.log('Order found:', order.orderId);
+    console.log("Order found:", order.orderId);
 
     // Format order for frontend
     const formattedOrder = {
@@ -34,13 +37,13 @@ export async function GET(req, { params }) {
       user: order.user?.toString(),
       userName: order.userName,
       userEmail: order.userEmail,
-      items: order.items?.map(item => ({
+      items: order.items?.map((item) => ({
         product: item.product?._id?.toString() || item.product,
         title: item.title,
         image: item.image || item.product?.images?.[0]?.url,
         quantity: item.quantity,
         price: item.price,
-        variant: item.variant
+        variant: item.variant,
       })),
       totalPrice: order.totalPrice,
       discount: order.discount,
@@ -60,27 +63,35 @@ export async function GET(req, { params }) {
       statusHistory: order.statusHistory,
       estimatedDelivery: order.estimatedDelivery,
       createdAt: order.createdAt,
-      updatedAt: order.updatedAt
+      updatedAt: order.updatedAt,
     };
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      order: formattedOrder 
+      order: formattedOrder,
     });
-
   } catch (error) {
-    console.error('Get order details error:', error);
-    
+    console.error("Get order details error:", error);
+
     // Handle authentication errors
-    if (error.message === 'Admin access required' || error.message === 'Authentication required') {
-      return NextResponse.json({ 
-        error: 'Unauthorized. Admin access required.' 
-      }, { status: 401 });
+    if (
+      error.message === "Admin access required" ||
+      error.message === "Authentication required"
+    ) {
+      return NextResponse.json(
+        {
+          error: "Unauthorized. Admin access required.",
+        },
+        { status: 401 }
+      );
     }
 
-    return NextResponse.json({ 
-      error: error.message || 'Failed to fetch order details' 
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: error.message || "Failed to fetch order details",
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -90,10 +101,10 @@ export async function PUT(req, { params }) {
     await requireAdmin(req);
     await connectDB();
 
-    const { orderId } = params;
+    const { orderId } = await params;
     const updates = await req.json();
 
-    console.log('Updating order:', orderId, updates);
+    console.log("Updating order:", orderId, updates);
 
     const order = await Order.findOneAndUpdate(
       { orderId },
@@ -102,22 +113,27 @@ export async function PUT(req, { params }) {
     ).lean();
 
     if (!order) {
-      return NextResponse.json({ 
-        error: 'Order not found' 
-      }, { status: 404 });
+      return NextResponse.json(
+        {
+          error: "Order not found",
+        },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      message: 'Order updated successfully',
-      order 
+      message: "Order updated successfully",
+      order,
     });
-
   } catch (error) {
-    console.error('Update order error:', error);
-    return NextResponse.json({ 
-      error: error.message || 'Failed to update order' 
-    }, { status: 500 });
+    console.error("Update order error:", error);
+    return NextResponse.json(
+      {
+        error: error.message || "Failed to update order",
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -127,27 +143,32 @@ export async function DELETE(req, { params }) {
     await requireAdmin(req);
     await connectDB();
 
-    const { orderId } = params;
+    const { orderId } = await params;
 
-    console.log('Deleting order:', orderId);
+    console.log("Deleting order:", orderId);
 
     const order = await Order.findOneAndDelete({ orderId });
 
     if (!order) {
-      return NextResponse.json({ 
-        error: 'Order not found' 
-      }, { status: 404 });
+      return NextResponse.json(
+        {
+          error: "Order not found",
+        },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      message: 'Order deleted successfully' 
+      message: "Order deleted successfully",
     });
-
   } catch (error) {
-    console.error('Delete order error:', error);
-    return NextResponse.json({ 
-      error: error.message || 'Failed to delete order' 
-    }, { status: 500 });
+    console.error("Delete order error:", error);
+    return NextResponse.json(
+      {
+        error: error.message || "Failed to delete order",
+      },
+      { status: 500 }
+    );
   }
 }
