@@ -22,7 +22,7 @@ const OrderSchema = new mongoose.Schema(
     },
     userEmail: {
       type: String,
-      required: true,
+      required: false,
     },
     items: [
       {
@@ -40,6 +40,7 @@ const OrderSchema = new mongoose.Schema(
     ],
     totalPrice: { type: Number, required: true },
     discount: { type: Number, default: 0 },
+    gst: { type: Number, default: 0 },
     finalPrice: { type: Number, required: true },
     shippingAddress: {
       name: { type: String, required: true },

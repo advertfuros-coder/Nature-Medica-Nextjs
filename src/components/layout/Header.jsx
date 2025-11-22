@@ -21,11 +21,11 @@ export default function SearchFirstHeader() {
 
   const cartState = useSelector((state) => state.cart || { items: [] });
   const totalItems = cartState.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-  
+
   const userState = useSelector((state) => state.user || { user: null, isAuthenticated: false });
   const { user, isAuthenticated } = userState;
 
-  const quickLinks = ['Cold Cream',  'Alovera Gel', 'Serum', "Facewash", "Sanitary", "Oral"];
+  const quickLinks = ['Cold Cream', 'Alovera Gel', 'Serum', "Facewash", "Sanitary", "Oral"];
 
   // Typing animation state
   const [placeholder, setPlaceholder] = useState('');
@@ -92,7 +92,7 @@ export default function SearchFirstHeader() {
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
-<PromoStripSimple />
+      <PromoStripSimple />
       <div className="max-w-6xl mx-auto px-4 pb-2 -my-1">
         {/* Top Row */}
         <div className="flex items-center justify-between ">
@@ -100,12 +100,12 @@ export default function SearchFirstHeader() {
           <Link href="/" className="flex-shrink-0">
             <Image src={logo} alt="Nature Medica" className="h-14  w-auto" />
           </Link>
-          
+
           {/* Right Actions */}
           <div className="flex items-center gap-3">
             {/* Orders Link */}
-            <Link 
-              href="/orders" 
+            <Link
+              href="/orders"
               className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors group"
             >
               <Package className="w-5 h-5 text-gray-600 group-hover:text-[#3a5d1e]" />
@@ -142,8 +142,8 @@ export default function SearchFirstHeader() {
 
                     {/* Menu Items */}
                     <div className="py-2 ">
-                      <Link 
-                        href="/profile" 
+                      <Link
+                        href="/profile"
                         className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
                         onClick={() => setShowUserMenu(false)}
                       >
@@ -151,8 +151,8 @@ export default function SearchFirstHeader() {
                         <span className="text-sm text-gray-700">My Profile</span>
                       </Link>
 
-                      <Link 
-                        href="/orders" 
+                      <Link
+                        href="/orders"
                         className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
                         onClick={() => setShowUserMenu(false)}
                       >
@@ -162,7 +162,7 @@ export default function SearchFirstHeader() {
 
                       <div className="border-t border-gray-200 my-2"></div>
 
-                      <button 
+                      <button
                         onClick={handleLogout}
                         className="flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors w-full text-left"
                       >
@@ -174,8 +174,8 @@ export default function SearchFirstHeader() {
                 )}
               </div>
             ) : (
-              <Link 
-                href="/auth" 
+              <Link
+                href="/auth"
                 className="px-4 py-2 bg-[#3a5d1e] text-white rounded-lg font-medium hover:bg-[#2d4818] transition-colors text-sm"
               >
                 Sign In
@@ -183,8 +183,8 @@ export default function SearchFirstHeader() {
             )}
 
             {/* Cart */}
-            <Link 
-              href="/cart" 
+            <Link
+              href="/cart"
               className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ShoppingBag className="w-6 h-6 text-gray-700" />
@@ -204,7 +204,7 @@ export default function SearchFirstHeader() {
               <Search className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
               <input
                 type="text"
-                placeholder={ `Search for ${placeholder}...`}
+                placeholder={`Search for ${placeholder}...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1 bg-transparent focus:outline-none text-xs text-gray-900 placeholder:text-gray-500"
@@ -215,7 +215,7 @@ export default function SearchFirstHeader() {
             </div>
 
             {/* Quick Links */}
-            
+
           </div>
         </form>
       </div>
@@ -264,6 +264,7 @@ export default function SearchFirstHeader() {
             </Link>
           )}
         </div>
+        <NewsletterPopup />
       </nav>
 
       {/* Add animation styles */}

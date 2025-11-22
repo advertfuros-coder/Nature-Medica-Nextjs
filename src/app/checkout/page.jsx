@@ -42,7 +42,6 @@ export default function CheckoutPage() {
 
   const [newAddress, setNewAddress] = useState({
     name: '',
-    email: '',
     phone: '',
     street: '',
     city: '',
@@ -210,7 +209,6 @@ export default function CheckoutPage() {
         setShowAddressForm(false);
         setNewAddress({
           name: '',
-          email: '',
           phone: '',
           street: '',
           city: '',
@@ -268,7 +266,7 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     // For guest users, validate that they have filled the address form
     if (!isAuthenticated) {
-      if (!newAddress.name || !newAddress.email || !newAddress.phone ||
+      if (!newAddress.name || !newAddress.phone ||
         !newAddress.street || !newAddress.city || !newAddress.state || !newAddress.pincode) {
         alert('Please fill in all required delivery details');
         return;
@@ -286,7 +284,7 @@ export default function CheckoutPage() {
     try {
       // Use guest address or selected address
       const shippingAddress = isAuthenticated ? selectedAddress : newAddress;
-      const userEmail = isAuthenticated ? user?.email : newAddress.email;
+      const userEmail = isAuthenticated ? user?.email : '';
       const userName = isAuthenticated ? user?.name : newAddress.name;
 
       // Create order API call
@@ -304,7 +302,8 @@ export default function CheckoutPage() {
           })),
           totalPrice,
           discount,
-          finalPrice: totalPrice - discount + 30,
+          gst: gstAmount,
+          finalPrice,
           shippingAddress,
           paymentMode,
           couponCode,
@@ -363,7 +362,10 @@ export default function CheckoutPage() {
   if (items.length === 0) return null;
 
   const deliveryCharge = 30;
-  const finalPrice = totalPrice - discount + deliveryCharge;
+  const subtotalAfterDiscount = totalPrice - discount;
+  const gstRate = 0.18; // 18% GST
+  const gstAmount = Math.round(subtotalAfterDiscount * gstRate);
+  const finalPrice = subtotalAfterDiscount + gstAmount + deliveryCharge;
 
   return (
     <>
@@ -415,20 +417,6 @@ export default function CheckoutPage() {
                             value={newAddress.name}
                             onChange={handleAddressInputChange}
                             required
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d]"
-                          />
-                        </div>
-
-                        {/* Email */}
-                        <div>
-                          <label className="block text-[10px] font-semibold text-gray-700 mb-1">Email</label>
-                          <input
-                            type="email"
-                            name="email"
-                            value={newAddress.email}
-                            onChange={handleAddressInputChange}
-                            required
-                            placeholder="your@email.com"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d]"
                           />
                         </div>
@@ -871,6 +859,11 @@ export default function CheckoutPage() {
                     )}
 
                     <div className="flex justify-between text-gray-600 text-[11px]">
+                      <span>GST (18%)</span>
+                      <span className="font-semibold">₹{gstAmount.toLocaleString('en-IN')}</span>
+                    </div>
+
+                    <div className="flex justify-between text-gray-600 text-[11px]">
                       <span>Shipping</span>
                       <span className="font-semibold text-green-600">FREE</span>
                     </div>
@@ -892,7 +885,7 @@ export default function CheckoutPage() {
                       loading ||
                       (isAuthenticated
                         ? !selectedAddress
-                        : (!newAddress.name || !newAddress.email || !newAddress.phone ||
+                        : (!newAddress.name || !newAddress.phone ||
                           !newAddress.street || !newAddress.city || !newAddress.state || !newAddress.pincode)
                       )
                     }
