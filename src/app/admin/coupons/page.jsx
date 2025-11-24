@@ -2,6 +2,8 @@ import connectDB from '@/lib/mongodb';
 import Coupon from '@/models/Coupon';
 import CouponList from '@/components/admin/CouponList';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminCouponsPage() {
   await connectDB();
 
