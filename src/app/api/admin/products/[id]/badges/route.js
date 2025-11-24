@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Product from "@/models/Product";
 import { requireAdmin } from "@/middleware/auth";
@@ -28,6 +28,10 @@ export async function PUT(req, { params }) {
     }
 
     await product.save();
+
+    // Revalidate the homepage to reflect changes immediately
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath("/", "page");
 
     return NextResponse.json({
       success: true,

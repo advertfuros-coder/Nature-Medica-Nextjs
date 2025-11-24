@@ -1,7 +1,10 @@
 import connectDB from '@/lib/mongodb';
 import Product from '@/models/Product';
 import BestSellerSection from './BestsellerSection';
- 
+
+// Disable caching to ensure fresh data
+export const revalidate = 0;
+
 export default async function BestSellerSectionWrapper() {
   await connectDB();
 

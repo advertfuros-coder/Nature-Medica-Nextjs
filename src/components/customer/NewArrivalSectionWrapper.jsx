@@ -2,6 +2,9 @@ import connectDB from '@/lib/mongodb';
 import Product from '@/models/Product';
 import NewArrivalSection from './NewArrivalSection';
 
+// Disable caching to ensure fresh data
+export const revalidate = 0;
+
 export default async function NewArrivalSectionWrapper() {
   await connectDB();
 

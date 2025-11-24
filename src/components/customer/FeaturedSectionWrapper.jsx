@@ -2,6 +2,9 @@ import connectDB from '@/lib/mongodb';
 import Product from '@/models/Product';
 import FeaturedSection from './FeaturedSection';
 
+// Disable caching to ensure fresh data
+export const revalidate = 0;
+
 export default async function FeaturedSectionWrapper() {
   await connectDB();
 
