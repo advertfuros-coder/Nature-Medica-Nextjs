@@ -6,14 +6,16 @@ import Link from 'next/link';
 export default async function AdminProductsPage({ searchParams }) {
   await connectDB();
 
-  const page = parseInt(searchParams.page) || 1;
+  // Await searchParams for Next.js 15
+  const params = await searchParams;
+  const page = parseInt(params.page) || 1;
   const limit = 20;
   const skip = (page - 1) * limit;
 
   let query = {};
-  
-  if (searchParams.search) {
-    query.$text = { $search: searchParams.search };
+
+  if (params.search) {
+    query.$text = { $search: params.search };
   }
 
   const products = await Product.find(query)
@@ -38,7 +40,7 @@ export default async function AdminProductsPage({ searchParams }) {
         </Link>
       </div>
 
-      <ProductTable 
+      <ProductTable
         products={JSON.parse(JSON.stringify(products))}
         currentPage={page}
         totalPages={totalPages}

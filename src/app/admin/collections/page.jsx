@@ -6,15 +6,17 @@ import CollectionsTable from '@/components/admin/CollectionsTable';
 export default async function AdminCollectionsPage({ searchParams }) {
   await connectDB();
 
-  const page = parseInt(searchParams.page) || 1;
-  const filter = searchParams.filter || 'all';
-  const search = searchParams.search || '';
+  // Await searchParams for Next.js 15
+  const params = await searchParams;
+  const page = parseInt(params.page) || 1;
+  const filter = params.filter || 'all';
+  const search = params.search || '';
   const limit = 20;
   const skip = (page - 1) * limit;
 
   // Build query
   let query = {};
-  
+
   if (search) {
     query.$or = [
       { title: { $regex: search, $options: 'i' } },

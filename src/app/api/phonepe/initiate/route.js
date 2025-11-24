@@ -61,7 +61,7 @@ export async function POST(request) {
 
     // 2. Prepare Payment Request (PG Checkout V2)
     const amountInPaise = Math.round(amount * 100);
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ;
     const redirectUrl = `${baseUrl}/api/phonepe/callback?orderId=${orderId}`;
 
     const payload = {
