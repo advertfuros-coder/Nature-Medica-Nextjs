@@ -8,7 +8,7 @@ export default function PromoStripSimple() {
   const [copied, setCopied] = useState(false);
 
   const copyCode = () => {
-    navigator.clipboard.writeText('NEW20');
+    navigator.clipboard.writeText('NATURE20');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

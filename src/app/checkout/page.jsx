@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { clearCart, applyCoupon, removeCoupon, removeFromCart, updateQuantity } from '@/store/slices/cartSlice';
 import { Check, MapPin, Plus, Shield, Truck, Package, X, CreditCard, Loader2, Tag, Trash2, Minus } from 'lucide-react';
+import Script from 'next/script';
 
 // Utility to get default or first address id
 function chooseDefaultAddressId(addresses) {
@@ -264,7 +265,7 @@ export default function CheckoutPage() {
     // Remove coupon when cart is modified
     if (couponCode) {
       dispatch(removeCoupon());
-     }
+    }
   };
 
   const handleUpdateQuantity = (productId, variant, newQuantity) => {
@@ -273,7 +274,7 @@ export default function CheckoutPage() {
     // Remove coupon when cart is modified
     if (couponCode) {
       dispatch(removeCoupon());
-     }
+    }
   };
 
   const handlePlaceOrder = async () => {
@@ -335,26 +336,37 @@ export default function CheckoutPage() {
       }
 
       if (paymentMode === 'online') {
-        // Initiate PhonePe Payment
-        const paymentRes = await fetch('/api/phonepe/initiate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            amount: orderData.amount,
-            orderId: orderData.orderId,
-            customerPhone: shippingAddress.phone,
-            customerEmail: userEmail
-          }),
-        });
+        // Initiate Cashfree Payment
+        try {
+          const sessionRes = await fetch('/api/cashfree/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              total: finalPrice,
+              address: shippingAddress,
+              items: items,
+              email: userEmail,
+              orderId: orderData.orderId
+            }),
+          });
 
-        const paymentData = await paymentRes.json();
+          const sessionData = await sessionRes.json();
 
-        if (paymentData.success && paymentData.redirectUrl) {
-          // Don't clear cart here - it will be cleared in the callback after payment success
-          // Redirect to PhonePe
-          window.location.href = paymentData.redirectUrl;
-        } else {
-          alert(paymentData.error || 'Failed to initiate payment');
+          if (sessionData.payment_session_id) {
+            const cashfree = window.Cashfree({
+              mode: "production"
+            });
+            cashfree.checkout({
+              paymentSessionId: sessionData.payment_session_id,
+              returnUrl: `${window.location.origin}/orders?order_id=${sessionData.order_id}`
+            });
+          } else {
+            alert('Failed to initiate payment session');
+            setLoading(false);
+          }
+        } catch (error) {
+          console.error('Payment initiation error:', error);
+          alert('Failed to initiate payment');
           setLoading(false);
         }
       } else {
@@ -388,6 +400,10 @@ export default function CheckoutPage() {
 
   return (
     <>
+      <Script
+        src="https://sdk.cashfree.com/js/v3/cashfree.js"
+        strategy="lazyOnload"
+      />
 
 
       <div className="min-h-screen bg-gray-50">
@@ -687,7 +703,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="p-4 space-y-3">
-                  {/* Online Payment - Temporarily Disabled
+                  {/* Online Payment */}
                   <label
                     className={`block p-3 border-2 rounded-lg cursor-pointer transition-all ${paymentMode === 'online'
                       ? 'border-[#415f2d] bg-[#415f2d]/5'
@@ -721,12 +737,11 @@ export default function CheckoutPage() {
                         </div>
                         <div className="flex items-center gap-1 text-green-600 text-[10px] mt-2">
                           <Shield className="w-3 h-3" />
-                          <span>100% Secure payment</span>
+                          <span>100% Secure payment via Cashfree</span>
                         </div>
                       </div>
                     </div>
                   </label>
-                  */}
 
                   {/* Cash on Delivery */}
                   <label
