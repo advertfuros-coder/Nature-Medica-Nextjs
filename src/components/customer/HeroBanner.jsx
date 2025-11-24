@@ -4,7 +4,12 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
-const videoPaths = ['/all.mp4', '/b3.mp4', '/b4.mp4', '/b1.mp4', ];
+const videoPaths = [
+  'https://res.cloudinary.com/dnhak76jd/video/upload/c_limit,f_auto,q_auto,w_1280/v1764007920/nature_medica_hero_all.mp4',
+  '/b3.mp4',
+  '/b4.mp4',
+  '/b1.mp4'
+];
 
 // Separate Video component to handle individual video playback
 function Video({ src, isActive }) {
@@ -35,9 +40,8 @@ function Video({ src, isActive }) {
       playsInline
       loop
       preload="auto"
-      className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-700 ${
-        isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
-      }`}
+      className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-700 ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
+        }`}
       onError={(e) => {
         console.error('Video failed to load:', src, e);
       }}
@@ -81,7 +85,7 @@ export default function HeroBanner({ banners }) {
         <div className="text-center text-white">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">Welcome to NatureMedica</h1>
           <p className="text-xl md:text-2xl mb-8">Your Trusted Source for Natural Wellness</p>
-          <Link 
+          <Link
             href="/products"
             className="bg-white text-green-600 px-8 py-3 rounded-full font-semibold hover:bg-green-50 transition inline-block"
           >
@@ -93,7 +97,7 @@ export default function HeroBanner({ banners }) {
   }
 
   return (
-    <div 
+    <div
       className="relative w-full h-[150px] md:h-[500px] overflow-hidden bg-gray-200"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -116,7 +120,7 @@ export default function HeroBanner({ banners }) {
           >
             <FiChevronLeft className="text-gray-800 text-xl md:text-2xl" />
           </button>
-          
+
           <button
             onClick={nextSlide}
             className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white rounded-full p-2 md:p-3 transition shadow-lg"
@@ -134,11 +138,10 @@ export default function HeroBanner({ banners }) {
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`transition-all rounded-full ${
-                index === currentSlide
+              className={`transition-all rounded-full ${index === currentSlide
                   ? 'bg-white w-8 h-3'
                   : 'bg-white/50 hover:bg-white/75 w-3 h-3'
-              }`}
+                }`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}

@@ -25,7 +25,7 @@ export async function POST(req) {
       return_url: `${(process.env.NEXT_PUBLIC_APP_URL || "").replace(
         "http://",
         "https://"
-      )}/orders?order_id=${order_id}`,
+      )}/payment/status?order_id=${order_id}`,
     },
   };
 
