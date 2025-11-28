@@ -26,7 +26,7 @@ export default function ProductImages({ images = [], title }) {
     <div className="  ">
       {/* Main Image */}
       <div
-        className="relative h-50 mb-3 rounded-xl overflow-hidden bg-white shadow-lg transition-shadow duration-300 hover:shadow-2xl"
+        className="relative h-84 mb-3 rounded-xl overflow-hidden bg-white shadow-lg transition-shadow duration-300 hover:shadow-2xl"
         onTouchStart={(e) => {
           touchStartRef.current = e.touches[0].clientX;
         }}
@@ -67,7 +67,7 @@ export default function ProductImages({ images = [], title }) {
 
       {/* Thumbnail Images */}
       {images.length > 1 && (
-        <div className="grid grid-cols-6 gap-2">
+        <div className="grid   grid-cols-6 gap-2">
           {images.map((image, index) => (
             <button
               key={index}

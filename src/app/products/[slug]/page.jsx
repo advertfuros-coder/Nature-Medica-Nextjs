@@ -62,7 +62,7 @@ export default async function ProductDetailPage({ params }) {
     return (
       <div className="bg-white min-h-screen">
         {/* Breadcrumb */}
-        <div className="bg-gray-50 border-b border-gray-100">
+        {/* <div className="bg-gray-50 border-b border-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <nav className="flex items-center gap-2 text-xs">
               <Link 
@@ -96,11 +96,11 @@ export default async function ProductDetailPage({ params }) {
               </span>
             </nav>
           </div>
-        </div>
+        </div> */}
 
         {/* Product Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:py-12">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-12">
+          <div className="grid lg:grid-cols-2 gap-4 lg:gap-12 mb-12">
             <ProductImages 
               images={serializedProduct.images || []} 
               title={serializedProduct.title} 

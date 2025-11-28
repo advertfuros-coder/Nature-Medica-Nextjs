@@ -90,8 +90,8 @@ export default function ProductInfo({ product }) {
         </div>
       )}
 
-      <div className="mb-3">
-        <h3 className="font-semibold mb-3 text-[11px]">Quantity:</h3>
+      <div className="my-3 flex items-center gap-3 items-center ">
+        <h3 className="font-semibold mb- text-[11px]">Quantity:</h3>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
