@@ -26,7 +26,7 @@ export default function ProductImages({ images = [], title }) {
     <div className="  ">
       {/* Main Image */}
       <div
-        className="relative h-84 mb-3 rounded-xl overflow-hidden bg-white shadow-lg transition-shadow duration-300 hover:shadow-2xl"
+        className="relative h-[60vh] mb-3 rounded-xl overflow-hidden bg-white shadow-lg transition-shadow duration-300 hover:shadow-2xl"
         onTouchStart={(e) => {
           touchStartRef.current = e.touches[0].clientX;
         }}
@@ -59,7 +59,7 @@ export default function ProductImages({ images = [], title }) {
           alt={title}
           fill
           priority={selectedImage === 0}
-          className="object-contain p-4 cursor-zoom-in"
+          className="object-contain  cursor-zoom-in"
           sizes="(max-width: 768px) 100vw, 50vw"
           onClick={() => setIsModalOpen(true)}
         />
@@ -91,7 +91,7 @@ export default function ProductImages({ images = [], title }) {
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div
             className="relative w-full h-full flex items-center justify-center overflow-hidden"
             onTouchStart={(e) => (modalTouchStart.current = e.touches[0].clientX)}
