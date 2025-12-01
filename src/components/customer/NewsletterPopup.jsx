@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
+import popupbanner from "@/assets/popupbanner.jpeg";
+import Image from "next/image";
 export default function NewsletterPopup() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -59,9 +60,9 @@ export default function NewsletterPopup() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
           <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden flex flex-col md:flex-row border border-gray-200 animate-scaleIn">
             {/* Left Image */}
-            <div className="relative w-full md:w-1/2 h-72 md:h-auto">
-              <img
-                src="https://plus.unsplash.com/premium_photo-1677502356487-023fca0fd6f0?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NjF8fGJlYXV0eSUyMHByb2R1Y3R8ZW58MHwwfDB8fHww"
+            <div className="relative w-full md:w-1/2 h-96 md:h-auto">
+              <Image
+                src={popupbanner}
                 alt="Popup Image"
                 className="object-cover w-full h-full"
               />
@@ -69,13 +70,7 @@ export default function NewsletterPopup() {
 
             {/* Right Content */}
             <div className="p-8 md:p-12 w-full md:w-1/2 flex flex-col justify-center relative bg-gradient-to-br from-white to-gray-50">
-              <button
-                onClick={() => setOpen(false)}
-                className="absolute top-4 right-4 text-gray-500 hover:text-black text-lg"
-              >
-                ×
-              </button>
-
+              
               <h2 className="text-lg font-semibold text-gray-900 leading-snug tracking-tight">
                 Rediscover Your Natural Wellness Journey
               </h2>
@@ -114,7 +109,7 @@ export default function NewsletterPopup() {
 
               <button
                 onClick={() => setOpen(false)}
-                className="mt-4 text-gray-500 text-[10px] hover:text-gray-700 transition-colors"
+                className="mt-4 text-gray-500 text-[14px] hover:text-gray-700 transition-colors"
               >
                 No thanks, maybe later
               </button>
