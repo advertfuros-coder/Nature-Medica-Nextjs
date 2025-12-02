@@ -8,12 +8,50 @@ export default function FeaturedSection({ products }) {
   const scrollContainerRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
+  const autoScrollRef = useRef(null);
 
   useEffect(() => {
     checkScrollability();
     window.addEventListener('resize', checkScrollability);
     return () => window.removeEventListener('resize', checkScrollability);
   }, [products]);
+
+  // Auto-scroll effect
+  useEffect(() => {
+    if (!products || products.length === 0) return;
+
+    const startAutoScroll = () => {
+      autoScrollRef.current = setInterval(() => {
+        if (!isPaused) {
+          const container = scrollContainerRef.current;
+          if (!container) return;
+
+          // Check if we've reached the end
+          const isAtEnd = container.scrollLeft >= container.scrollWidth - container.clientWidth - 10;
+
+          if (isAtEnd) {
+            // Smoothly scroll back to start
+            container.scrollTo({ left: 0, behavior: 'smooth' });
+          } else {
+            // Scroll to the right by one card width
+            const cardWidth = container.firstChild?.offsetWidth || 300;
+            container.scrollBy({ left: cardWidth, behavior: 'smooth' });
+          }
+
+          setTimeout(checkScrollability, 300);
+        }
+      }, 3000);
+    };
+
+    startAutoScroll();
+
+    return () => {
+      if (autoScrollRef.current) {
+        clearInterval(autoScrollRef.current);
+      }
+    };
+  }, [products, isPaused]);
 
   const checkScrollability = () => {
     const container = scrollContainerRef.current;
@@ -56,22 +94,20 @@ export default function FeaturedSection({ products }) {
             <button
               onClick={() => scroll('left')}
               disabled={!canScrollLeft}
-              className={`p-3 rounded-full border-2 transition-all ${
-                canScrollLeft
+              className={`p-3 rounded-full border-2 transition-all ${canScrollLeft
                   ? 'border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white'
                   : 'border-gray-200 text-gray-300 cursor-not-allowed'
-              }`}
+                }`}
             >
               <FiChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={() => scroll('right')}
               disabled={!canScrollRight}
-              className={`p-3 rounded-full border-2 transition-all ${
-                canScrollRight
+              className={`p-3 rounded-full border-2 transition-all ${canScrollRight
                   ? 'border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white'
                   : 'border-gray-200 text-gray-300 cursor-not-allowed'
-              }`}
+                }`}
             >
               <FiChevronRight className="w-5 h-5" />
             </button>
@@ -83,6 +119,8 @@ export default function FeaturedSection({ products }) {
           <div
             ref={scrollContainerRef}
             onScroll={checkScrollability}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
             className="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
             style={{
               scrollbarWidth: 'none',

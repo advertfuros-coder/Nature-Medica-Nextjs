@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiChevronDown } from 'react-icons/fi';
@@ -71,11 +72,51 @@ const categories = [
 ];
 
 export default function CategoryGrid() {
+  const scrollContainerRef = useRef(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const autoScrollRef = useRef(null);
+
+  // Auto-scroll effect
+  useEffect(() => {
+    const startAutoScroll = () => {
+      autoScrollRef.current = setInterval(() => {
+        if (!isPaused) {
+          const container = scrollContainerRef.current;
+          if (!container) return;
+
+          // Check if we've reached the end
+          const isAtEnd = container.scrollLeft >= container.scrollWidth - container.clientWidth - 10;
+          
+          if (isAtEnd) {
+            // Smoothly scroll back to start
+            container.scrollTo({ left: 0, behavior: 'smooth' });
+          } else {
+            // Scroll to the right by one category width (approximately 120px)
+            container.scrollBy({ left: 120, behavior: 'smooth' });
+          }
+        }
+      }, 3000);
+    };
+
+    startAutoScroll();
+
+    return () => {
+      if (autoScrollRef.current) {
+        clearInterval(autoScrollRef.current);
+      }
+    };
+  }, [isPaused]);
+
   return (
     <div className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Category Grid - Horizontal Scrollable on Mobile */}
-        <div className="overflow-x-auto scrollbar-hide">
+        <div 
+          ref={scrollContainerRef}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          className="overflow-x-auto scrollbar-hide scroll-smooth"
+        >
           <div className="flex gap-6 md:gap-8 lg:gap-10 min-w-max md:min-w-0 md:grid md:grid-cols-4 lg:grid-cols-9 md:justify-items-center">
             {categories.map((category) => (
               <Link
@@ -103,6 +144,16 @@ export default function CategoryGrid() {
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }
