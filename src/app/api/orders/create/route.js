@@ -19,6 +19,10 @@ export async function POST(req) {
       isGuest,
       guestEmail,
       guestName,
+      // Cashfree payment fields (when creating after payment verification)
+      cashfreeOrderId,
+      cashfreePaymentId,
+      paymentVerified,
     } = await req.json();
 
     let user = null;
@@ -127,14 +131,26 @@ export async function POST(req) {
         type: shippingAddress.type || "home",
       },
       paymentMode,
-      paymentStatus: "pending",
-      orderStatus: "Pending",
+      paymentStatus:
+        paymentMode === "online" && paymentVerified ? "paid" : "pending",
+      orderStatus:
+        paymentMode === "online" && paymentVerified ? "Processing" : "Pending",
+      cashfreeOrderId: cashfreeOrderId || null,
+      cashfreePaymentId: cashfreePaymentId || null,
       couponCode: couponCode || null,
       statusHistory: [
         {
-          status: "Pending",
+          status:
+            paymentMode === "online" && paymentVerified
+              ? "Processing"
+              : "Pending",
           updatedAt: new Date(),
-          note: isGuest ? "Guest order created" : "Order created",
+          note:
+            paymentMode === "online" && paymentVerified
+              ? `Payment verified - Order placed (Cashfree ID: ${cashfreePaymentId})`
+              : isGuest
+              ? "Guest order created"
+              : "Order created",
         },
       ],
     };

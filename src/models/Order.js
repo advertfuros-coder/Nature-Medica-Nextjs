@@ -63,8 +63,9 @@ const OrderSchema = new mongoose.Schema(
 
     paymentMode: {
       type: String,
-      enum: ["online", "cod"],
+      enum: ["online"],
       required: true,
+      default: "online",
     },
     paymentStatus: {
       type: String,
@@ -111,6 +112,8 @@ const OrderSchema = new mongoose.Schema(
     razorpayOrderId: String,
     razorpayPaymentId: String,
     razorpaySignature: String,
+    cashfreeOrderId: String,
+    cashfreePaymentId: String,
     trackingId: String,
     couponCode: String,
     statusHistory: [

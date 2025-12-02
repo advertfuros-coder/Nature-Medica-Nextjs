@@ -2,52 +2,118 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import { clearCart } from '@/store/slices/cartSlice';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 
 export default function PaymentStatusPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const orderId = searchParams.get('order_id');
+    const dispatch = useDispatch();
+    const cashfreeOrderId = searchParams.get('order_id');
 
     const [status, setStatus] = useState('verifying'); // verifying, success, failed
     const [message, setMessage] = useState('Verifying your payment...');
+    const [createdOrderId, setCreatedOrderId] = useState(null);
 
     useEffect(() => {
-        if (!orderId) {
+        if (!cashfreeOrderId) {
             setStatus('failed');
             setMessage('Invalid order ID');
             return;
         }
 
-        const verifyPayment = async () => {
+        const verifyPaymentAndCreateOrder = async () => {
             try {
-                const res = await fetch('/api/cashfree/verify', {
+                // Step 1: Verify payment with Cashfree
+                setMessage('Verifying payment with Cashfree...');
+                const verifyRes = await fetch('/api/cashfree/verify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orderId })
+                    body: JSON.stringify({ orderId: cashfreeOrderId })
                 });
 
-                const data = await res.json();
+                const verifyData = await verifyRes.json();
 
-                if (data.success && data.status === 'SUCCESS') {
-                    setStatus('success');
-                    setMessage('Payment successful! Redirecting...');
-                    setTimeout(() => {
-                        router.push('/thankyou');
-                    }, 2000);
-                } else {
+                if (!verifyData.success || verifyData.status !== 'SUCCESS') {
                     setStatus('failed');
-                    setMessage('Payment failed or pending. Please try again.');
+                    setMessage('Payment verification failed. Please contact support if amount was deducted.');
+                    // Clean up sessionStorage
+                    sessionStorage.removeItem('pendingOrderData');
+                    sessionStorage.removeItem('cashfreeOrderId');
+                    return;
                 }
+
+                // Step 2: Payment successful! Now create the order in database
+                setMessage('Payment verified! Creating your order...');
+
+                // Retrieve pending order data from sessionStorage
+                const pendingOrderData = sessionStorage.getItem('pendingOrderData');
+                if (!pendingOrderData) {
+                    setStatus('failed');
+                    setMessage('Order data not found. Please contact support - your payment was successful.');
+                    return;
+                }
+
+                const orderPayload = JSON.parse(pendingOrderData);
+
+                // Create the order in database
+                const createOrderRes = await fetch('/api/orders/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ...orderPayload,
+                        // Add payment verification info
+                        cashfreeOrderId: cashfreeOrderId,
+                        cashfreePaymentId: verifyData.payment?.cf_payment_id,
+                        paymentVerified: true,
+                    })
+                });
+
+                const createOrderData = await createOrderRes.json();
+
+                if (!createOrderRes.ok) {
+                    setStatus('failed');
+                    setMessage(`Failed to create order: ${createOrderData.error}. Your payment was successful. Please contact support with this payment ID: ${cashfreeOrderId}`);
+                    return;
+                }
+
+                // Step 3: Update the order payment status to "paid"
+                await fetch('/api/orders/update-payment-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: createOrderData.orderId,
+                        paymentStatus: 'paid',
+                        cashfreePaymentId: verifyData.payment?.cf_payment_id,
+                        cashfreeOrderId: cashfreeOrderId
+                    })
+                });
+
+                // Success!
+                setStatus('success');
+                setMessage('Payment successful! Your order has been placed.');
+                setCreatedOrderId(createOrderData.orderId);
+
+                // Clear cart and sessionStorage
+                dispatch(clearCart());
+                sessionStorage.removeItem('pendingOrderData');
+                sessionStorage.removeItem('cashfreeOrderId');
+
+                // Redirect to thank you page
+                setTimeout(() => {
+                    router.push(`/thankyou?orderId=${createOrderData.orderId}`);
+                }, 2000);
+
             } catch (error) {
-                console.error('Verification error:', error);
+                console.error('Payment verification error:', error);
                 setStatus('failed');
-                setMessage('Failed to verify payment. Please contact support.');
+                setMessage('An error occurred while processing your payment. Please contact support.');
             }
         };
 
-        verifyPayment();
-    }, [orderId, router]);
+        verifyPaymentAndCreateOrder();
+    }, [cashfreeOrderId, router, dispatch]);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -55,16 +121,21 @@ export default function PaymentStatusPage() {
                 {status === 'verifying' && (
                     <div className="flex flex-col items-center gap-4">
                         <Loader2 className="w-16 h-16 text-[#415f2d] animate-spin" />
-                        <h2 className="text-xl font-semibold text-gray-900">Verifying Payment</h2>
+                        <h2 className="text-xl font-semibold text-gray-900">Processing Payment</h2>
                         <p className="text-gray-600">{message}</p>
+                        <p className="text-sm text-gray-500">Please do not refresh or close this page</p>
                     </div>
                 )}
 
                 {status === 'success' && (
                     <div className="flex flex-col items-center gap-4">
                         <CheckCircle className="w-16 h-16 text-green-500" />
-                        <h2 className="text-xl font-semibold text-gray-900">Payment Successful</h2>
+                        <h2 className="text-xl font-semibold text-gray-900">Payment Successful!</h2>
                         <p className="text-gray-600">Your order has been confirmed.</p>
+                        {createdOrderId && (
+                            <p className="text-sm text-gray-500">Order ID: <span className="font-mono font-semibold">{createdOrderId}</span></p>
+                        )}
+                        <p className="text-sm text-gray-500">Redirecting to confirmation page...</p>
                     </div>
                 )}
 
@@ -72,7 +143,12 @@ export default function PaymentStatusPage() {
                     <div className="flex flex-col items-center gap-4">
                         <XCircle className="w-16 h-16 text-red-500" />
                         <h2 className="text-xl font-semibold text-gray-900">Payment Failed</h2>
-                        <p className="text-gray-600">{message}</p>
+                        <p className="text-gray-600 text-sm">{message}</p>
+                        {cashfreeOrderId && (
+                            <p className="text-xs text-gray-500 bg-gray-100 p-2 rounded">
+                                Reference ID: {cashfreeOrderId}
+                            </p>
+                        )}
                         <div className="flex gap-3 mt-4">
                             <button
                                 onClick={() => router.push('/checkout')}

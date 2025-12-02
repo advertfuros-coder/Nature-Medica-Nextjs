@@ -24,7 +24,6 @@ export default function CheckoutPage() {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
-  const [paymentMode, setPaymentMode] = useState('cod');
 
   const [loading, setLoading] = useState(false);
   const [pincodeLoading, setPincodeLoading] = useState(false);
@@ -301,78 +300,70 @@ export default function CheckoutPage() {
       const userEmail = isAuthenticated ? user?.email : '';
       const userName = isAuthenticated ? user?.name : newAddress.name;
 
-      // Create order API call
-      const orderRes = await fetch('/api/orders/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: items.map(item => ({
-            product: item.product._id,
-            title: item.product.title,
-            image: item.product.images[0]?.url || '',
-            quantity: item.quantity,
-            price: item.price,
-            variant: item.variant || '',
-          })),
-          totalPrice,
-          discount,
-          finalPrice,
-          shippingAddress,
-          paymentMode,
-          couponCode,
-          // Guest user details
-          isGuest: !isAuthenticated,
-          guestEmail: userEmail,
-          guestName: userName,
-        }),
-      });
+      // Prepare order data
+      const orderPayload = {
+        items: items.map(item => ({
+          product: item.product._id,
+          title: item.product.title,
+          image: item.product.images[0]?.url || '',
+          quantity: item.quantity,
+          price: item.price,
+          variant: item.variant || '',
+        })),
+        totalPrice,
+        discount,
+        finalPrice,
+        shippingAddress,
+        paymentMode: 'online', // Always online payment
+        couponCode,
+        isGuest: !isAuthenticated,
+        guestEmail: userEmail,
+        guestName: userName,
+      };
 
-      const orderData = await orderRes.json();
+      // Store order data in sessionStorage to create after payment success
+      sessionStorage.setItem('pendingOrderData', JSON.stringify(orderPayload));
 
-      if (!orderRes.ok) {
-        alert(orderData.error || 'Failed to create order');
-        setLoading(false);
-        return;
-      }
+      try {
+        // Generate a temporary order ID for Cashfree session
+        const tempOrderId = `TEMP_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      if (paymentMode === 'online') {
-        // Initiate Cashfree Payment
-        try {
-          const sessionRes = await fetch('/api/cashfree/session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              total: finalPrice,
-              address: shippingAddress,
-              items: items,
-              email: userEmail,
-              orderId: orderData.orderId
-            }),
+        const sessionRes = await fetch('/api/cashfree/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            total: finalPrice,
+            address: shippingAddress,
+            items: items,
+            email: userEmail,
+            orderId: tempOrderId // Use temp ID for Cashfree
+          }),
+        });
+
+        const sessionData = await sessionRes.json();
+
+        if (sessionData.payment_session_id) {
+          // Store the Cashfree order ID to verify later
+          sessionStorage.setItem('cashfreeOrderId', sessionData.order_id);
+
+          // Use the mode returned from the API (sandbox for TEST, production for PROD)
+          const cashfree = window.Cashfree({
+            mode: sessionData.mode || "sandbox"
           });
-
-          const sessionData = await sessionRes.json();
-
-          if (sessionData.payment_session_id) {
-            const cashfree = window.Cashfree({
-              mode: "production"
-            });
-            cashfree.checkout({
-              paymentSessionId: sessionData.payment_session_id,
-              returnUrl: `${window.location.origin}/orders?order_id=${sessionData.order_id}`
-            });
-          } else {
-            alert('Failed to initiate payment session');
-            setLoading(false);
-          }
-        } catch (error) {
-          console.error('Payment initiation error:', error);
-          alert('Failed to initiate payment');
+          cashfree.checkout({
+            paymentSessionId: sessionData.payment_session_id,
+            returnUrl: `${window.location.origin}/payment/status?order_id=${sessionData.order_id}`
+          });
+        } else {
+          alert('Failed to initiate payment session');
           setLoading(false);
+          sessionStorage.removeItem('pendingOrderData');
         }
-      } else {
-        // Handle Cash on Delivery
-        dispatch(clearCart());
-        window.location.href = '/thankyou';
+      } catch (error) {
+        console.error('Payment initiation error:', error);
+        alert('Failed to initiate payment');
+        setLoading(false);
+        sessionStorage.removeItem('pendingOrderData');
       }
     } catch (error) {
       console.error('Place order error:', error);
@@ -688,7 +679,7 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Payment Method Section */}
+              {/* Payment Information */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-4 border-b border-gray-100">
                   <div className="flex items-center gap-2">
@@ -696,37 +687,19 @@ export default function CheckoutPage() {
                       <CreditCard className="w-4 h-4 text-[#415f2d]" />
                     </div>
                     <div>
-                      <h2 className="text-sm font-semibold text-gray-900">Payment Method</h2>
-                      <p className="text-[10px] text-gray-500">Choose payment option</p>
+                      <h2 className="text-sm font-semibold text-gray-900">Payment</h2>
+                      <p className="text-[10px] text-gray-500">Secure online payment only</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-4 space-y-3">
-                  {/* Online Payment */}
-                  <label
-                    className={`block p-3 border-2 rounded-lg cursor-pointer transition-all ${paymentMode === 'online'
-                      ? 'border-[#415f2d] bg-[#415f2d]/5'
-                      : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                  >
+                <div className="p-4">
+                  {/* Online Payment Info */}
+                  <div className="block p-4 border-2 border-[#415f2d] bg-[#415f2d]/5 rounded-lg">
                     <div className="flex items-start gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${paymentMode === 'online'
-                        ? 'border-[#415f2d] bg-[#415f2d]'
-                        : 'border-gray-300'
-                        }`}>
-                        {paymentMode === 'online' && (
-                          <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
-                        )}
+                      <div className="w-5 h-5 rounded-full border-2 border-[#415f2d] bg-[#415f2d] flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
                       </div>
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="online"
-                        checked={paymentMode === 'online'}
-                        onChange={(e) => setPaymentMode(e.target.value)}
-                        className="sr-only"
-                      />
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-1">
                           <div>
@@ -741,40 +714,14 @@ export default function CheckoutPage() {
                         </div>
                       </div>
                     </div>
-                  </label>
+                  </div>
 
-                  {/* Cash on Delivery */}
-                  <label
-                    className={`block p-3 border-2 rounded-lg cursor-pointer transition-all ${paymentMode === 'cod'
-                      ? 'border-[#415f2d] bg-[#415f2d]/5'
-                      : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${paymentMode === 'cod'
-                        ? 'border-[#415f2d] bg-[#415f2d]'
-                        : 'border-gray-300'
-                        }`}>
-                        {paymentMode === 'cod' && (
-                          <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
-                        )}
-                      </div>
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="cod"
-                        checked={paymentMode === 'cod'}
-                        onChange={(e) => setPaymentMode(e.target.value)}
-                        className="sr-only"
-                      />
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-900 mb-1 text-[11px]">Cash on Delivery</p>
-                        <p className="text-[10px] text-gray-600">Pay when you receive</p>
-                      </div>
-                    </div>
-                  </label>
-
-
+                  {/* Important Note */}
+                  <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-[10px] text-blue-800">
+                      <strong>Note:</strong> We only accept online payments. Cash on Delivery is not available.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
