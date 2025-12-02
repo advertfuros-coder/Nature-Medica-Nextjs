@@ -58,9 +58,9 @@ export default function NewsletterPopup() {
       {/* Newsletter Popup */}
       {open && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden flex flex-col md:flex-row border border-gray-200 animate-scaleIn">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden flex flex-col md:flex-row border border-gray-200 animate-scaleIn max-h-[90vh] md:max-h-auto">
             {/* Left Image */}
-            <div className="relative w-full md:w-1/2 h-96 md:h-auto">
+            <div className="relative w-full md:w-1/2 h-48 md:h-auto">
               <Image
                 src={popupbanner}
                 alt="Popup Image"
@@ -69,23 +69,23 @@ export default function NewsletterPopup() {
             </div>
 
             {/* Right Content */}
-            <div className="p-8 md:p-12 w-full md:w-1/2 flex flex-col justify-center relative bg-gradient-to-br from-white to-gray-50">
+            <div className="p-6 md:p-12 w-full md:w-1/2 flex flex-col justify-center relative bg-gradient-to-br from-white to-gray-50 overflow-y-auto">
               {/* Close Button */}
               <button
                 onClick={() => setOpen(false)}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors hover:rotate-90 duration-300"
+                className="absolute top-3 right-3 md:top-4 md:right-4 text-gray-400 hover:text-gray-600 transition-colors hover:rotate-90 duration-300 z-10"
                 aria-label="Close popup"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
 
-              <h2 className="text-lg font-semibold text-gray-900 leading-snug tracking-tight">
+              <h2 className="text-base md:text-lg font-semibold text-gray-900 leading-snug tracking-tight">
                 Rediscover Your Natural Wellness Journey
               </h2>
 
-              <p className="text-gray-600 mt-2 text-[10px]  leading-relaxed">
+              <p className="text-gray-600 mt-2 text-[10px] leading-relaxed">
                 Join our community and enjoy 10% off your first order along with exclusive member-only offers.
               </p>
 
@@ -96,7 +96,7 @@ export default function NewsletterPopup() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="border border-gray-300 w-full mt-5 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-700 outline-none shadow-sm bg-white/80 backdrop-blur"
+                  className="border border-gray-300 w-full mt-3 md:mt-5 rounded-lg px-4 py-2.5 md:py-3 text-sm focus:ring-2 focus:ring-green-700 outline-none shadow-sm bg-white/80 backdrop-blur"
                 />
 
                 <input
@@ -105,13 +105,13 @@ export default function NewsletterPopup() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
-                  className="border border-gray-300 w-full mt-5 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-700 outline-none shadow-sm bg-white/80 backdrop-blur"
+                  className="border border-gray-300 w-full mt-3 md:mt-5 rounded-lg px-4 py-2.5 md:py-3 text-sm focus:ring-2 focus:ring-green-700 outline-none shadow-sm bg-white/80 backdrop-blur"
                 />
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-5 bg-[#2d4a22] text-white py-3 rounded-lg font-semibold  hover:bg-[#1f3517] transition-all shadow-md w-full disabled:opacity-50"
+                  className="mt-3 md:mt-5 bg-[#2d4a22] text-white py-2.5 md:py-3 rounded-lg font-semibold text-sm hover:bg-[#1f3517] transition-all shadow-md w-full disabled:opacity-50"
                 >
                   {loading ? "SUBMITTING..." : "UNLOCK 10% OFF"}
                 </button>
@@ -119,7 +119,7 @@ export default function NewsletterPopup() {
 
               <button
                 onClick={() => setOpen(false)}
-                className="mt-4 text-gray-500 text-[14px] hover:text-gray-700 transition-colors"
+                className="mt-3 md:mt-4 text-gray-500 text-xs md:text-[14px] hover:text-gray-700 transition-colors"
               >
                 No thanks, maybe later
               </button>
