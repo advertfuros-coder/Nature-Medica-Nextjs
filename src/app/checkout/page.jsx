@@ -324,13 +324,27 @@ export default function CheckoutPage() {
         guestEmail: userEmail,
         guestName: userName,
       };
-
       // Store order data in sessionStorage to create after payment success
       sessionStorage.setItem('pendingOrderData', JSON.stringify(orderPayload));
 
       try {
-        // Generate a temporary order ID for Cashfree session
-        const tempOrderId = `TEMP_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        // Pre-generate a proper order ID (NM format) for Cashfree
+        const orderIdRes = await fetch('/api/orders/generate-id', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        const { orderId: properOrderId } = await orderIdRes.json();
+
+        if (!properOrderId) {
+          alert('Failed to generate order ID. Please try again.');
+          setLoading(false);
+          sessionStorage.removeItem('pendingOrderData');
+          return;
+        }
+
+        // Store the pre-generated order ID
+        sessionStorage.setItem('preGeneratedOrderId', properOrderId);
 
         const sessionRes = await fetch('/api/cashfree/session', {
           method: 'POST',
@@ -340,7 +354,7 @@ export default function CheckoutPage() {
             address: shippingAddress,
             items: items,
             email: userEmail,
-            orderId: tempOrderId // Use temp ID for Cashfree
+            orderId: properOrderId // Use proper NM ID for Cashfree
           }),
         });
 

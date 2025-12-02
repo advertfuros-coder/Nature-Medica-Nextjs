@@ -23,6 +23,7 @@ export async function POST(req) {
       cashfreeOrderId,
       cashfreePaymentId,
       paymentVerified,
+      preGeneratedOrderId, // Pre-generated order ID from checkout
     } = await req.json();
 
     let user = null;
@@ -98,9 +99,14 @@ export async function POST(req) {
       }
     }
 
-    // Generate Order ID
-    const orderCount = await Order.countDocuments();
-    const orderId = `NM${String(orderCount + 1).padStart(6, "0")}`;
+    // Use pre-generated Order ID if provided, otherwise generate new one
+    let orderId;
+    if (preGeneratedOrderId) {
+      orderId = preGeneratedOrderId;
+    } else {
+      const orderCount = await Order.countDocuments();
+      orderId = `NM${String(orderCount + 1).padStart(6, "0")}`;
+    }
 
     // Prepare order data
     const orderData = {

@@ -41,6 +41,7 @@ export default function PaymentStatusPage() {
                     // Clean up sessionStorage
                     sessionStorage.removeItem('pendingOrderData');
                     sessionStorage.removeItem('cashfreeOrderId');
+                    sessionStorage.removeItem('preGeneratedOrderId');
                     return;
                 }
 
@@ -49,6 +50,8 @@ export default function PaymentStatusPage() {
 
                 // Retrieve pending order data from sessionStorage
                 const pendingOrderData = sessionStorage.getItem('pendingOrderData');
+                const preGeneratedOrderId = sessionStorage.getItem('preGeneratedOrderId');
+
                 if (!pendingOrderData) {
                     setStatus('failed');
                     setMessage('Order data not found. Please contact support - your payment was successful.');
@@ -57,12 +60,14 @@ export default function PaymentStatusPage() {
 
                 const orderPayload = JSON.parse(pendingOrderData);
 
-                // Create the order in database
+                // Create the order in database with the pre-generated ID
                 const createOrderRes = await fetch('/api/orders/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         ...orderPayload,
+                        // Use the pre-generated order ID
+                        preGeneratedOrderId: preGeneratedOrderId,
                         // Add payment verification info
                         cashfreeOrderId: cashfreeOrderId,
                         cashfreePaymentId: verifyData.payment?.cf_payment_id,
@@ -99,6 +104,7 @@ export default function PaymentStatusPage() {
                 dispatch(clearCart());
                 sessionStorage.removeItem('pendingOrderData');
                 sessionStorage.removeItem('cashfreeOrderId');
+                sessionStorage.removeItem('preGeneratedOrderId');
 
                 // Redirect to thank you page
                 setTimeout(() => {
