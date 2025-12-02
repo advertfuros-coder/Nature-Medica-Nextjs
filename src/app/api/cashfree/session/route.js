@@ -18,7 +18,10 @@ export async function POST(req) {
     (email?.split("@")[0] || "guest").replace(/[^a-zA-Z0-9_-]/g, "") +
     "_" +
     Date.now();
-  const order_id = orderId || "order_" + crypto.randomBytes(6).toString("hex");
+  
+  // Create unique Cashfree order ID by adding timestamp
+  // This prevents "order already exists" error on retries
+  const cashfreeOrderId = `${orderId}_${Date.now()}`;
 
   // Determine API URL based on environment
   const isProduction = process.env.CASHFREE_ENV === "PRODUCTION";
@@ -27,7 +30,7 @@ export async function POST(req) {
     : "https://sandbox.cashfree.com/pg/orders";
 
   const payload = {
-    order_id,
+    order_id: cashfreeOrderId, // Use unique ID for Cashfree
     order_amount: total,
     order_currency: "INR",
     customer_details: {
@@ -40,8 +43,11 @@ export async function POST(req) {
       return_url: `${(process.env.NEXT_PUBLIC_APP_URL || "").replace(
         "http://",
         "https://"
-      )}/payment/status?order_id=${order_id}`,
+      )}/payment/status?order_id=${cashfreeOrderId}&internal_order_id=${orderId}`,
+      // Store original order ID in notes for reference
+      notify_url: process.env.CASHFREE_WEBHOOK_URL || "",
     },
+    order_note: `Internal Order ID: ${orderId}`,
   };
 
   console.log(
@@ -66,7 +72,8 @@ export async function POST(req) {
 
     return NextResponse.json({
       payment_session_id: res.data.payment_session_id,
-      order_id,
+      order_id: cashfreeOrderId, // Return Cashfree order ID
+      internal_order_id: orderId, // Return original order ID
       mode: isProduction ? "production" : "sandbox", // Return mode for frontend
     });
   } catch (err) {

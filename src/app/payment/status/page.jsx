@@ -10,14 +10,15 @@ export default function PaymentStatusPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const dispatch = useDispatch();
-    const cashfreeOrderId = searchParams.get('order_id');
+    const cashfreeOrderId = searchParams.get('order_id'); // Unique Cashfree ID with timestamp
+    const internalOrderId = searchParams.get('internal_order_id'); // Our NM000xxx ID
 
     const [status, setStatus] = useState('verifying'); // verifying, success, failed
     const [message, setMessage] = useState('Verifying your payment...');
     const [createdOrderId, setCreatedOrderId] = useState(null);
 
     useEffect(() => {
-        if (!cashfreeOrderId) {
+        if (!cashfreeOrderId || !internalOrderId) {
             setStatus('failed');
             setMessage('Invalid order ID');
             return;
@@ -50,8 +51,7 @@ export default function PaymentStatusPage() {
 
                 // Retrieve pending order data from sessionStorage
                 const pendingOrderData = sessionStorage.getItem('pendingOrderData');
-                const preGeneratedOrderId = sessionStorage.getItem('preGeneratedOrderId');
-
+                
                 if (!pendingOrderData) {
                     setStatus('failed');
                     setMessage('Order data not found. Please contact support - your payment was successful.');
@@ -60,14 +60,14 @@ export default function PaymentStatusPage() {
 
                 const orderPayload = JSON.parse(pendingOrderData);
 
-                // Create the order in database with the pre-generated ID
+                // Create the order in database with the internal order ID
                 const createOrderRes = await fetch('/api/orders/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         ...orderPayload,
-                        // Use the pre-generated order ID
-                        preGeneratedOrderId: preGeneratedOrderId,
+                        // Use the internal order ID from URL
+                        preGeneratedOrderId: internalOrderId,
                         // Add payment verification info
                         cashfreeOrderId: cashfreeOrderId,
                         cashfreePaymentId: verifyData.payment?.cf_payment_id,
