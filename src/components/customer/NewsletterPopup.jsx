@@ -70,7 +70,17 @@ export default function NewsletterPopup() {
 
             {/* Right Content */}
             <div className="p-8 md:p-12 w-full md:w-1/2 flex flex-col justify-center relative bg-gradient-to-br from-white to-gray-50">
-              
+              {/* Close Button */}
+              <button
+                onClick={() => setOpen(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors hover:rotate-90 duration-300"
+                aria-label="Close popup"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
               <h2 className="text-lg font-semibold text-gray-900 leading-snug tracking-tight">
                 Rediscover Your Natural Wellness Journey
               </h2>
@@ -120,21 +130,21 @@ export default function NewsletterPopup() {
 
       {/* Premium Coupon Code Message - Centered with Black Backdrop */}
       {showCoupon && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-backdropFadeIn"
           onClick={() => setShowCoupon(false)}
         >
-          <div 
+          <div
             className="relative animate-zoomIn"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative overflow-hidden rounded-2xl shadow-2xl max-w-md w-full">
               {/* Animated Gradient Background */}
               <div className="absolute inset-0 bg-gradient-animated"></div>
-              
+
               {/* Shimmer Effect */}
               <div className="absolute inset-0 shimmer-effect"></div>
-              
+
               {/* Content */}
               <div className="relative px-8 py-6 backdrop-blur-sm">
                 <button

@@ -268,7 +268,11 @@ export default function CheckoutPage() {
   };
 
   const handleUpdateQuantity = (productId, variant, newQuantity) => {
-    if (newQuantity < 1) return;
+    // If quantity would become 0 or less, remove the item from cart
+    if (newQuantity < 1) {
+      handleRemoveItem(productId, variant);
+      return;
+    }
     dispatch(updateQuantity({ productId, variant, quantity: newQuantity }));
     // Remove coupon when cart is modified
     if (couponCode) {
