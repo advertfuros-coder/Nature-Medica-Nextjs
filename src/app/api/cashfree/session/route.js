@@ -54,7 +54,7 @@ export async function POST(req) {
     `🔐 Cashfree Environment: ${isProduction ? "PRODUCTION" : "TEST"}`
   );
   console.log(`🌐 API URL: ${apiUrl}`);
-  console.log(`📦 Creating payment session for order: ${order_id}`);
+  console.log(`📦 Creating payment session for order: ${orderId} (Cashfree ID: ${cashfreeOrderId})`);
 
   try {
     const res = await axios.post(apiUrl, payload, {
