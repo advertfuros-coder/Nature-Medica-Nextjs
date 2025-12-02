@@ -11,16 +11,32 @@ export default function PaymentStatusPage() {
     const router = useRouter();
     const dispatch = useDispatch();
     const cashfreeOrderId = searchParams.get('order_id'); // Unique Cashfree ID with timestamp
-    const internalOrderId = searchParams.get('internal_order_id'); // Our NM000xxx ID
+    let internalOrderId = searchParams.get('internal_order_id'); // Our NM000xxx ID
+
+    // If internal_order_id is missing, extract it from cashfreeOrderId
+    // Format: NM000085_1764660705883 -> NM000085
+    if (!internalOrderId && cashfreeOrderId) {
+        const parts = cashfreeOrderId.split('_');
+        if (parts.length >= 2 && parts[0].startsWith('NM')) {
+            internalOrderId = parts[0];
+            console.log(`🔧 Extracted internal order ID: ${internalOrderId} from ${cashfreeOrderId}`);
+        }
+    }
 
     const [status, setStatus] = useState('verifying'); // verifying, success, failed
     const [message, setMessage] = useState('Verifying your payment...');
     const [createdOrderId, setCreatedOrderId] = useState(null);
 
     useEffect(() => {
-        if (!cashfreeOrderId || !internalOrderId) {
+        if (!cashfreeOrderId) {
             setStatus('failed');
-            setMessage('Invalid order ID');
+            setMessage('Invalid payment session. Please contact support.');
+            return;
+        }
+        
+        if (!internalOrderId) {
+            setStatus('failed');
+            setMessage('Could not identify order. Please contact support with this payment ID: ' + cashfreeOrderId);
             return;
         }
 
