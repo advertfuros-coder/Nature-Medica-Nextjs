@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Order from '@/models/Order';
+import Product from '@/models/Product';
 import { requireAdmin } from '@/middleware/auth';
 
 export async function GET(req) {

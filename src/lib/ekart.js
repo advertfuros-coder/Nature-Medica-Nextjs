@@ -1,137 +1,320 @@
-class EkartService {
+// Ekart Logistics API Integration Utility
+import axios from "axios";
+
+const EKART_BASE_URL = "https://app.elite.ekartlogistics.in";
+
+class EkartAPI {
   constructor() {
-    this.merchantCode = process.env.EKART_MERCHANT_CODE;
-    this.authorization = process.env.EKART_AUTHORIZATION;
-    this.serviceCode = process.env.EKART_SERVICE_CODE || 'REGULAR';
-    this.reverseServiceCode = process.env.EKART_REVERSE_SERVICE_CODE || 'REVERSE';
-    this.baseURL = process.env.EKART_ENV === 'production'
-      ? 'https://api.ekartlogistics.com'
-      : 'https://staging.ekartlogistics.com';
-    this.token = null;
+    this.clientId = process.env.EKART_CLIENT_ID;
+    this.username = process.env.EKART_USERNAME;
+    this.password = process.env.EKART_PASSWORD;
+    this.accessToken = null;
     this.tokenExpiry = null;
   }
 
-  async getToken() {
-    // Token expires in 60 minutes
-    if (this.token && this.tokenExpiry && Date.now() < this.tokenExpiry) {
-      return this.token;
+  /**
+   * Get access token for Ekart API
+   * Token is valid for 24 hours and cached
+   */
+  async getAccessToken() {
+    // Return cached token if still valid
+    if (this.accessToken && this.tokenExpiry && Date.now() < this.tokenExpiry) {
+      return this.accessToken;
     }
 
     try {
-      console.log('🔑 Getting Ekart token...');
+      const response = await axios.post(
+        `${EKART_BASE_URL}/integrations/v2/auth/token/${this.clientId}`,
+        {
+          username: this.username,
+          password: this.password,
+        }
+      );
 
-      const response = await fetch(`${this.baseURL}/v2/auth/token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': this.authorization
-        },
-        body: JSON.stringify({
-          merchant_code: this.merchantCode
-        })
-      });
+      this.accessToken = response.data.access_token;
+      // Store expiry time (expires_in is in seconds)
+      this.tokenExpiry = Date.now() + response.data.expires_in * 1000;
 
-      const data = await response.json();
-
-      if (!response.ok || !data.token) {
-        throw new Error(data.message || 'Failed to get token');
-      }
-
-      this.token = data.token;
-      this.tokenExpiry = Date.now() + (55 * 60 * 1000); // 55 minutes
-
-      console.log('✅ Ekart token obtained');
-      return this.token;
+      return this.accessToken;
     } catch (error) {
-      console.error('❌ Ekart token error:', error.message);
+      console.error(
+        "❌ Ekart authentication error:",
+        error.response?.data || error.message
+      );
+      throw new Error("Failed to authenticate with Ekart");
+    }
+  }
+
+  /**
+   * Get authorization headers
+   */
+  async getHeaders() {
+    const token = await this.getAccessToken();
+    return {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+  }
+
+  /**
+   * Create a new shipment
+   * @param {Object} shipmentData - Shipment details
+   * @returns {Promise<Object>} - Shipment response with tracking_id
+   */
+  async createShipment(shipmentData) {
+    try {
+      const headers = await this.getHeaders();
+      const response = await axios.put(
+        `${EKART_BASE_URL}/api/v1/package/create`,
+        shipmentData,
+        { headers }
+      );
+
+      console.log("✅ Ekart shipment created:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error(
+        "❌ Ekart create shipment error:",
+        error.response?.data || error.message
+      );
       throw error;
     }
   }
 
-  async makeRequest(endpoint, options = {}) {
-    const token = await this.getToken();
+  /**
+   * Cancel a shipment
+   * @param {string} trackingId - Ekart tracking ID
+   * @returns {Promise<Object>} - Cancellation response
+   */
+  async cancelShipment(trackingId) {
+    try {
+      const headers = await this.getHeaders();
+      const response = await axios.delete(
+        `${EKART_BASE_URL}/api/v1/package/cancel?tracking_id=${trackingId}`,
+        { headers }
+      );
 
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        ...options.headers
-      }
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || data.error || 'Request failed');
+      console.log("✅ Ekart shipment cancelled:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error(
+        "❌ Ekart cancel shipment error:",
+        error.response?.data || error.message
+      );
+      throw error;
     }
-
-    return data;
   }
 
-  // Check serviceability
-  async checkServiceability(sellerPincode, customerPincode, weight = 1) {
-    const params = new URLSearchParams({
-      seller_pincode: sellerPincode,
-      customer_pincode: customerPincode,
-      weight: weight.toString(),
-      service_type: 'FORWARD'
-    });
+  /**
+   * Track a shipment (Open API - no auth required)
+   * @param {string} trackingId - Ekart tracking ID
+   * @returns {Promise<Object>} - Tracking information
+   */
+  async trackShipment(trackingId) {
+    try {
+      const response = await axios.get(
+        `${EKART_BASE_URL}/api/v1/track/${trackingId}`
+      );
 
-    return await this.makeRequest(`/v1/offerings?${params}`);
+      return response.data;
+    } catch (error) {
+      console.error(
+        "❌ Ekart track shipment error:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
   }
 
-  // Create forward shipment
-  async createForwardShipment(shipmentData) {
-    return await this.makeRequest('/v2/shipments/create', {
-      method: 'POST',
-      body: JSON.stringify({
-        ...shipmentData,
-        service_type: 'FORWARD',
-        service_code: this.serviceCode
-      })
-    });
+  /**
+   * Download shipping label (PDF)
+   * @param {Array<string>} trackingIds - Array of tracking IDs (max 100)
+   * @param {boolean} jsonOnly - Return JSON data only (no PDF)
+   * @returns {Promise<Buffer|Object>} - PDF buffer or JSON data
+   */
+  async downloadLabel(trackingIds, jsonOnly = false) {
+    try {
+      const headers = await this.getHeaders();
+      const response = await axios.post(
+        `${EKART_BASE_URL}/api/v1/package/label?json_only=${jsonOnly}`,
+        { ids: trackingIds },
+        {
+          headers,
+          responseType: jsonOnly ? "json" : "arraybuffer",
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        "❌ Ekart download label error:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
   }
 
-  // Create reverse shipment
-  async createReverseShipment(shipmentData) {
-    return await this.makeRequest('/v2/shipments/create', {
-      method: 'POST',
-      body: JSON.stringify({
-        ...shipmentData,
-        service_type: 'REVERSE',
-        service_code: this.reverseServiceCode
-      })
-    });
+  /**
+   * Download manifest (PDF)
+   * @param {Array<string>} trackingIds - Array of tracking IDs (max 100)
+   * @returns {Promise<Object>} - Manifest URLs
+   */
+  async downloadManifest(trackingIds) {
+    try {
+      const headers = await this.getHeaders();
+      const response = await axios.post(
+        `${EKART_BASE_URL}/data/v2/generate/manifest`,
+        { ids: trackingIds },
+        { headers }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        "❌ Ekart download manifest error:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
   }
 
-  // Track shipment
-  async trackShipment(referenceId) {
-    return await this.makeRequest(`/v2/shipments/track/${referenceId}`);
+  /**
+   * Check serviceability for a pincode
+   * @param {number} pincode - Indian pincode
+   * @returns {Promise<Object>} - Serviceability information
+   */
+  async checkServiceability(pincode) {
+    try {
+      const headers = await this.getHeaders();
+      const response = await axios.get(
+        `${EKART_BASE_URL}/api/v2/serviceability/${pincode}`,
+        { headers }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        "❌ Ekart serviceability check error:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
   }
 
-  // Cancel shipment
-  async cancelShipment(referenceId) {
-    return await this.makeRequest(`/v2/shipments/cancel/${referenceId}`, {
-      method: 'POST'
-    });
+  /**
+   * Get shipping rate estimate
+   * @param {Object} estimateData - Estimate request data
+   * @returns {Promise<Object>} - Pricing estimates
+   */
+  async getEstimate(estimateData) {
+    try {
+      const headers = await this.getHeaders();
+      const response = await axios.post(
+        `${EKART_BASE_URL}/data/pricing/estimate`,
+        estimateData,
+        { headers }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        "❌ Ekart estimate error:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
   }
 
-  // Get label
-  async getLabel(referenceId) {
-    return await this.makeRequest(`/v2/shipments/label/${referenceId}`);
+  /**
+   * Add/register a pickup/return address
+   * @param {Object} addressData - Address details
+   * @returns {Promise<Object>} - Address response
+   */
+  async addAddress(addressData) {
+    try {
+      const headers = await this.getHeaders();
+      const response = await axios.post(
+        `${EKART_BASE_URL}/api/v2/address`,
+        addressData,
+        { headers }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        "❌ Ekart add address error:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
   }
 
-  // Get manifest
-  async getManifest(referenceIds) {
-    return await this.makeRequest('/v2/shipments/manifest', {
-      method: 'POST',
-      body: JSON.stringify({
-        reference_ids: Array.isArray(referenceIds) ? referenceIds : [referenceIds]
-      })
-    });
+  /**
+   * Get all registered addresses
+   * @returns {Promise<Array>} - List of addresses
+   */
+  async getAddresses() {
+    try {
+      const headers = await this.getHeaders();
+      const response = await axios.get(`${EKART_BASE_URL}/api/v2/addresses`, {
+        headers,
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        "❌ Ekart get addresses error:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Add a webhook for tracking updates
+   * @param {Object} webhookData - Webhook configuration
+   * @returns {Promise<Object>} - Webhook response
+   */
+  async addWebhook(webhookData) {
+    try {
+      const headers = await this.getHeaders();
+      const response = await axios.post(
+        `${EKART_BASE_URL}/api/v2/webhook`,
+        webhookData,
+        { headers }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        "❌ Ekart add webhook error:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Get all webhooks
+   * @returns {Promise<Array>} - List of webhooks
+   */
+  async getWebhooks() {
+    try {
+      const headers = await this.getHeaders();
+      const response = await axios.get(`${EKART_BASE_URL}/api/v2/webhook`, {
+        headers,
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        "❌ Ekart get webhooks error:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
   }
 }
 
-const ekartService = new EkartService();
-export default ekartService;
+// Export singleton instance
+export default new EkartAPI();

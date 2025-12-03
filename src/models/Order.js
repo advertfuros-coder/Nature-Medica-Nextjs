@@ -83,38 +83,48 @@ const OrderSchema = new mongoose.Schema(
     manualCourierName: String,
     manualShipmentNote: String,
 
-    courierName: String,
-    trackingId: String,
-    estimatedDelivery: Date,
-    delhiveryWaybill: String,
-    phonePeTransactionId: String,
-    phonePePaymentId: String,
-    ekartReferenceId: {
-      type: String,
-      default: null,
-    },
-    ekartTrackingId: {
-      type: String,
-      default: null,
-    },
-
     // Generic shipping fields
     shippingProvider: {
       type: String,
-      enum: ["shiprocket", "delhivery", "manual"],
+      enum: ["shiprocket", "delhivery", "ekart", "manual"],
       default: "manual",
     },
-    shiprocketOrderId: Number,
-    shiprocketShipmentId: Number,
     courierName: String,
     estimatedDelivery: Date,
     trackingId: String,
+
+    // Ekart Logistics specific fields
+    ekart: {
+      trackingId: String, // Ekart tracking ID (500999A3408005)
+      waybillNumber: String, // Vendor waybill number
+      vendor: String, // Courier partner name (e.g., "EKART", "BLUEDART")
+      orderNumber: String, // Order number as sent to Ekart
+      channelId: String, // Ekart order ID
+      codWaybill: String, // COD waybill for COD shipments
+      shipmentStatus: String, // Latest shipment status
+      labelUrl: String, // URL to download label
+      manifestUrl: String, // URL to download manifest
+      createdAt: Date, // Shipment creation timestamp
+      cancelledAt: Date, // Cancellation timestamp (if applicable)
+      deliveredAt: Date, // Delivery timestamp (if delivered)
+    },
+
+    // Delhivery specific
+    delhiveryWaybill: String,
+
+    // Shiprocket specific
+    shiprocketOrderId: Number,
+    shiprocketShipmentId: Number,
+
+    // PhonePe/Razorpay/Cashfree payment IDs
+    phonePeTransactionId: String,
+    phonePePaymentId: String,
     razorpayOrderId: String,
     razorpayPaymentId: String,
     razorpaySignature: String,
     cashfreeOrderId: String,
     cashfreePaymentId: String,
-    trackingId: String,
+    
     couponCode: String,
     statusHistory: [
       {
@@ -129,5 +139,6 @@ const OrderSchema = new mongoose.Schema(
 
 OrderSchema.index({ orderId: 1 });
 OrderSchema.index({ user: 1 });
+OrderSchema.index({ "ekart.trackingId": 1 });
 
 export default mongoose.models.Order || mongoose.model("Order", OrderSchema);
