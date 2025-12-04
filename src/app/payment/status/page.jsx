@@ -33,7 +33,7 @@ export default function PaymentStatusPage() {
             setMessage('Invalid payment session. Please contact support.');
             return;
         }
-        
+
         if (!internalOrderId) {
             setStatus('failed');
             setMessage('Could not identify order. Please contact support with this payment ID: ' + cashfreeOrderId);
@@ -67,7 +67,7 @@ export default function PaymentStatusPage() {
 
                 // Retrieve pending order data from sessionStorage
                 const pendingOrderData = sessionStorage.getItem('pendingOrderData');
-                
+
                 if (!pendingOrderData) {
                     setStatus('failed');
                     setMessage('Order data not found. Please contact support - your payment was successful.');
@@ -94,6 +94,39 @@ export default function PaymentStatusPage() {
                 const createOrderData = await createOrderRes.json();
 
                 if (!createOrderRes.ok) {
+                    // Check if it's a duplicate key error (order already exists)
+                    if (createOrderData.error && createOrderData.error.includes('duplicate key')) {
+                        console.log('⚠️ Order already exists, updating payment status instead');
+                        // Order already exists, just update payment status
+                        await fetch('/api/orders/update-payment-status', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                orderId: internalOrderId,
+                                paymentStatus: 'paid',
+                                cashfreePaymentId: verifyData.payment?.cf_payment_id,
+                                cashfreeOrderId: cashfreeOrderId
+                            })
+                        });
+
+                        // Success!
+                        setStatus('success');
+                        setMessage('Payment successful! Your order has been placed.');
+                        setCreatedOrderId(internalOrderId);
+
+                        // Clear cart and sessionStorage
+                        dispatch(clearCart());
+                        sessionStorage.removeItem('pendingOrderData');
+                        sessionStorage.removeItem('cashfreeOrderId');
+                        sessionStorage.removeItem('preGeneratedOrderId');
+
+                        // Redirect to thank you page
+                        setTimeout(() => {
+                            router.push(`/thankyou?orderId=${internalOrderId}`);
+                        }, 2000);
+                        return;
+                    }
+
                     setStatus('failed');
                     setMessage(`Failed to create order: ${createOrderData.error}. Your payment was successful. Please contact support with this payment ID: ${cashfreeOrderId}`);
                     return;

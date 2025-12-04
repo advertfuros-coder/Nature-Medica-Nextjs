@@ -32,6 +32,8 @@ export default function CheckoutPage() {
   const [couponInput, setCouponInput] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' or 'cod'
+  const [isOrderPlacing, setIsOrderPlacing] = useState(false); // Flag to prevent cart redirect during order placement
 
   // Guest user details
   const [guestDetails, setGuestDetails] = useState({
@@ -147,6 +149,9 @@ export default function CheckoutPage() {
   };
 
   useEffect(() => {
+    // Don't redirect if we're currently placing an order
+    if (isOrderPlacing) return;
+    
     if (!items || items.length === 0) {
       router.push('/cart');
       return;
@@ -158,7 +163,7 @@ export default function CheckoutPage() {
       // For guest users, show the address form by default
       setShowAddressForm(true);
     }
-  }, [isAuthenticated, items?.length, router]);
+  }, [isAuthenticated, items?.length, router, isOrderPlacing]);
 
 
 
@@ -318,12 +323,45 @@ export default function CheckoutPage() {
         discount,
         finalPrice,
         shippingAddress,
-        paymentMode: 'online', // Always online payment
+        paymentMode: paymentMethod, // 'online' or 'cod'
         couponCode,
         isGuest: !isAuthenticated,
         guestEmail: userEmail,
         guestName: userName,
       };
+
+      // Handle COD orders differently - create order directly
+      if (paymentMethod === 'cod') {
+        setIsOrderPlacing(true); // Prevent cart redirect
+        try {
+          const res = await fetch('/api/orders/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderPayload),
+          });
+
+          const data = await res.json();
+
+          if (res.ok && data.orderId) {
+            // Clear cart and redirect to success page
+            dispatch(clearCart());
+            // Use replace to ensure immediate redirect without back button issues
+            router.replace(`/checkout/success?orderId=${data.orderId}`);
+          } else {
+            alert(data.error || 'Failed to place order. Please try again.');
+            setLoading(false);
+            setIsOrderPlacing(false);
+          }
+        } catch (error) {
+          console.error('COD order error:', error);
+          alert('Failed to place order. Please try again.');
+          setLoading(false);
+          setIsOrderPlacing(false);
+        }
+        return;
+      }
+
+      // Handle online payment orders
       // Store order data in sessionStorage to create after payment success
       sessionStorage.setItem('pendingOrderData', JSON.stringify(orderPayload));
 
@@ -705,18 +743,25 @@ export default function CheckoutPage() {
                       <CreditCard className="w-4 h-4 text-[#415f2d]" />
                     </div>
                     <div>
-                      <h2 className="text-sm font-semibold text-gray-900">Payment</h2>
-                      <p className="text-[10px] text-gray-500">Secure online payment only</p>
+                      <h2 className="text-sm font-semibold text-gray-900">Payment Method</h2>
+                      <p className="text-[10px] text-gray-500">Choose your preferred payment option</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-4">
-                  {/* Online Payment Info */}
-                  <div className="block p-4 border-2 border-[#415f2d] bg-[#415f2d]/5 rounded-lg">
+                <div className="p-4 space-y-3">
+                  {/* Online Payment Option */}
+                  <div
+                    onClick={() => setPaymentMethod('online')}
+                    className={`cursor-pointer p-4 border-2 rounded-lg transition-all ${paymentMethod === 'online'
+                      ? 'border-[#415f2d] bg-[#415f2d]/5'
+                      : 'border-gray-200 hover:border-gray-300'}`}
+                  >
                     <div className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full border-2 border-[#415f2d] bg-[#415f2d] flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${paymentMethod === 'online'
+                        ? 'border-[#415f2d] bg-[#415f2d]'
+                        : 'border-gray-300'}`}>
+                        {paymentMethod === 'online' && <div className="w-2.5 h-2.5 rounded-full bg-white"></div>}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-1">
@@ -724,7 +769,6 @@ export default function CheckoutPage() {
                             <p className="font-semibold text-gray-900 mb-1 text-[11px]">Online Payment</p>
                             <p className="text-[10px] text-gray-600">UPI, Cards, Net Banking, Wallets</p>
                           </div>
-                          <span className="text-[10px] text-[#415f2d] font-bold">Nature Medica</span>
                         </div>
                         <div className="flex items-center gap-1 text-green-600 text-[10px] mt-2">
                           <Shield className="w-3 h-3" />
@@ -734,11 +778,32 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  {/* Important Note */}
-                  <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-[10px] text-blue-800">
-                      <strong>Note:</strong> We only accept online payments. Cash on Delivery is not available.
-                    </p>
+                  {/* Cash on Delivery Option */}
+                  <div
+                    onClick={() => setPaymentMethod('cod')}
+                    className={`cursor-pointer p-4 border-2 rounded-lg transition-all ${paymentMethod === 'cod'
+                      ? 'border-[#415f2d] bg-[#415f2d]/5'
+                      : 'border-gray-200 hover:border-gray-300'}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${paymentMethod === 'cod'
+                        ? 'border-[#415f2d] bg-[#415f2d]'
+                        : 'border-gray-300'}`}>
+                        {paymentMethod === 'cod' && <div className="w-2.5 h-2.5 rounded-full bg-white"></div>}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-1">
+                          <div>
+                            <p className="font-semibold text-gray-900 mb-1 text-[11px]">Cash on Delivery</p>
+                            <p className="text-[10px] text-gray-600">Pay when you receive your order</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-blue-600 text-[10px] mt-2">
+                          <Package className="w-3 h-3" />
+                          <span>Convenient and secure</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

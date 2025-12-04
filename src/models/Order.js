@@ -63,7 +63,7 @@ const OrderSchema = new mongoose.Schema(
 
     paymentMode: {
       type: String,
-      enum: ["online"],
+      enum: ["online", "cod"],
       required: true,
       default: "online",
     },
@@ -124,7 +124,7 @@ const OrderSchema = new mongoose.Schema(
     razorpaySignature: String,
     cashfreeOrderId: String,
     cashfreePaymentId: String,
-    
+
     couponCode: String,
     statusHistory: [
       {
@@ -140,5 +140,10 @@ const OrderSchema = new mongoose.Schema(
 OrderSchema.index({ orderId: 1 });
 OrderSchema.index({ user: 1 });
 OrderSchema.index({ "ekart.trackingId": 1 });
+
+// Delete the model from cache in development to pick up schema changes
+if (process.env.NODE_ENV !== "production" && mongoose.models.Order) {
+  delete mongoose.models.Order;
+}
 
 export default mongoose.models.Order || mongoose.model("Order", OrderSchema);

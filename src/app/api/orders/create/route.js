@@ -103,6 +103,21 @@ export async function POST(req) {
     let orderId;
     if (preGeneratedOrderId) {
       orderId = preGeneratedOrderId;
+
+      // Check if order already exists
+      const existingOrder = await Order.findOne({ orderId }).lean();
+      if (existingOrder) {
+        console.log(
+          `⚠️ Order ${orderId} already exists, returning existing order`
+        );
+        return NextResponse.json({
+          success: true,
+          orderId: existingOrder.orderId,
+          amount: existingOrder.finalPrice,
+          mobileNumber: existingOrder.shippingAddress.phone,
+          alreadyExists: true,
+        });
+      }
     } else {
       const orderCount = await Order.countDocuments();
       orderId = `NM${String(orderCount + 1).padStart(6, "0")}`;
@@ -138,9 +153,17 @@ export async function POST(req) {
       },
       paymentMode,
       paymentStatus:
-        paymentMode === "online" && paymentVerified ? "paid" : "pending",
+        paymentMode === "online" && paymentVerified
+          ? "paid"
+          : paymentMode === "cod"
+          ? "pending"
+          : "pending",
       orderStatus:
-        paymentMode === "online" && paymentVerified ? "Processing" : "Pending",
+        paymentMode === "online" && paymentVerified
+          ? "Processing"
+          : paymentMode === "cod"
+          ? "Processing"
+          : "Pending",
       cashfreeOrderId: cashfreeOrderId || null,
       cashfreePaymentId: cashfreePaymentId || null,
       couponCode: couponCode || null,
@@ -149,11 +172,17 @@ export async function POST(req) {
           status:
             paymentMode === "online" && paymentVerified
               ? "Processing"
+              : paymentMode === "cod"
+              ? "Processing"
               : "Pending",
           updatedAt: new Date(),
           note:
             paymentMode === "online" && paymentVerified
               ? `Payment verified - Order placed (Cashfree ID: ${cashfreePaymentId})`
+              : paymentMode === "cod"
+              ? isGuest
+                ? "COD order created (Guest)"
+                : "COD order created"
               : isGuest
               ? "Guest order created"
               : "Order created",
