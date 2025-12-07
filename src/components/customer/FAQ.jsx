@@ -80,7 +80,7 @@ export default function FAQCompactList() {
           <p className="text-[10px] text-gray-500">Find quick answers below</p>
         </div>
 
-        <div className="space-y-1">
+        <div className="space-y-1 grid grid-cols-1 md:grid-cols-2">
           {faqs.map((faq, index) => {
             const Icon = faq.icon;
             const isOpen = openIndex === index;

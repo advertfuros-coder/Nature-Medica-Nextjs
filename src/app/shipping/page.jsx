@@ -119,7 +119,7 @@ export default function ShippingPolicyPage() {
             <h3 className="text-lg font-bold text-white">FREE SHIPPING</h3>
           </div>
           <p className="text-white text-sm font-medium">
-            On all orders above ₹499
+            On all orders above ₹1499
           </p>
         </div>
       </div>

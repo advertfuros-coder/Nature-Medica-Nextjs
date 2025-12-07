@@ -124,7 +124,7 @@ export default function FAQPage() {
     {
       category: 'shipping',
       question: 'Do you offer free shipping?',
-      answer: `Yes! Free shipping on orders above ₹499
+      answer: `Yes! Free shipping on orders above ₹1499
         - Standard delivery: 3-7 business days
         - Orders below ₹499: ₹40 shipping charge
         - Express delivery: ₹99 (where available)

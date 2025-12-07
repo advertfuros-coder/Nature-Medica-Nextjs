@@ -16,6 +16,7 @@ import {
   Mail,
   MapPin
 } from 'lucide-react';
+import { FiArrowRight } from 'react-icons/fi';
 import Image from 'next/image';
 
 export default function AboutPage() {
@@ -23,8 +24,8 @@ export default function AboutPage() {
 
   const stats = [
     { icon: Users, value: '50K+', label: 'Happy Customers' },
-    { icon: Award, value: '500+', label: 'Premium Products' },
-    { icon: Globe, value: '100+', label: 'Cities Served' },
+    { icon: Award, value: '75K+', label: 'Verified Orders' },
+    { icon: Globe, value: '15K+', label: '5-Star Reviews' },
     { icon: TrendingUp, value: '98%', label: 'Satisfaction Rate' }
   ];
 
@@ -83,19 +84,19 @@ export default function AboutPage() {
       name: 'Dr. Rajesh Kumar',
       role: 'Chief Ayurvedic Officer',
       description: '20+ years of experience in Ayurvedic medicine and wellness.',
-      image: '/team/dr-rajesh.jpg'
+      image: '/team/dr-rajesh.png'
     },
     {
       name: 'Priya Sharma',
       role: 'Head of Product Development',
       description: 'Expert in herbal formulations and natural product innovation.',
-      image: '/team/priya.jpg'
+      image: '/team/priya.png'
     },
     {
       name: 'Amit Verma',
       role: 'Quality Assurance Head',
       description: 'Ensures every product meets the highest quality standards.',
-      image: '/team/amit.jpg'
+      image: '/team/amit.png'
     }
   ];
 
@@ -138,6 +139,71 @@ export default function AboutPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </div>
+
+      {/* CTA Section with Trust Stats */}
+      <div className="px-4 mt-8">
+        <div className="bg-gradient-to-br from-[#f0f9ff] via-[#e0f2fe] to-[#dbeafe] rounded-2xl p-8 border-2 border-blue-200 shadow-xl overflow-hidden relative">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-40 h-40 bg-blue-300/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-green-300/20 rounded-full blur-3xl"></div>
+
+          <div className="relative z-10">
+            <div className="text-center mb-6">
+              <span className="inline-block px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-full mb-4 animate-pulse">
+                🎉 Trusted by 50,000+ Customers
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+                Discover Our Premium Collection
+              </h2>
+              <p className="text-gray-700 text-lg max-w-2xl mx-auto">
+                Join thousands of satisfied customers who've transformed their wellness journey with our authentic Ayurvedic products.
+              </p>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div className="bg-white/80 backdrop-blur rounded-xl p-4 text-center shadow-md hover:shadow-lg transition-shadow">
+                <div className="text-3xl mb-2">📦</div>
+                <p className="font-bold text-gray-900 text-lg">75K+</p>
+                <p className="text-sm text-gray-600">Orders Delivered</p>
+              </div>
+              <div className="bg-white/80 backdrop-blur rounded-xl p-4 text-center shadow-md hover:shadow-lg transition-shadow">
+                <div className="text-3xl mb-2">⭐</div>
+                <p className="font-bold text-gray-900 text-lg">15K+</p>
+                <p className="text-sm text-gray-600">5-Star Reviews</p>
+              </div>
+              <div className="bg-white/80 backdrop-blur rounded-xl p-4 text-center shadow-md hover:shadow-lg transition-shadow">
+                <div className="text-3xl mb-2">🏆</div>
+                <p className="font-bold text-gray-900 text-lg">4.9/5</p>
+                <p className="text-sm text-gray-600">Average Rating</p>
+              </div>
+              <div className="bg-white/80 backdrop-blur rounded-xl p-4 text-center shadow-md hover:shadow-lg transition-shadow">
+                <div className="text-3xl mb-2">✅</div>
+                <p className="font-bold text-gray-900 text-lg">100%</p>
+                <p className="text-sm text-gray-600">Money Back</p>
+              </div>
+            </div>
+
+            {/* CTA Button */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => router.push('/products?sort=bestseller')}
+                className="px-8 py-4 bg-gradient-to-r from-[#3a5d1e] to-[#4a7d2e] text-white rounded-xl font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group"
+              >
+                <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                Shop Our Bestsellers
+                <FiArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button
+                onClick={() => router.push('/products')}
+                className="px-8 py-4 bg-white text-[#3a5d1e] border-2 border-[#3a5d1e] rounded-xl font-bold text-lg hover:bg-[#3a5d1e] hover:text-white transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                View All Products
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -219,17 +285,26 @@ export default function AboutPage() {
 
       {/* Our Team */}
       <div className="p-4">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Meet Our Team</h2>
-        <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Meet Our Experts</h2>
+        <p className="text-gray-600 mb-6 text-sm">
+          Our dedicated team of Ayurvedic professionals and wellness experts are committed to your health journey.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {team.map((member, index) => (
-            <div key={index} className="bg-white rounded-xl p-6 flex items-start gap-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#3a5d1e] to-[#4a7d2e] rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-xl">
-                {member.name.charAt(0)}
+            <div key={index} className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100">
+              <div className="relative h-64 bg-gradient-to-br from-[#3a5d1e] to-[#4a7d2e]">
+                <Image
+                  src={member.image}
+                  alt={member.name}
+                  fill
+                  className="object-cover "
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
               </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-900 text-lg">{member.name}</h3>
-                <p className="text-[#3a5d1e] text-sm font-medium mb-2">{member.role}</p>
-                <p className="text-gray-600 text-sm">{member.description}</p>
+              <div className="p-6">
+                <h3 className="font-bold text-gray-900 text-xl mb-1">{member.name}</h3>
+                <p className="text-[#3a5d1e] text-sm font-semibold mb-3">{member.role}</p>
+                <p className="text-gray-600 text-sm leading-relaxed">{member.description}</p>
               </div>
             </div>
           ))}
@@ -289,7 +364,7 @@ export default function AboutPage() {
           <p className="text-gray-600 text-sm text-center mb-6">
             Have questions? We'd love to hear from you!
           </p>
-          
+
           <div className="space-y-3 mb-6">
             <a href="tel:+918400043322" className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
               <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -331,25 +406,7 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Newsletter Signup */}
-      <div className="p-4 mb-6">
-        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 border-2 border-yellow-200">
-          <h3 className="font-bold text-gray-900 mb-2">Stay Updated!</h3>
-          <p className="text-sm text-gray-600 mb-4">
-            Subscribe to our newsletter for wellness tips, new products, and exclusive offers.
-          </p>
-          <div className="flex gap-2">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-2 bg-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#3a5d1e] text-sm"
-            />
-            <button className="px-6 py-2 bg-[#3a5d1e] text-white rounded-lg font-medium hover:bg-[#2d4818] transition-colors whitespace-nowrap">
-              Subscribe
-            </button>
-          </div>
-        </div>
-      </div>
+      
     </div>
   );
 }

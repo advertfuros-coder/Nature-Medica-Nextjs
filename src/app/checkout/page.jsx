@@ -995,10 +995,7 @@ export default function CheckoutPage() {
                       <Shield className="w-3.5 h-3.5 text-green-600" />
                       <span>100% secure payments</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] text-gray-600">
-                      <Truck className="w-3.5 h-3.5 text-green-600" />
-                      <span>Free shipping on all orders</span>
-                    </div>
+                    
                     <div className="flex items-center gap-2 text-[10px] text-gray-600">
                       <Package className="w-3.5 h-3.5 text-green-600" />
                       <span>Easy returns within 30 days</span>

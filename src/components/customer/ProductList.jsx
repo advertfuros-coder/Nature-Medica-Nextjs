@@ -4,7 +4,7 @@ import ProductCard from './ProductCard';
 import { useRouter } from 'next/navigation';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
-export default function ProductList({ products, currentPage, totalPages }) {
+export default function ProductList({ products, currentPage, totalPages, totalProducts }) {
   const router = useRouter();
 
   const handlePageChange = (page) => {
@@ -48,7 +48,7 @@ export default function ProductList({ products, currentPage, totalPages }) {
       </div>
 
       {/* Product Grid - 2 columns on mobile, 3 on desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6 px-2 lg:px-0">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6 px-2 lg:px-0 pb-24 lg:pb-0">
         {products.map((product) => (
           <ProductCard key={product._id} product={product} />
         ))}
@@ -82,11 +82,10 @@ export default function ProductList({ products, currentPage, totalPages }) {
                 <button
                   key={pageNum}
                   onClick={() => handlePageChange(pageNum)}
-                  className={`w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center rounded-lg font-medium transition-all ${
-                    currentPage === pageNum
-                      ? 'bg-[#415f2d] text-white shadow-md'
-                      : 'border border-gray-200 hover:border-[#415f2d] hover:text-[#415f2d]'
-                  }`}
+                  className={`w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center rounded-lg font-medium transition-all ${currentPage === pageNum
+                    ? 'bg-[#415f2d] text-white shadow-md'
+                    : 'border border-gray-200 hover:border-[#415f2d] hover:text-[#415f2d]'
+                    }`}
                 >
                   {pageNum}
                 </button>

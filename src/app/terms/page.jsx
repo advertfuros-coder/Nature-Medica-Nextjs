@@ -126,7 +126,7 @@ export default function TermsPage() {
 
         <h4 class="font-semibold text-gray-900 mb-2">Shipping Charges:</h4>
         <ul class="list-disc pl-6 mb-4 space-y-2">
-          <li>Free shipping on orders above ₹499</li>
+          <li>Free shipping on orders above ₹1499</li>
           <li>Standard shipping charges apply for orders below ₹499</li>
           <li>Remote area delivery may incur additional charges</li>
           <li>Shipping costs are non-refundable</li>

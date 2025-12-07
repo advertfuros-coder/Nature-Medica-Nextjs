@@ -2,6 +2,7 @@
 import { Check, ShoppingBag, DollarSign } from 'lucide-react';
 import Image from 'next/image';
 import serum from "@/assets/serum.png"
+import Link from 'next/link';
 export default function WellnessSection() {
   return (
     <section className="bg-gradient-to-br from-amber-50 to-white py-8 px-4 sm:px-6">
@@ -9,7 +10,7 @@ export default function WellnessSection() {
         
         {/* Left Content */}
         <div className="lg:col-span-1">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-green-900 leading-tight mb-3">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-[#4D6F36] leading-tight mb-3">
             INSPIRED BY NATURE,<br />
             DRIVEN BY WELLNESS
           </h1>
@@ -40,9 +41,9 @@ export default function WellnessSection() {
             </div>
           </div>
           
-          <button className="bg-green-800 hover:bg-green-900 text-white text-xs sm:text-sm font-semisemibold px-5 py-2 rounded transition-colors duration-300">
-            Explorer Our Product
-          </button>
+          <Link href="/products/" className="bg-[#4D6F36] hover:bg-[#4D6F36] text-white text-xs sm:text-sm font-semisemibold px-5 py-2 rounded transition-colors duration-300">
+            Shop Now - 20% Off
+          </Link>
         </div>
         
         {/* Center - Product Image */}
@@ -60,7 +61,7 @@ export default function WellnessSection() {
         {/* Right Content - Features */}
         <div className="lg:col-span-1 space-y-6">
           <div className="flex items-start gap-3">
-            <div className="bg-green-800 rounded-full p-2.5 flex-shrink-0">
+            <div className="bg-[#4D6F36] rounded-full p-2.5 flex-shrink-0">
               <ShoppingBag className="w-5 h-5 text-white" strokeWidth={1.5} />
             </div>
             <div>
@@ -74,7 +75,7 @@ export default function WellnessSection() {
           </div>
           
           <div className="flex items-start gap-3">
-            <div className="bg-green-800 rounded-full p-2.5 flex-shrink-0">
+            <div className="bg-[#4D6F36] rounded-full p-2.5 flex-shrink-0">
               <DollarSign className="w-5 h-5 text-white" strokeWidth={1.5} />
             </div>
             <div>

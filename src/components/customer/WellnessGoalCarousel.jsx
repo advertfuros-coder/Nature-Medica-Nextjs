@@ -51,8 +51,8 @@ export default function WellnessGoalCarousel() {
     setTouchEndX(0);
   };
 
-  return (
-    <section className="w-full pt-3  bg-white">
+  return ( 
+    <section className="w-full pt-3 mx-auto justify-center flex  bg-white">
     
 
       {/* Scrollable Carousel */}

@@ -185,7 +185,7 @@ export default async function ProductDetailPage({ params }) {
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Free Shipping</h3>
-                <p className="text-sm opacity-90">On orders above ₹499</p>
+                <p className="text-sm opacity-90">On orders above ₹1499</p>
               </div>
               
               <div className="flex flex-col items-center">

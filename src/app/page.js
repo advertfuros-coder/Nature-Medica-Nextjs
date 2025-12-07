@@ -24,6 +24,7 @@ import InfoStrip from "@/components/customer/InfoStrip";
 import PromoStripSimple from "@/components/customer/PromoStripSimple";
 import CategoryGrid from "@/components/customer/CategoryGrid";
 import NewsletterPopup from "@/components/customer/NewsletterPopup";
+import TrustBadgesSection from "@/components/customer/TrustBadgesSection";
 
 export default async function HomePage() {
   await connectDB();
@@ -52,13 +53,14 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen bg-white">
-       
       {/* Hero Banner */}
       <section className="relative">
         <HeroBanner banners={JSON.parse(JSON.stringify(homeBanners))} />
       </section>
 
-      <CategoryGrid/>
+      <CategoryGrid />
+
+      {/* <TrustBadgesSection /> */}
 
       <BrandMarquee />
 
