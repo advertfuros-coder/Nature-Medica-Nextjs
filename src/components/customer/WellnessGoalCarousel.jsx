@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-const videoPaths = ['/b2.mp4','/b5.mp4','/b1.mp4', '/men.mp4', '/sleep.mp4', '/gt.mp4'  ];
+const videoPaths = ['/b2.mp4', '/b5.mp4', '/b1.mp4', '/men.mp4', '/sleep.mp4', '/gt.mp4'];
 
 export default function WellnessGoalCarousel() {
   const scrollContainerRef = useRef(null);
@@ -51,28 +51,26 @@ export default function WellnessGoalCarousel() {
     setTouchEndX(0);
   };
 
-  return ( 
-    <section className="w-full pt-3 mx-auto justify-center flex  bg-white">
-    
-
+  return (
+    <section className="w-full pt-3 px-4 mx-auto justify-center flex bg-white">
       {/* Scrollable Carousel */}
-      <div className="relative">
+      <div className="relative w-full max-w-7xl">
         <div
           ref={scrollContainerRef}
           onScroll={checkScrollability}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+          className="flex gap-3 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4 px-1"
           style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
         >
           {wellnessGoals.map((goal, index) => (
-            <Link 
-              key={goal.id} 
+            <Link
+              key={goal.id}
               href={goal.href}
-              className="flex-shrink-0 w-30 md:w-54 cursor-pointer group"
+              className="flex-shrink-0 w-40 md:w-80 cursor-pointer group"
             >
-              <div className="relative rounded-2xl overflow-hidden h-40 md:h-60 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="relative rounded-2xl overflow-hidden h-48 md:h-64 shadow-lg hover:shadow-xl transition-all duration-300">
                 <video
                   src={videoPaths[index % videoPaths.length]}
                   autoPlay
@@ -82,8 +80,8 @@ export default function WellnessGoalCarousel() {
                   className="object-cover w-full h-full"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-                <div className="absolute bottom-6 left-6 right-6">
-                  <h3 className=" text-white text-xs">{goal.label}</h3>
+                <div className="absolute bottom-4 md:bottom-6 left-4 md:left-6 right-4 md:right-6">
+                  <h3 className="text-white text-base md:text-lg font-semibold">{goal.label}</h3>
                 </div>
               </div>
             </Link>

@@ -13,13 +13,12 @@ export default function FilterSidebar({ categories }) {
     sort: searchParams.get('sort') || '',
   };
 
-  // Mobile drawer states
-  const [categoryDrawer, setCategoryDrawer] = useState(false);
-  const [sortDrawer, setSortDrawer] = useState(false);
+  // Mobile drawer state - single combined drawer
+  const [filterDrawer, setFilterDrawer] = useState(false);
 
   // Lock body scroll when any drawer is open
   useEffect(() => {
-    if (categoryDrawer || sortDrawer) {
+    if (filterDrawer) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -27,7 +26,7 @@ export default function FilterSidebar({ categories }) {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [categoryDrawer, sortDrawer]);
+  }, [filterDrawer]);
 
   const applyFilter = (key, value) => {
     const params = new URLSearchParams(searchParams);
@@ -90,119 +89,128 @@ export default function FilterSidebar({ categories }) {
   return (
     <>
       {/* ============ MOBILE VIEW ============ */}
-      {/* Flipkart-style Filter Bar - Bottom Sticky */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] safe-area-pb">
-        <div className="flex items-center justify-around py-3 px-2">
-          {/* Sort By Button */}
-          <button
-            onClick={() => setSortDrawer(true)}
-            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all ${
-              currentFilters.sort ? 'bg-green-50' : ''
-            }`}
-          >
-            <FiTrendingUp className={`w-5 h-5 ${currentFilters.sort ? 'text-[#4D6F36]' : 'text-gray-600'}`} />
-            <span className={`text-xs font-medium ${currentFilters.sort ? 'text-[#4D6F36]' : 'text-gray-700'}`}>
-              Sort
-            </span>
-          </button>
-
-          {/* Category Button */}
-          <button
-            onClick={() => setCategoryDrawer(true)}
-            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all ${
-              currentFilters.category ? 'bg-green-50' : ''
-            }`}
-          >
-            <FiTag className={`w-5 h-5 ${currentFilters.category ? 'text-[#4D6F36]' : 'text-gray-600'}`} />
-            <span className={`text-xs font-medium ${currentFilters.category ? 'text-[#4D6F36]' : 'text-gray-700'}`}>
-              Category
-            </span>
-          </button>
-
-          {/* Clear Filters (if any active) */}
+      {/* Circular Floating Filter Button */}
+      <div className="lg:hidden fixed bottom-20 right-4 z-30">
+        <button
+          onClick={() => setFilterDrawer(true)}
+          className="relative bg-gradient-to-br from-[#4D6F36] to-[#3d5829] text-white w-14 h-14 rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
+        >
+          <FiFilter className="w-6 h-6" />
+          {/* Active Filter Badge */}
           {(currentFilters.category || currentFilters.sort) && (
-            <button
-              onClick={clearFilters}
-              className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg hover:bg-red-50 transition-all"
-            >
-              <FiX className="w-5 h-5 text-red-600" />
-              <span className="text-xs font-medium text-red-600">Clear</span>
-            </button>
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+              {(currentFilters.category ? 1 : 0) + (currentFilters.sort ? 1 : 0)}
+            </span>
           )}
-        </div>
+        </button>
       </div>
 
-      {/* Category Drawer */}
-      <Drawer isOpen={categoryDrawer} onClose={() => setCategoryDrawer(false)} title="Select Category">
-        <div className="p-4 space-y-1">
-          <label className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
-            <span className={`text-sm font-medium ${!currentFilters.category ? 'text-[#4D6F36]' : 'text-gray-700'}`}>
-              All Categories
-            </span>
-            <input
-              type="radio"
-              name="category"
-              checked={!currentFilters.category}
-              onChange={() => {
-                applyFilter('category', '');
-                setCategoryDrawer(false);
+      {/* Combined Filter Drawer */}
+      <Drawer isOpen={filterDrawer} onClose={() => setFilterDrawer(false)} title="Filters">
+        <div className="p-4 space-y-6">
+          {/* Clear All Filters */}
+          {(currentFilters.category || currentFilters.sort) && (
+            <button
+              onClick={() => {
+                clearFilters();
+                setFilterDrawer(false);
               }}
-              className="w-4 h-4 text-[#4D6F36] focus:ring-[#4D6F36]"
-            />
-          </label>
-          {categories.map((category) => (
-            <label
-              key={category._id}
-              className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 rounded-xl font-medium hover:bg-red-100 transition-colors"
             >
-              <span className={`text-sm font-medium ${currentFilters.category === category.slug ? 'text-[#4D6F36]' : 'text-gray-700'}`}>
-                {category.name}
-              </span>
-              <input
-                type="radio"
-                name="category"
-                checked={currentFilters.category === category.slug}
-                onChange={() => {
-                  applyFilter('category', category.slug);
-                  setCategoryDrawer(false);
-                }}
-                className="w-4 h-4 text-[#4D6F36] focus:ring-[#4D6F36]"
-              />
-            </label>
-          ))}
-        </div>
-      </Drawer>
+              <FiX className="w-4 h-4" />
+              Clear All Filters
+            </button>
+          )}
 
-      {/* Sort Drawer */}
-      <Drawer isOpen={sortDrawer} onClose={() => setSortDrawer(false)} title="Sort By">
-        <div className="p-4 space-y-1">
-          {[
-            { value: '', label: 'Relevance' },
-            { value: 'price-asc', label: 'Price: Low to High' },
-            { value: 'price-desc', label: 'Price: High to Low' },
-            { value: 'rating', label: 'Highest Rated' },
-            { value: 'newest', label: 'Newest First' },
-            { value: 'bestseller', label: 'Best Sellers' },
-          ].map((option) => (
-            <label
-              key={option.value}
-              className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer"
-            >
-              <span className={`text-sm font-medium ${currentFilters.sort === option.value ? 'text-[#4D6F36]' : 'text-gray-700'}`}>
-                {option.label}
-              </span>
-              <input
-                type="radio"
-                name="sort"
-                checked={currentFilters.sort === option.value}
-                onChange={() => {
-                  applyFilter('sort', option.value);
-                  setSortDrawer(false);
-                }}
-                className="w-4 h-4 text-[#4D6F36] focus:ring-[#4D6F36]"
-              />
-            </label>
-          ))}
+          {/* Sort Section */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <FiTrendingUp className="w-5 h-5 text-[#4D6F36]" />
+              <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide">Sort By</h4>
+            </div>
+            <div className="space-y-1">
+              {[
+                { value: '', label: 'Relevance' },
+                { value: 'price-asc', label: 'Price: Low to High' },
+                { value: 'price-desc', label: 'Price: High to Low' },
+                { value: 'rating', label: 'Highest Rated' },
+                { value: 'newest', label: 'Newest First' },
+                { value: 'bestseller', label: 'Best Sellers' },
+              ].map((option) => (
+                <label
+                  key={option.value}
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  <span className={`text-sm font-medium ${currentFilters.sort === option.value ? 'text-[#4D6F36]' : 'text-gray-700'}`}>
+                    {option.label}
+                  </span>
+                  <input
+                    type="radio"
+                    name="sort"
+                    checked={currentFilters.sort === option.value}
+                    onChange={() => {
+                      applyFilter('sort', option.value);
+                    }}
+                    className="w-4 h-4 text-[#4D6F36] focus:ring-[#4D6F36]"
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-gray-200"></div>
+
+          {/* Category Section */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <FiTag className="w-5 h-5 text-[#4D6F36]" />
+              <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide">Category</h4>
+            </div>
+            <div className="space-y-1">
+              <label className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <span className={`text-sm font-medium ${!currentFilters.category ? 'text-[#4D6F36]' : 'text-gray-700'}`}>
+                  All Categories
+                </span>
+                <input
+                  type="radio"
+                  name="category"
+                  checked={!currentFilters.category}
+                  onChange={() => {
+                    applyFilter('category', '');
+                  }}
+                  className="w-4 h-4 text-[#4D6F36] focus:ring-[#4D6F36]"
+                />
+              </label>
+              {categories.map((category) => (
+                <label
+                  key={category._id}
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  <span className={`text-sm font-medium ${currentFilters.category === category.slug ? 'text-[#4D6F36]' : 'text-gray-700'}`}>
+                    {category.name}
+                  </span>
+                  <input
+                    type="radio"
+                    name="category"
+                    checked={currentFilters.category === category.slug}
+                    onChange={() => {
+                      applyFilter('category', category.slug);
+                    }}
+                    className="w-4 h-4 text-[#4D6F36] focus:ring-[#4D6F36]"
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Apply Button */}
+          <button
+            onClick={() => setFilterDrawer(false)}
+            className="w-full bg-gradient-to-br from-[#4D6F36] to-[#3d5829] text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+          >
+            Apply Filters
+          </button>
         </div>
       </Drawer>
 
