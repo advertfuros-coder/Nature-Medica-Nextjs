@@ -3,7 +3,7 @@ FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# Install dependencies
 COPY package.json package-lock.json* ./
 RUN npm ci --legacy-peer-deps
 
@@ -15,7 +15,14 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build arguments for public env vars that need to be available at build time
+# Set environment variables for build
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+# Build arguments for environment variables needed during build
+ARG MONGODB_URI
+ARG NEXTAUTH_SECRET
+ARG NEXTAUTH_URL
 ARG NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 ARG NEXT_PUBLIC_CASHFREE_APP_ID
 ARG NEXT_PUBLIC_RAZORPAY_KEY_ID
@@ -23,15 +30,16 @@ ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_BASE_URL
 ARG NEXT_PUBLIC_GTM_ID
 
-# Set environment variables for build
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-ENV NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=$NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
-ENV NEXT_PUBLIC_CASHFREE_APP_ID=$NEXT_PUBLIC_CASHFREE_APP_ID
-ENV NEXT_PUBLIC_RAZORPAY_KEY_ID=$NEXT_PUBLIC_RAZORPAY_KEY_ID
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
-ENV NEXT_PUBLIC_GTM_ID=$NEXT_PUBLIC_GTM_ID
+# Set environment variables from build args (with defaults for missing values)
+ENV MONGODB_URI=${MONGODB_URI:-mongodb://localhost:27017/dummy}
+ENV NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-dummy-secret-for-build-only}
+ENV NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+ENV NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}
+ENV NEXT_PUBLIC_CASHFREE_APP_ID=${NEXT_PUBLIC_CASHFREE_APP_ID}
+ENV NEXT_PUBLIC_RAZORPAY_KEY_ID=${NEXT_PUBLIC_RAZORPAY_KEY_ID}
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL}
+ENV NEXT_PUBLIC_GTM_ID=${NEXT_PUBLIC_GTM_ID:-GTM-PB77XJD6}
 
 # Build the Next.js application
 RUN npm run build
