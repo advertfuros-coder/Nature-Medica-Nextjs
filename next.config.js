@@ -3,6 +3,9 @@ const nextConfig = {
   // Enable standalone output for Docker
   output: "standalone",
 
+  // Set output file tracing root to silence workspace warning
+  outputFileTracingRoot: __dirname,
+
   // Image optimization
   images: {
     remotePatterns: [
@@ -25,13 +28,6 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:
       process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  },
-
-  // Turbopack configuration (for dev mode only)
-  experimental: {
-    turbo: {
-      // Turbopack configuration if needed
-    },
   },
 };
 

@@ -316,5 +316,6 @@ class EkartAPI {
   }
 }
 
-// Export singleton instance
-export default new EkartAPI();
+// Export singleton instance with a name to avoid ESLint warning
+const ekartAPI = new EkartAPI();
+export default ekartAPI;
