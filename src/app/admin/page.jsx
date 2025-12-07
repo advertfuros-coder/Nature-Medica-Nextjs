@@ -11,11 +11,14 @@ import SalesChart from '@/components/admin/SalesChart';
 import CategoryChart from '@/components/admin/CategoryChart';
 import TopProductsChart from '@/components/admin/TopProductsChart';
 
+// Force dynamic rendering to prevent build-time database access
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboard() {
   try {
     const cookieStore = cookies();
     const token = cookieStore.get('token');
-    
+
     if (!token) {
       redirect('/admin/login');
     }
@@ -26,12 +29,12 @@ export default async function AdminDashboard() {
     const totalOrders = await Order.countDocuments();
     const totalProducts = await Product.countDocuments();
     const totalUsers = await User.countDocuments({ role: 'customer' });
-    
+
     const revenue = await Order.aggregate([
       { $match: { paymentStatus: 'completed' } },
       { $group: { _id: null, total: { $sum: '$finalPrice' } } }
     ]);
-    
+
     const totalRevenue = revenue[0]?.total || 0;
 
     // Get recent orders
@@ -46,11 +49,11 @@ export default async function AdminDashboard() {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const salesData = await Order.aggregate([
-      { 
-        $match: { 
+      {
+        $match: {
           createdAt: { $gte: sevenDaysAgo },
           paymentStatus: 'completed'
-        } 
+        }
       },
       {
         $group: {

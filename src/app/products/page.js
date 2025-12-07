@@ -6,6 +6,9 @@ import FilterSidebar from "@/components/customer/FilterSidebar";
 import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export default async function ProductsPage({ searchParams }) {
   await connectDB();
 
