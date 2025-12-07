@@ -97,6 +97,14 @@ export async function POST(req) {
 
     // For online payment, create Razorpay order
     if (paymentMode === 'online') {
+      const razorpay = getRazorpay();
+      
+      if (!razorpay) {
+        return NextResponse.json({
+          error: 'Payment gateway not configured'
+        }, { status: 500 });
+      }
+      
       const razorpayOrder = await razorpay.orders.create({
         amount: Math.round(orderData.finalPrice * 100), // Convert to paise
         currency: 'INR',
