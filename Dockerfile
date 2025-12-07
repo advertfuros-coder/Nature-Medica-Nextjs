@@ -15,9 +15,23 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Build arguments for public env vars that need to be available at build time
+ARG NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+ARG NEXT_PUBLIC_CASHFREE_APP_ID
+ARG NEXT_PUBLIC_RAZORPAY_KEY_ID
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_BASE_URL
+ARG NEXT_PUBLIC_GTM_ID
+
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=$NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+ENV NEXT_PUBLIC_CASHFREE_APP_ID=$NEXT_PUBLIC_CASHFREE_APP_ID
+ENV NEXT_PUBLIC_RAZORPAY_KEY_ID=$NEXT_PUBLIC_RAZORPAY_KEY_ID
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
+ENV NEXT_PUBLIC_GTM_ID=$NEXT_PUBLIC_GTM_ID
 
 # Build the Next.js application
 RUN npm run build
@@ -38,8 +52,8 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
 # Set the correct permission for prerender cache
-RUN mkdir .next/cache
-RUN chown nextjs:nodejs .next/cache
+RUN mkdir -p .next/cache
+RUN chown -R nextjs:nodejs .next
 
 USER nextjs
 
