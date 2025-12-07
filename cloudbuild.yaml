@@ -1,0 +1,44 @@
+steps:
+  # Build the Docker image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/nature-medica:$COMMIT_SHA"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/nature-medica:latest"
+      - "."
+
+  # Push the Docker image to Google Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "gcr.io/$PROJECT_ID/nature-medica:$COMMIT_SHA"
+
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "gcr.io/$PROJECT_ID/nature-medica:latest"
+
+  # Deploy to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - "run"
+      - "deploy"
+      - "nature-medica"
+      - "--image"
+      - "gcr.io/$PROJECT_ID/nature-medica:$COMMIT_SHA"
+      - "--region"
+      - "us-central1"
+      - "--platform"
+      - "managed"
+      - "--allow-unauthenticated"
+      - "--set-env-vars"
+      - "NODE_ENV=production"
+
+images:
+  - "gcr.io/$PROJECT_ID/nature-medica:$COMMIT_SHA"
+  - "gcr.io/$PROJECT_ID/nature-medica:latest"
+
+timeout: 1200s
