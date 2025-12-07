@@ -4,10 +4,18 @@ import Order from '@/models/Order';
 import Razorpay from 'razorpay';
 import { formatPhoneForShiprocket, validateIndianMobile } from '@/lib/validators';
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET
-});
+// Lazy initialize Razorpay only when needed
+let razorpayInstance = null;
+
+function getRazorpay() {
+  if (!razorpayInstance && process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+    razorpayInstance = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
+  }
+  return razorpayInstance;
+}
 
 export async function POST(req) {
   try {
