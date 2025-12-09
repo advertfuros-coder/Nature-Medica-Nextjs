@@ -4,7 +4,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { removeFromCart, updateQuantity, applyCoupon, removeCoupon } from '@/store/slices/cartSlice';
 import Link from 'next/link';
 import { FiTrash2, FiShoppingBag, FiX, FiTag, FiArrowLeft, FiLock } from 'react-icons/fi';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { trackRemoveFromCart, trackViewCart, trackBeginCheckout } from '@/lib/gtm';
 
 export default function CartClient() {
     const dispatch = useDispatch();
@@ -30,8 +31,29 @@ export default function CartClient() {
     };
 
     const handleRemove = (productId, variant) => {
+        // Find the item to get product details for tracking
+        const itemToRemove = items.find(item => 
+            item.product._id === productId && item.variant === variant
+        );
+        
+        if (itemToRemove) {
+            // Track remove from cart event in GTM
+            trackRemoveFromCart(
+                itemToRemove.product, 
+                itemToRemove.quantity, 
+                itemToRemove.variant
+            );
+        }
+        
         dispatch(removeFromCart({ productId, variant }));
     };
+    
+    // Track view_cart event when cart is loaded with items
+    useEffect(() => {
+        if (items.length > 0) {
+            trackViewCart(items, cartTotal);
+        }
+    }, []); // Only run on mount
 
     const handleApplyCoupon = async () => {
         if (!couponInput.trim()) return;
@@ -279,6 +301,7 @@ export default function CartClient() {
                                 {/* Checkout Button */}
                                 <Link
                                     href="/checkout"
+                                    onClick={() => trackBeginCheckout(items, finalPrice, couponCode)}
                                     className="block w-full bg-[#415f2d] text-white text-center py-2.5 rounded-lg hover:bg-[#344b24] transition-all duration-300 font-semibold text-sm shadow-sm hover:translate-y-0.5 hover:shadow-md"
                                 >
                                     <span className="flex items-center justify-center gap-2">
@@ -295,7 +318,7 @@ export default function CartClient() {
                                         </svg>
                                         <span>Secure checkout guaranteed</span>
                                     </div>
-                                   
+
                                     <div className="flex items-center gap-2 text-[11px] text-gray-600">
                                         <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />

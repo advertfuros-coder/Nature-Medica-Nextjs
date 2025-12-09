@@ -7,6 +7,7 @@ import { useDispatch } from 'react-redux';
 import { addToCart } from '@/store/slices/cartSlice';
 import { ShoppingCart, Zap, Star, Heart, Leaf, Award } from 'lucide-react';
 import { useState } from 'react';
+import { trackAddToCart } from '@/lib/gtm';
 
 // Custom Cloudinary loader function
 const cloudinaryLoader = ({ src, width, quality }) => {
@@ -37,6 +38,10 @@ export default function ProductCard({ product }) {
     e.stopPropagation();
     setAdding(true);
     dispatch(addToCart({ product, quantity: 1, variant: null }));
+    
+    // Track add to cart event in GTM
+    trackAddToCart(product, 1, null);
+    
     setTimeout(() => setAdding(false), 1500);
   };
 
@@ -45,6 +50,10 @@ export default function ProductCard({ product }) {
     e.stopPropagation();
     setQuickBuying(true);
     dispatch(addToCart({ product, quantity: 1, variant: null }));
+    
+    // Track add to cart event for Buy Now (since it adds to cart before checkout)
+    trackAddToCart(product, 1, null);
+    
     setTimeout(() => router.push('/checkout'), 500);
   };
 
@@ -105,7 +114,7 @@ export default function ProductCard({ product }) {
 
             <div className="flex-1"></div>
 
-            
+
           </div>
 
           {/* Trust Badges */}
@@ -152,8 +161,8 @@ export default function ProductCard({ product }) {
                   <Star
                     key={i}
                     className={`w-3 h-3 ${i < Math.round(product.ratingAvg)
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : 'fill-gray-200 text-gray-200'
+                      ? 'fill-yellow-400 text-yellow-400'
+                      : 'fill-gray-200 text-gray-200'
                       }`}
                   />
                 ))}
@@ -196,8 +205,8 @@ export default function ProductCard({ product }) {
               onClick={handleAddToCart}
               disabled={adding}
               className={`w-full border-2 py-2.5 rounded-xl text-[12px] font-semisemibold flex items-center justify-center gap-2 transition-all ${adding
-                  ? 'border-green-500 bg-green-50 text-green-700'
-                  : 'border-gray-200 bg-white hover:border-[#4D6F36] hover:bg-green-50 text-gray-900'
+                ? 'border-green-500 bg-green-50 text-green-700'
+                : 'border-gray-200 bg-white hover:border-[#4D6F36] hover:bg-green-50 text-gray-900'
                 }`}
             >
               <ShoppingCart className="w-4 h-4" />

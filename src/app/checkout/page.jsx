@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { clearCart, applyCoupon, removeCoupon, removeFromCart, updateQuantity } from '@/store/slices/cartSlice';
 import { Check, MapPin, Plus, Shield, Truck, Package, X, CreditCard, Loader2, Tag, Trash2, Minus } from 'lucide-react';
 import Script from 'next/script';
+import { trackPurchase, trackCheckout } from '@/lib/gtm';
 
 // Utility to get default or first address id
 function chooseDefaultAddressId(addresses) {
@@ -151,7 +152,7 @@ export default function CheckoutPage() {
   useEffect(() => {
     // Don't redirect if we're currently placing an order
     if (isOrderPlacing) return;
-    
+
     if (!items || items.length === 0) {
       router.push('/cart');
       return;
@@ -172,6 +173,17 @@ export default function CheckoutPage() {
       setSelectedAddressId(chooseDefaultAddressId(addresses));
     }
   }, [addresses, selectedAddressId]);
+
+  // Track checkout event when payment method is selected
+  useEffect(() => {
+    if (items && items.length > 0 && paymentMethod) {
+      const deliveryCharge = 49;
+      const finalPrice = totalPrice - discount + deliveryCharge;
+      const shippingTier = "Standard"; // Can be dynamic based on selection
+
+      trackCheckout(items, finalPrice, shippingTier, couponCode || "");
+    }
+  }, [paymentMethod]); // Track when payment method changes
 
   const selectedAddress = addresses.find(addr => addr._id === selectedAddressId);
 
@@ -343,6 +355,16 @@ export default function CheckoutPage() {
           const data = await res.json();
 
           if (res.ok && data.orderId) {
+            // Track purchase event in GTM
+            trackPurchase({
+              orderId: data.orderId,
+              items: items,
+              total: finalPrice,
+              tax: 0,
+              shipping: deliveryCharge,
+              couponCode: couponCode
+            });
+
             // Clear cart and redirect to success page
             dispatch(clearCart());
             // Use replace to ensure immediate redirect without back button issues
@@ -995,7 +1017,7 @@ export default function CheckoutPage() {
                       <Shield className="w-3.5 h-3.5 text-green-600" />
                       <span>100% secure payments</span>
                     </div>
-                    
+
                     <div className="flex items-center gap-2 text-[10px] text-gray-600">
                       <Package className="w-3.5 h-3.5 text-green-600" />
                       <span>Easy returns within 30 days</span>

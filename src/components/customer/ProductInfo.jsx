@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '@/store/slices/cartSlice';
 import { FiShoppingCart, FiStar, FiCheck, FiTruck, FiRefreshCw, FiShield, FiPackage, FiTag } from 'react-icons/fi';
 import { Zap, Heart, Share2, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { trackAddToCart, trackViewItem } from '@/lib/gtm';
 
 export default function ProductInfo({ product }) {
   const dispatch = useDispatch();
@@ -32,6 +33,10 @@ export default function ProductInfo({ product }) {
       quantity,
       variant: selectedVariant?.name
     }));
+
+    // Track add to cart event in GTM
+    trackAddToCart(product, quantity, selectedVariant?.name);
+
     setTimeout(() => setAdding(false), 1500);
   };
 
@@ -39,12 +44,23 @@ export default function ProductInfo({ product }) {
     e.preventDefault();
     setQuickBuying(true);
     dispatch(addToCart({ product, quantity, variant: selectedVariant?.name }));
+
+    // Track add to cart event for Buy Now (since it adds to cart before checkout)
+    trackAddToCart(product, quantity, selectedVariant?.name);
+
     setTimeout(() => router.push('/checkout'), 500);
   };
 
   const handleWishlist = () => {
     setIsWishlisted(!isWishlisted);
   };
+
+  // Track view_item event when product is viewed
+  useEffect(() => {
+    if (product) {
+      trackViewItem(product, selectedVariant?.name || "");
+    }
+  }, [product._id]); // Track when product changes
 
   return (
     <div className="flex flex-col h-full pb-24 lg:pb-0">
@@ -116,8 +132,8 @@ export default function ProductInfo({ product }) {
                 <FiStar
                   key={i}
                   className={`w-4 h-4 ${i < Math.round(product.ratingAvg)
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-gray-300'
+                    ? 'fill-yellow-400 text-yellow-400'
+                    : 'text-gray-300'
                     }`}
                 />
               ))}
@@ -182,8 +198,8 @@ export default function ProductInfo({ product }) {
                 key={index}
                 onClick={() => setSelectedVariant(variant)}
                 className={`relative px-4 py-3 border-2 rounded-xl text-sm font-medium transition-all ${selectedVariant === variant
-                    ? 'border-[#4D6F36] bg-green-50 text-[#4D6F36]'
-                    : 'border-gray-200 hover:border-gray-300 text-gray-700 hover:bg-gray-50'
+                  ? 'border-[#4D6F36] bg-green-50 text-[#4D6F36]'
+                  : 'border-gray-200 hover:border-gray-300 text-gray-700 hover:bg-gray-50'
                   }`}
               >
                 <div className="text-center">
@@ -245,10 +261,10 @@ export default function ProductInfo({ product }) {
             onClick={handleAddToCart}
             disabled={adding || currentStock === 0}
             className={`col-span- py-4 rounded-xl text-base font-semibold flex items-center justify-center gap-2 transition-all ${adding
-                ? 'border-2 border-green-500 bg-green-50 text-green-700'
-                : currentStock === 0
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'border-2 border-gray-200 bg-white hover:border-[#4D6F36] hover:bg-green-50 text-gray-900 shadow-sm'
+              ? 'border-2 border-green-500 bg-green-50 text-green-700'
+              : currentStock === 0
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'border-2 border-gray-200 bg-white hover:border-[#4D6F36] hover:bg-green-50 text-gray-900 shadow-sm'
               }`}
           >
             {adding ? (
@@ -270,8 +286,8 @@ export default function ProductInfo({ product }) {
             onClick={handleQuickBuy}
             disabled={quickBuying || currentStock === 0}
             className={` py-4 rounded-xl text-base font-semibold flex items-center justify-center gap-2 transition-all ${currentStock === 0
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                : 'bg-[#4D6F36] text-white hover:bg-[#3d5829] shadow-md hover:shadow-lg'
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-[#4D6F36] text-white hover:bg-[#3d5829] shadow-md hover:shadow-lg'
               }`}
           >
             <Zap className="w-5 h-5" />
@@ -288,10 +304,10 @@ export default function ProductInfo({ product }) {
             onClick={handleAddToCart}
             disabled={adding || currentStock === 0}
             className={`col-span- 3 py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all ${adding
-                ? 'border-2 border-green-500 bg-green-50 text-green-700'
-                : currentStock === 0
-                  ? 'bg-gray-200 text-gray-400'
-                  : 'border-2 border-gray-200 bg-white hover:border-[#4D6F36] hover:bg-green-50 text-gray-900'
+              ? 'border-2 border-green-500 bg-green-50 text-green-700'
+              : currentStock === 0
+                ? 'bg-gray-200 text-gray-400'
+                : 'border-2 border-gray-200 bg-white hover:border-[#4D6F36] hover:bg-green-50 text-gray-900'
               }`}
           >
             {adding ? (
@@ -313,8 +329,8 @@ export default function ProductInfo({ product }) {
             onClick={handleQuickBuy}
             disabled={quickBuying || currentStock === 0}
             className={`col-span -2  py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all ${currentStock === 0
-                ? 'bg-gray-200 text-gray-400'
-                : 'bg-[#4D6F36] text-white hover:bg-[#3d5829]'
+              ? 'bg-gray-200 text-gray-400'
+              : 'bg-[#4D6F36] text-white hover:bg-[#3d5829]'
               }`}
           >
             <Zap className="w-4 h-4" />

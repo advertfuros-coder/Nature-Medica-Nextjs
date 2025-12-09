@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { clearCart } from '@/store/slices/cartSlice';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { trackPurchase } from '@/lib/gtm';
 
 export default function PaymentStatusPage() {
     const searchParams = useSearchParams();
@@ -113,6 +114,17 @@ export default function PaymentStatusPage() {
                         setStatus('success');
                         setMessage('Payment successful! Your order has been placed.');
                         setCreatedOrderId(internalOrderId);
+                        
+                        // Track purchase event in GTM
+                        const orderData = JSON.parse(pendingOrderData);
+                        trackPurchase({
+                            orderId: internalOrderId,
+                            items: orderData.items || [],
+                            total: orderData.finalPrice || 0,
+                            tax: 0,
+                            shipping: 49,
+                            couponCode: orderData.couponCode || null
+                        });
 
                         // Clear cart and sessionStorage
                         dispatch(clearCart());
@@ -148,6 +160,16 @@ export default function PaymentStatusPage() {
                 setStatus('success');
                 setMessage('Payment successful! Your order has been placed.');
                 setCreatedOrderId(createOrderData.orderId);
+                
+                // Track purchase event in GTM
+                trackPurchase({
+                    orderId: createOrderData.orderId,
+                    items: orderPayload.items || [],
+                    total: orderPayload.finalPrice || 0,
+                    tax: 0,
+                    shipping: 49,
+                    couponCode: orderPayload.couponCode || null
+                });
 
                 // Clear cart and sessionStorage
                 dispatch(clearCart());
