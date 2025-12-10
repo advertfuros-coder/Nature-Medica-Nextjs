@@ -4,6 +4,8 @@ import Category from '@/models/Category';
 import { notFound } from 'next/navigation';
 import ProductEditForm from '@/components/admin/ProductEditForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ProductEditPage({ params }) {
   await connectDB();
 
@@ -21,9 +23,9 @@ export default async function ProductEditPage({ params }) {
         <p className="text-gray-600 mt-2">Update product details, images, pricing and inventory</p>
       </div>
 
-      <ProductEditForm 
-        product={JSON.parse(JSON.stringify(product))} 
-        categories={JSON.parse(JSON.stringify(categories))} 
+      <ProductEditForm
+        product={JSON.parse(JSON.stringify(product))}
+        categories={JSON.parse(JSON.stringify(categories))}
       />
     </div>
   );

@@ -26,6 +26,9 @@ import CategoryGrid from "@/components/customer/CategoryGrid";
 import NewsletterPopup from "@/components/customer/NewsletterPopup";
 import TrustBadgesSection from "@/components/customer/TrustBadgesSection";
 
+// Force dynamic rendering to avoid build-time DB queries
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   await connectDB();
 

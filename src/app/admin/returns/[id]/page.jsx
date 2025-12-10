@@ -6,6 +6,8 @@ import Product from '@/models/Product'; // Import Product model
 import ReturnDetailView from '@/components/admin/ReturnDetailView';
 import { notFound } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminReturnDetailPage({ params }) {
   await connectDB();
 
