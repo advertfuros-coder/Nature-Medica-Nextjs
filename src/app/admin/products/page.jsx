@@ -3,6 +3,8 @@ import Product from '@/models/Product';
 import ProductTable from '@/components/admin/ProductTable';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminProductsPage({ searchParams }) {
   await connectDB();
 

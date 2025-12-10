@@ -137,7 +137,6 @@ const OrderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-OrderSchema.index({ orderId: 1 });
 OrderSchema.index({ user: 1 });
 OrderSchema.index({ "ekart.trackingId": 1 });
 

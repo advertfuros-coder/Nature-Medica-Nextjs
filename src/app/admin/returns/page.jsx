@@ -4,6 +4,8 @@ import Order from '@/models/Order'; // Add this import
 import User from '@/models/User'; // Add this import
 import ReturnsTable from '@/components/admin/ReturnsTable';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminReturnsPage({ searchParams }) {
   await connectDB();
 

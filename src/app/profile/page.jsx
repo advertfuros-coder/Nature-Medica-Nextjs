@@ -2,15 +2,15 @@
 
 import { useSelector, useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { 
-  User, 
-  Package, 
-  MapPin, 
-  Heart, 
-  Bell, 
-  HelpCircle, 
-  Settings, 
+import { useState, useEffect } from 'react';
+import {
+  User,
+  Package,
+  MapPin,
+  Heart,
+  Bell,
+  HelpCircle,
+  Settings,
   LogOut,
   ChevronRight,
   Edit,
@@ -35,9 +35,15 @@ export default function ProfilePage() {
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated (client-side only)
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      router.push('/auth');
+    }
+  }, [isAuthenticated, user, router]);
+
+  // Don't render until we've checked authentication
   if (!isAuthenticated || !user) {
-    router.push('/auth');
     return null;
   }
 
@@ -82,7 +88,7 @@ export default function ProfilePage() {
       <div className="bg-gradient-to-br from-[#3a5d1e] to-[#4a7d2e] text-white px-4 pt-6 pb-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-lg font-semibold">My Account</h1>
-          <button 
+          <button
             onClick={() => router.push('/profile/edit')}
             className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
           >

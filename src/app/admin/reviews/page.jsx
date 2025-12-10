@@ -2,18 +2,20 @@ import connectDB from '@/lib/mongodb';
 import Review from '@/models/Review';
 import ReviewList from '@/components/admin/ReviewList';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminReviewsPage({ searchParams }) {
   await connectDB();
 
   // ✅ Await searchParams (Next.js 15)
   const params = await searchParams;
-  
+
   const page = parseInt(params?.page) || 1;
   const limit = 20;
   const skip = (page - 1) * limit;
 
   let query = {};
-  
+
   if (params?.status === 'pending') {
     query.approved = false;
   } else if (params?.status === 'approved') {
@@ -42,7 +44,7 @@ export default async function AdminReviewsPage({ searchParams }) {
     return (
       <div className="p-8">
         <h1 className="text-3xl font-bold mb-8">Reviews Management</h1>
-        <ReviewList 
+        <ReviewList
           reviews={JSON.parse(JSON.stringify(validReviews))}
           currentPage={page}
           totalPages={totalPages}

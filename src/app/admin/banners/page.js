@@ -1,6 +1,9 @@
-import connectDB from '@/lib/mongodb';
-import Banner from '@/models/Banner';
-import BannerList from '@/components/admin/BannerList';
+import connectDB from "@/lib/mongodb";
+import Banner from "@/models/Banner";
+import BannerList from "@/components/admin/BannerList";
+
+// Force dynamic rendering to avoid build-time DB queries
+export const dynamic = "force-dynamic";
 
 export default async function AdminBannersPage() {
   await connectDB();
