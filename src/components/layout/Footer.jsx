@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FiFacebook, FiInstagram, FiTwitter, FiYoutube, FiMapPin, FiPhone, FiMail, FiArrowRight, FiSend } from 'react-icons/fi';
 import { useState } from 'react';
-import logo from '@/assets/logo.webp';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
@@ -29,19 +28,19 @@ export default function Footer() {
       </div>
 
       <div className="relative">
-       
+
         {/* Main Footer Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
             {/* Brand & Contact - Takes more space */}
             <div className="lg:col-span-5">
               <div className="mb-6">
-                <Image 
-                  src={logo} 
-                  alt="NatureMedica Logo" 
-                  width={220} 
+                <Image
+                  src="/naturemedicalogo.png"
+                  alt="NatureMedica Logo"
+                  width={220}
                   height={80}
-                  className="brightness-0 invert mb-4 hover:scale-105 transition-transform"
+                  className="bg-white p-3 rounded-lg mb-4 hover:scale-105 sc0 transition-transform"
                 />
                 <p className="text-green-100 leading-relaxed text-sm md:text-base">
                   Your trusted partner in natural health and wellness. We bring you the finest quality products with care and dedication.
@@ -50,7 +49,7 @@ export default function Footer() {
 
               {/* Contact Cards with Enhanced Design */}
               <div className="space-y-4">
-                <a 
+                <a
                   href="https://maps.google.com/?q=1st+Floor,+LHPS+Building,+Friends+Colony,+Sector-7,+Kamla+Nehru+Nagar,+Vikas+Nagar,+Lucknow,+Uttar+Pradesh+226022"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -68,7 +67,7 @@ export default function Footer() {
                   </div>
                 </a>
 
-                <a 
+                <a
                   href="tel:8400043322"
                   className="group flex items-center gap-4 p-4 bg-white/5 backdrop-blur rounded-2xl border border-white/10 hover:bg-white/10 hover:border-green-300/30 transition-all hover:translate-x-1"
                 >
@@ -83,7 +82,7 @@ export default function Footer() {
                   </div>
                 </a>
 
-                <a 
+                <a
                   href="mailto:support@naturemedica.com"
                   className="group flex items-center gap-4 p-4 bg-white/5 backdrop-blur rounded-2xl border border-white/10 hover:bg-white/10 hover:border-green-300/30 transition-all hover:translate-x-1"
                 >
@@ -103,7 +102,7 @@ export default function Footer() {
             {/* Quick Links Grid - Enhanced Design */}
             <div className="lg:col-span-7">
               <div className="grid grid-cols-2 md:grid-cols-2 gap-8">
-               
+
 
                 {/* Support */}
                 <div>
@@ -119,8 +118,8 @@ export default function Footer() {
                       { href: '/faq', label: 'FAQ' },
                     ].map((link) => (
                       <li key={link.href}>
-                        <Link 
-                          href={link.href} 
+                        <Link
+                          href={link.href}
                           className="text-green-100 hover:text-white transition-colors flex items-center gap-2 group"
                         >
                           <FiArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
@@ -145,8 +144,8 @@ export default function Footer() {
                       { href: '/shipping', label: 'Shipping Policy' },
                     ].map((link) => (
                       <li key={link.href}>
-                        <Link 
-                          href={link.href} 
+                        <Link
+                          href={link.href}
                           className="text-green-100 hover:text-white transition-colors flex items-center gap-2 group"
                         >
                           <FiArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
@@ -174,8 +173,8 @@ export default function Footer() {
               <div className="flex items-center gap-4">
                 <span className="text-green-100 font-medium text-sm">Follow Us:</span>
                 <div className="flex gap-3">
-                  <a 
-                    href="https://www.facebook.com/profile.php?id=61584706168474" 
+                  <a
+                    href="https://www.facebook.com/profile.php?id=61584706168474"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur border border-white/20 hover:bg-gradient-to-br hover:from-blue-500 hover:to-blue-600 flex items-center justify-center transition-all hover:scale-110 hover:rotate-6 group"
@@ -183,8 +182,8 @@ export default function Footer() {
                   >
                     <FiFacebook className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
                   </a>
-                  <a 
-                    href="https://www.instagram.com/nature_medica_/" 
+                  <a
+                    href="https://www.instagram.com/nature_medica_/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur border border-white/20 hover:bg-gradient-to-br hover:from-pink-500 hover:to-purple-600 flex items-center justify-center transition-all hover:scale-110 hover:rotate-6 group"
@@ -225,7 +224,7 @@ export default function Footer() {
             </div>
           </div>
         </div>
- 
+
       </div>
     </footer>
   );
