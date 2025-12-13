@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import popupbanner from "@/assets/popupbanner.jpeg";
 import Image from "next/image";
 export default function NewsletterPopup() {
   const [open, setOpen] = useState(false);
@@ -59,12 +58,12 @@ export default function NewsletterPopup() {
       {open && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
           <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden flex flex-col md:flex-row border border-gray-200 animate-scaleIn max-h-[90vh] md:max-h-auto">
-            {/* Left Image */}
             <div className="relative w-full md:w-1/2 h-48 md:h-auto">
               <Image
-                src={popupbanner}
+                src="/image.png"
                 alt="Popup Image"
-                className="object-cover w-full h-full"
+                fill
+                className="object-cover"
               />
             </div>
 

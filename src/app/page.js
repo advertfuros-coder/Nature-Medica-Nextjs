@@ -25,6 +25,7 @@ import PromoStripSimple from "@/components/customer/PromoStripSimple";
 import CategoryGrid from "@/components/customer/CategoryGrid";
 import NewsletterPopup from "@/components/customer/NewsletterPopup";
 import TrustBadgesSection from "@/components/customer/TrustBadgesSection";
+import PromoBanner from "@/components/customer/PromoBanner";
 
 // Force dynamic rendering to avoid build-time DB queries
 export const dynamic = "force-dynamic";
@@ -63,6 +64,7 @@ export default async function HomePage() {
 
       <CategoryGrid />
 
+
       {/* <TrustBadgesSection /> */}
 
       <BrandMarquee />
@@ -72,7 +74,8 @@ export default async function HomePage() {
       {/* Shop by Category */}
 
       <BestSellerSectionWrapper />
-      <FacewashSection />
+      {/* <FacewashSection /> */}
+      <PromoBanner />
 
       <NewArrivalSectionWrapper />
       <FeaturedSectionWrapper />
@@ -108,7 +111,7 @@ export default async function HomePage() {
             alt="Nature Medica Products"
             className="w-full h-full object-contain"
           />
-          
+
           {/* Shop Now Button - Left Bottom */}
           <Link href="/products">
             <button className="absolute bottom-6 left-6 md:bottom-12 md:left-12 px-6 md:px-8 py-3 md:py-4 bg-white text-[#415f2d] font-semibold text-sm md:text-base rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transform transition-all duration-300 flex items-center gap-2 group-hover:gap-3">
