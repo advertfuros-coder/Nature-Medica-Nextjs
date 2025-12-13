@@ -165,9 +165,22 @@ export default function Footer() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               {/* Copyright */}
-              <p className="text-green-100 text-sm text-center md:text-left">
-                © {new Date().getFullYear()} <span className="font-semibold text-white">Nature Medica</span>. All rights reserved.
-              </p>
+              <div className="text-green-100 text-sm text-center md:text-left">
+                <p>
+                  © {new Date().getFullYear()} <span className="font-semibold text-white">Nature Medica</span>. All rights reserved.
+                </p>
+                <p className="mt-1">
+                  Design and Development by{' '}
+                  <a
+                    href="https://genforgestudio.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-white hover:text-green-300 transition-colors underline decoration-green-400/50 hover:decoration-green-300"
+                  >
+                    Genforge Studio
+                  </a>
+                </p>
+              </div>
 
               {/* Social Media - Enhanced */}
               <div className="flex items-center gap-4">
