@@ -6,7 +6,7 @@ import { addToCart } from '@/store/slices/cartSlice';
 import { FiShoppingCart, FiStar, FiCheck, FiTruck, FiRefreshCw, FiShield, FiPackage, FiTag } from 'react-icons/fi';
 import { Zap, Heart, Share2, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { trackAddToCart, trackViewItem } from '@/lib/gtm';
+import { trackAddToCart, trackViewItem } from '@/utils/analytics';
 
 export default function ProductInfo({ product }) {
   const dispatch = useDispatch();
@@ -34,8 +34,8 @@ export default function ProductInfo({ product }) {
       variant: selectedVariant?.name
     }));
 
-    // Track add to cart event in GTM
-    trackAddToCart(product, quantity, selectedVariant?.name);
+    // Track add to cart event
+    trackAddToCart(product, quantity);
 
     setTimeout(() => setAdding(false), 1500);
   };
@@ -45,8 +45,8 @@ export default function ProductInfo({ product }) {
     setQuickBuying(true);
     dispatch(addToCart({ product, quantity, variant: selectedVariant?.name }));
 
-    // Track add to cart event for Buy Now (since it adds to cart before checkout)
-    trackAddToCart(product, quantity, selectedVariant?.name);
+    // Track add to cart event for Buy Now
+    trackAddToCart(product, quantity);
 
     setTimeout(() => router.push('/checkout'), 500);
   };
@@ -58,7 +58,7 @@ export default function ProductInfo({ product }) {
   // Track view_item event when product is viewed
   useEffect(() => {
     if (product) {
-      trackViewItem(product, selectedVariant?.name || "");
+      trackViewItem(product);
     }
   }, [product._id]); // Track when product changes
 

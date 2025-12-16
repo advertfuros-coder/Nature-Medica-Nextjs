@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Recovery - Nature Medica</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 40px;
+        max-width: 600px;
+        width: 100%;
+      }
+
+      h1 {
+        color: #2d3748;
+        margin-bottom: 10px;
+        font-size: 24px;
+      }
+
+      .subtitle {
+        color: #718096;
+        margin-bottom: 30px;
+        font-size: 14px;
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        color: #4a5568;
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      button {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .result {
+        margin-top: 30px;
+        padding: 20px;
+        border-radius: 8px;
+        display: none;
+      }
+
+      .result.success {
+        background: #f0fdf4;
+        border: 2px solid #86efac;
+        display: block;
+      }
+
+      .result.error {
+        background: #fef2f2;
+        border: 2px solid #fca5a5;
+        display: block;
+      }
+
+      .result h3 {
+        margin-bottom: 15px;
+        color: #2d3748;
+        font-size: 18px;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .info-row:last-child {
+        border-bottom: none;
+      }
+
+      .info-label {
+        color: #718096;
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      .info-value {
+        color: #2d3748;
+        font-weight: 500;
+        font-size: 13px;
+      }
+
+      .instructions {
+        margin-top: 20px;
+        padding: 15px;
+        background: #fffbeb;
+        border-radius: 6px;
+        border-left: 4px solid #fbbf24;
+      }
+
+      .instructions h4 {
+        color: #92400e;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      .instructions ol {
+        margin-left: 20px;
+        color: #78350f;
+        font-size: 13px;
+        line-height: 1.8;
+      }
+
+      .loader {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔧 Payment Recovery Tool</h1>
+      <p class="subtitle">Recover customer details for failed order NM000085</p>
+
+      <div class="input-group">
+        <label for="orderId">Cashfree Order ID</label>
+        <input
+          type="text"
+          id="orderId"
+          value="NM000085_1764660705883"
+          placeholder="e.g., NM000085_1764660705883"
+        />
+      </div>
+
+      <div class="input-group">
+        <label for="password">Admin Password</label>
+        <input
+          type="password"
+          id="password"
+          value="Admin@123456"
+          placeholder="Enter admin password"
+        />
+      </div>
+
+      <button onclick="recoverPayment()" id="submitBtn">
+        Recover Payment Details
+      </button>
+
+      <div id="result" class="result"></div>
+    </div>
+
+    <script>
+      async function recoverPayment() {
+        const orderId = document.getElementById("orderId").value;
+        const password = document.getElementById("password").value;
+        const resultDiv = document.getElementById("result");
+        const submitBtn = document.getElementById("submitBtn");
+
+        if (!orderId || !password) {
+          resultDiv.className = "result error";
+          resultDiv.innerHTML =
+            "<h3>❌ Error</h3><p>Please fill in all fields</p>";
+          return;
+        }
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="loader"></span> Processing...';
+        resultDiv.style.display = "none";
+
+        try {
+          const response = await fetch("/api/admin/recover-payment", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              cashfreeOrderId: orderId,
+              adminPassword: password,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            // Success - show payment details
+            resultDiv.className = "result success";
+            resultDiv.innerHTML = `
+                        <h3>✅ Payment Found in Cashfree!</h3>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Internal Order ID:</span>
+                            <span class="info-value">${
+                              data.internalOrderId
+                            }</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Cashfree Order ID:</span>
+                            <span class="info-value">${
+                              data.cashfreeOrderId
+                            }</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Amount Paid:</span>
+                            <span class="info-value">₹${
+                              data.payment.payment_amount
+                            }</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Payment Status:</span>
+                            <span class="info-value">${
+                              data.payment.payment_status
+                            }</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Payment ID:</span>
+                            <span class="info-value">${
+                              data.payment.cf_payment_id
+                            }</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Customer Phone:</span>
+                            <span class="info-value">${
+                              data.orderDetails.customer_details.customer_phone
+                            }</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Customer Name:</span>
+                            <span class="info-value">${
+                              data.orderDetails.customer_details.customer_name
+                            }</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Customer Email:</span>
+                            <span class="info-value">${
+                              data.orderDetails.customer_details
+                                .customer_email || "Not provided"
+                            }</span>
+                        </div>
+                        
+                        <div class="instructions">
+                            <h4>📋 Next Steps:</h4>
+                            <ol>
+                                ${data.instructions
+                                  .map((i) => `<li>${i}</li>`)
+                                  .join("")}
+                            </ol>
+                        </div>
+                    `;
+          } else if (data.message === "Order already exists") {
+            resultDiv.className = "result success";
+            resultDiv.innerHTML = `
+                        <h3>✅ Order Already Exists</h3>
+                        <p>The order has already been created in the database.</p>
+                        <div class="info-row">
+                            <span class="info-label">Order ID:</span>
+                            <span class="info-value">${data.order.orderId}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Payment Status:</span>
+                            <span class="info-value">${data.order.paymentStatus}</span>
+                        </div>
+                    `;
+          } else {
+            // Error
+            resultDiv.className = "result error";
+            resultDiv.innerHTML = `
+                        <h3>❌ Error</h3>
+                        <p>${data.error || "Failed to recover payment"}</p>
+                        ${
+                          data.details
+                            ? `<p style="margin-top: 10px; font-size: 12px; color: #7f1d1d;">${data.details}</p>`
+                            : ""
+                        }
+                    `;
+          }
+        } catch (error) {
+          resultDiv.className = "result error";
+          resultDiv.innerHTML = `
+                    <h3>❌ Network Error</h3>
+                    <p>${error.message}</p>
+                `;
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = "Recover Payment Details";
+        }
+      }
+    </script>
+  </body>
+</html>

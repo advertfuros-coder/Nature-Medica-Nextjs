@@ -56,6 +56,23 @@ export async function POST(req) {
       height: packageDetails?.height || 15,
     };
 
+    // Determine payment mode based on actual payment status
+    // COD if: explicitly COD OR online payment not completed (fallback scenario)
+    const isCOD =
+      order.paymentMode === "cod" ||
+      (order.paymentMode === "online" && order.paymentStatus === "pending");
+
+    // Log warning for pending online payments (these shouldn't exist but handle gracefully)
+    if (order.paymentMode === "online" && order.paymentStatus === "pending") {
+      console.warn(
+        "⚠️ WARNING: Shipping order with pending online payment as COD fallback:",
+        order.orderId
+      );
+      console.warn(
+        "   This order should not have been created. Check order creation flow."
+      );
+    }
+
     // Prepare shipment data for Ekart
     const shipmentData = {
       // Seller information
@@ -72,8 +89,8 @@ export async function POST(req) {
       consignee_name: order.shippingAddress.name,
       consignee_gst_tin: "", // Optional
 
-      // Payment details
-      payment_mode: "Prepaid", // All orders are online paid
+      // Payment details - FIXED: Now based on actual payment status
+      payment_mode: isCOD ? "COD" : "Prepaid",
 
       // Product details
       products_desc: order.items.map((item) => item.title).join(", "),
@@ -84,7 +101,7 @@ export async function POST(req) {
       taxable_amount: Math.round(order.finalPrice / 1.18), // Assuming 18% GST
       tax_value: Math.round(order.finalPrice - order.finalPrice / 1.18),
       commodity_value: String(Math.round(order.finalPrice / 1.18)),
-      cod_amount: 0, // Always 0 for prepaid
+      cod_amount: isCOD ? order.finalPrice : 0,
 
       // GST amounts
       seller_gst_amount: 0,

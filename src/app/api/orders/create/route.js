@@ -99,6 +99,23 @@ export async function POST(req) {
       }
     }
 
+    // CRITICAL VALIDATION: Prevent order creation for unverified online payments
+    // Following Flipkart/Amazon model: Online payment orders should only be created after successful payment
+    if (paymentMode === "online" && !paymentVerified) {
+      console.warn(
+        "⚠️ Attempted to create order with unverified online payment"
+      );
+      return NextResponse.json(
+        {
+          error: "Payment verification required",
+          message:
+            "Online payment orders can only be created after successful payment verification. Please complete the payment first.",
+          code: "PAYMENT_NOT_VERIFIED",
+        },
+        { status: 400 }
+      );
+    }
+
     // Use pre-generated Order ID if provided, otherwise generate new one
     let orderId;
     if (preGeneratedOrderId) {

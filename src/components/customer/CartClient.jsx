@@ -5,7 +5,7 @@ import { removeFromCart, updateQuantity, applyCoupon, removeCoupon } from '@/sto
 import Link from 'next/link';
 import { FiTrash2, FiShoppingBag, FiX, FiTag, FiArrowLeft, FiLock } from 'react-icons/fi';
 import { useState, useEffect } from 'react';
-import { trackRemoveFromCart, trackViewCart, trackBeginCheckout } from '@/lib/gtm';
+import { trackRemoveFromCart, trackViewCart, trackBeginCheckout } from '@/utils/analytics';
 
 export default function CartClient() {
     const dispatch = useDispatch();
@@ -32,26 +32,22 @@ export default function CartClient() {
 
     const handleRemove = (productId, variant) => {
         // Find the item to get product details for tracking
-        const itemToRemove = items.find(item => 
+        const itemToRemove = items.find(item =>
             item.product._id === productId && item.variant === variant
         );
-        
+
         if (itemToRemove) {
-            // Track remove from cart event in GTM
-            trackRemoveFromCart(
-                itemToRemove.product, 
-                itemToRemove.quantity, 
-                itemToRemove.variant
-            );
+            // Track remove from cart event
+            trackRemoveFromCart(itemToRemove.product, itemToRemove.quantity);
         }
-        
+
         dispatch(removeFromCart({ productId, variant }));
     };
-    
+
     // Track view_cart event when cart is loaded with items
     useEffect(() => {
         if (items.length > 0) {
-            trackViewCart(items, cartTotal);
+            trackViewCart(items.map(item => ({ ...item.product, quantity: item.quantity })), cartTotal);
         }
     }, []); // Only run on mount
 

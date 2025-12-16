@@ -66,7 +66,14 @@ export default function AdminOrderDetailsPage() {
 
   const fetchOrder = async () => {
     try {
-      const res = await fetch(`/api/admin/orders/${orderId}`);
+      // Add cache-busting to prevent stale data
+      const res = await fetch(`/api/admin/orders/${orderId}?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
       const data = await res.json();
       if (res.ok) {
         console.log('📦 Order data received:', data.order);
@@ -277,6 +284,32 @@ export default function AdminOrderDetailsPage() {
     } catch (error) {
       console.error('Ekart label error:', error);
       alert(`❌ Failed to download label\n\nError: ${error.message}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const downloadEkartManifest = async () => {
+    setActionLoading(true);
+    try {
+      const res = await fetch('/api/admin/shipments/ekart/manifest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: order.orderId })
+      });
+
+      const data = await res.json();
+      
+      if (res.ok && data.downloadUrl) {
+        // Open manifest URL in new tab
+        window.open(data.downloadUrl, '_blank');
+        alert('✅ Manifest opened in new tab!');
+      } else {
+        alert(`❌ Failed to download manifest\n\n${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Ekart manifest error:', error);
+      alert(`❌ Failed to download manifest\n\nError: ${error.message}`);
     } finally {
       setActionLoading(false);
     }
@@ -845,11 +878,11 @@ export default function AdminOrderDetailsPage() {
 
 
                     {console.log('🔍 Checking Ekart condition:', {
-                        hasOrder: !!order,
-                        hasEkart: !!order?.ekart,
-                        hasTrackingId: !!order?.ekart?.trackingId,
-                        trackingId: order?.ekart?.trackingId
-                      })}
+                      hasOrder: !!order,
+                      hasEkart: !!order?.ekart,
+                      hasTrackingId: !!order?.ekart?.trackingId,
+                      trackingId: order?.ekart?.trackingId
+                    })}
 
                     {/* Ekart Info */}
                     {(() => {
@@ -908,11 +941,11 @@ export default function AdminOrderDetailsPage() {
                         )}
 
                         {/* Action Buttons */}
-                        <div className="flex gap-2 mt-4">
+                        <div className="grid grid-cols-2 gap-2 mt-4">
                           <button
                             onClick={trackEkartShipment}
                             disabled={actionLoading}
-                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 transition-colors text-sm font-medium"
+                            className="flex items-center justify-center gap-2 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 transition-colors text-sm font-medium"
                           >
                             <FiRefreshCw className="w-4 h-4" />
                             Track
@@ -920,15 +953,23 @@ export default function AdminOrderDetailsPage() {
                           <button
                             onClick={downloadEkartLabel}
                             disabled={actionLoading}
-                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors text-sm font-medium"
+                            className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors text-sm font-medium"
                           >
                             <FiDownload className="w-4 h-4" />
                             Label
                           </button>
                           <button
+                            onClick={downloadEkartManifest}
+                            disabled={actionLoading}
+                            className="flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors text-sm font-medium"
+                          >
+                            <FiDownload className="w-4 h-4" />
+                            Manifest
+                          </button>
+                          <button
                             onClick={cancelEkartShipment}
                             disabled={actionLoading}
-                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors text-sm font-medium"
+                            className="flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors text-sm font-medium"
                           >
                             <FiX className="w-4 h-4" />
                             Cancel
@@ -1169,12 +1210,12 @@ export default function AdminOrderDetailsPage() {
                 <h2 className="font-bold text-gray-900">Payment Details</h2>
               </div>
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
+                {/* <div className="flex justify-between">
                   <span className="text-gray-600">Payment Method</span>
                   <span className="font-semibold text-gray-900">
                     {order.paymentMode === 'online' ? 'Online' : 'COD'}
                   </span>
-                </div>
+                </div> */}
                 <div className="flex justify-between">
                   <span className="text-gray-600">Payment Status</span>
                   <span className={`font-semibold ${order.paymentStatus === 'paid' ? 'text-green-600' : 'text-yellow-600'
@@ -1198,20 +1239,20 @@ export default function AdminOrderDetailsPage() {
                 <h2 className="font-bold text-gray-900">Order Summary</h2>
               </div>
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
+                {/* <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
                   <span className="font-semibold">₹{order.totalPrice?.toLocaleString('en-IN')}</span>
-                </div>
-                {order.discount > 0 && (
+                </div> */}
+                {/* {order.discount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Discount {order.couponCode && `(${order.couponCode})`}</span>
                     <span className="font-semibold">-₹{order.discount?.toLocaleString('en-IN')}</span>
                   </div>
-                )}
-                <div className="flex justify-between">
+                )} */}
+                {/* <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
                   <span className="font-semibold text-green-600">FREE</span>
-                </div>
+                </div> */}
                 <div className="pt-3 border-t border-gray-200 flex justify-between">
                   <span className="font-bold text-gray-900">Total</span>
                   <span className="font-bold text-xl text-gray-900">

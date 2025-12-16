@@ -30,7 +30,14 @@ export default function AdminOrdersPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/orders');
+      // Add cache-busting to prevent stale data
+      const res = await fetch(`/api/admin/orders?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
       const data = await res.json();
       if (res.ok) {
         setOrders(data.orders || []);
@@ -338,13 +345,13 @@ export default function AdminOrdersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col gap-1">
-                          <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                          {/* <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
                             order.paymentMode === 'online' 
                               ? 'bg-blue-100 text-blue-800' 
                               : 'bg-orange-100 text-orange-800'
                           }`}>
                             {order.paymentMode === 'online' ? 'Online' : 'COD'}
-                          </span>
+                          </span> */}
                           <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
                             order.paymentStatus === 'paid'
                               ? 'bg-green-100 text-green-800'

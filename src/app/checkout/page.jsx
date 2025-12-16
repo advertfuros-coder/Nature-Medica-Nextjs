@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { clearCart, applyCoupon, removeCoupon, removeFromCart, updateQuantity } from '@/store/slices/cartSlice';
 import { Check, MapPin, Plus, Shield, Truck, Package, X, CreditCard, Loader2, Tag, Trash2, Minus } from 'lucide-react';
 import Script from 'next/script';
-import { trackPurchase, trackCheckout } from '@/lib/gtm';
+import { trackPurchase, trackAddShippingInfo, trackAddPaymentInfo, trackBeginCheckout } from '@/utils/analytics';
 
 // Utility to get default or first address id
 function chooseDefaultAddressId(addresses) {
@@ -174,14 +174,21 @@ export default function CheckoutPage() {
     }
   }, [addresses, selectedAddressId]);
 
-  // Track checkout event when payment method is selected
+  // Track begin_checkout on page load
+  useEffect(() => {
+    if (items && items.length > 0) {
+      const deliveryCharge = 49;
+      const finalPrice = totalPrice - discount + deliveryCharge;
+      trackBeginCheckout(items.map(item => ({ ...item.product, quantity: item.quantity })), finalPrice, couponCode || '');
+    }
+  }, []); // Only on mount
+
+  // Track payment method selection
   useEffect(() => {
     if (items && items.length > 0 && paymentMethod) {
       const deliveryCharge = 49;
       const finalPrice = totalPrice - discount + deliveryCharge;
-      const shippingTier = "Standard"; // Can be dynamic based on selection
-
-      trackCheckout(items, finalPrice, shippingTier, couponCode || "");
+      trackAddPaymentInfo(items.map(item => ({ ...item.product, quantity: item.quantity })), finalPrice, paymentMethod, couponCode || '');
     }
   }, [paymentMethod]); // Track when payment method changes
 
@@ -355,14 +362,19 @@ export default function CheckoutPage() {
           const data = await res.json();
 
           if (res.ok && data.orderId) {
-            // Track purchase event in GTM
+            // Track purchase event
             trackPurchase({
               orderId: data.orderId,
-              items: items,
-              total: finalPrice,
+              items: items.map(item => ({
+                product: item.product,
+                title: item.product.title,
+                quantity: item.quantity,
+                price: item.price
+              })),
+              finalPrice: finalPrice,
               tax: 0,
-              shipping: deliveryCharge,
-              couponCode: couponCode
+              shippingCharges: deliveryCharge,
+              couponCode: couponCode || ''
             });
 
             // Clear cart and redirect to success page
