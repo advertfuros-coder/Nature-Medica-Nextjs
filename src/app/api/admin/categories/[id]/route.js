@@ -4,6 +4,9 @@ import Category from '@/models/Category';
 import { requireAdmin } from '@/middleware/auth';
 import { uploadImage, deleteImage } from '@/lib/cloudinary';
 
+export const runtime = 'nodejs';
+
+
 export async function PUT(req, { params }) {
   try {
     await requireAdmin(req);

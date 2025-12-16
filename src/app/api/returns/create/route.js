@@ -5,6 +5,9 @@ import Order from '@/models/Order';
 import { requireAuth } from '@/middleware/auth';
 import { uploadImage } from '@/lib/cloudinary';
 
+export const runtime = 'nodejs';
+
+
 export async function POST(req) {
   try {
     const user = await requireAuth(req);

@@ -29,6 +29,9 @@ const nextConfig = {
     NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:
       process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   },
+
+  // Mark server-only packages as external (Next.js 15+)
+  serverExternalPackages: ["cloudinary", "nodemailer"],
 };
 
 module.exports = nextConfig;

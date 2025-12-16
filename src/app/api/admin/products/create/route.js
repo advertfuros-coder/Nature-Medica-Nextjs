@@ -4,6 +4,9 @@ import Product from '@/models/Product';
 import { requireAdmin } from '@/middleware/auth';
 import { uploadMultipleImages } from '@/lib/cloudinary';
 
+export const runtime = 'nodejs';
+
+
 export async function POST(req) {
   try {
     await requireAdmin(req);

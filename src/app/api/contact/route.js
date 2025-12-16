@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import ContactMessage from '@/models/ContactMessage';
-import nodemailer from 'nodemailer';
+import { NextResponse } from "next/server";
+import connectDB from "@/lib/mongodb";
+import ContactMessage from "@/models/ContactMessage";
+import nodemailer from "nodemailer";
+
+export const runtime = "nodejs";
 
 export async function POST(req) {
   try {
@@ -12,7 +14,7 @@ export async function POST(req) {
     // Validate required fields
     if (!name || !email || !subject || !message) {
       return NextResponse.json(
-        { error: 'Please fill in all required fields' },
+        { error: "Please fill in all required fields" },
         { status: 400 }
       );
     }
@@ -24,8 +26,8 @@ export async function POST(req) {
       phone: phone || null,
       subject,
       message,
-      status: 'new',
-      createdAt: new Date()
+      status: "new",
+      createdAt: new Date(),
     });
 
     // Send email notification to admin
@@ -36,31 +38,31 @@ export async function POST(req) {
         secure: false,
         auth: {
           user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        }
+          pass: process.env.SMTP_PASS,
+        },
       });
 
       await transporter.sendMail({
         from: process.env.EMAIL_FROM,
-        to: process.env.ADMIN_EMAIL || 'naturemedica09@gmail.com',
+        to: process.env.ADMIN_EMAIL || "naturemedica09@gmail.com",
         subject: `New Contact Message: ${subject}`,
         html: `
           <h2>New Contact Form Submission</h2>
           <p><strong>From:</strong> ${name} (${email})</p>
-          ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
+          ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ""}
           <p><strong>Subject:</strong> ${subject}</p>
           <p><strong>Message:</strong></p>
           <p>${message}</p>
           <hr>
-          <p><small>Received: ${new Date().toLocaleString('en-IN')}</small></p>
-        `
+          <p><small>Received: ${new Date().toLocaleString("en-IN")}</small></p>
+        `,
       });
 
       // Send confirmation email to user
       await transporter.sendMail({
         from: process.env.EMAIL_FROM,
         to: email,
-        subject: 'We received your message - Nature Medica',
+        subject: "We received your message - Nature Medica",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #3a5d1e;">Thank you for contacting us!</h2>
@@ -77,23 +79,22 @@ export async function POST(req) {
               This is an automated message. Please do not reply to this email.
             </p>
           </div>
-        `
+        `,
       });
     } catch (emailError) {
-      console.error('Email sending failed:', emailError);
+      console.error("Email sending failed:", emailError);
       // Don't fail the request if email fails
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Message sent successfully',
-      messageId: contactMessage._id
+      message: "Message sent successfully",
+      messageId: contactMessage._id,
     });
-
   } catch (error) {
-    console.error('Contact form error:', error);
+    console.error("Contact form error:", error);
     return NextResponse.json(
-      { error: 'Failed to send message. Please try again.' },
+      { error: "Failed to send message. Please try again." },
       { status: 500 }
     );
   }
@@ -112,7 +113,7 @@ export async function GET(req) {
     return NextResponse.json({ messages });
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to fetch messages' },
+      { error: "Failed to fetch messages" },
       { status: 500 }
     );
   }

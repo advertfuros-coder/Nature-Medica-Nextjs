@@ -1,8 +1,10 @@
-import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import Category from '@/models/Category';
-import { requireAdmin } from '@/middleware/auth';
-import { uploadImage } from '@/lib/cloudinary';
+import { NextResponse } from "next/server";
+import connectDB from "@/lib/mongodb";
+import Category from "@/models/Category";
+import { requireAdmin } from "@/middleware/auth";
+import { uploadImage } from "@/lib/cloudinary";
+
+export const runtime = "nodejs";
 
 export async function POST(req) {
   try {
@@ -13,12 +15,12 @@ export async function POST(req) {
 
     const slug = name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
 
     let uploadedImage = null;
-    if (image && image.startsWith('')) {
-      uploadedImage = await uploadImage(image, 'categories');
+    if (image && image.startsWith("")) {
+      uploadedImage = await uploadImage(image, "categories");
     }
 
     const category = await Category.create({
@@ -27,18 +29,17 @@ export async function POST(req) {
       description,
       image: uploadedImage,
       icon,
-      active: true
+      active: true,
     });
 
     return NextResponse.json({
       success: true,
-      category
+      category,
     });
-
   } catch (error) {
-    console.error('Create category error:', error);
+    console.error("Create category error:", error);
     return NextResponse.json(
-      { error: 'Failed to create category' },
+      { error: "Failed to create category" },
       { status: 500 }
     );
   }
