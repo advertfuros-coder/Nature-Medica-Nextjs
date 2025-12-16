@@ -6,13 +6,13 @@ import Link from "next/link";
 export default function PromoBanner() {
     return (
         <section className="relative w-full group max-w-7xl mx-auto">
-            <div className="relative w-full md:h-[90vh] h-[30vh]">
+            <div className="relative w-full md:h-[70vh] h-[30vh]">
                 {/* Background Image */}
                 <Image
                     src="/3.jpg"
                     alt="Nature Medica Promotion"
                     fill
-                    className="object-cover h-full object-center"
+                    className="object- h-full object-"
                     priority={false}
                     sizes="100vw"
                 />
