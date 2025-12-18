@@ -264,8 +264,7 @@ export default function SearchFirstHeader() {
             </Link>
           )}
         </div>
-        <NewsletterPopup />
-      </nav>
+       </nav>
 
       {/* Add animation styles */}
       <style jsx>{`
