@@ -23,7 +23,6 @@ import LearnWellness from "@/components/customer/LearnWellness";
 import InfoStrip from "@/components/customer/InfoStrip";
 import PromoStripSimple from "@/components/customer/PromoStripSimple";
 import CategoryGrid from "@/components/customer/CategoryGrid";
-import NewsletterPopup from "@/components/customer/NewsletterPopup";
 import TrustBadgesSection from "@/components/customer/TrustBadgesSection";
 import PromoBanner from "@/components/customer/PromoBanner";
 
@@ -63,7 +62,6 @@ export default async function HomePage() {
       </section>
 
       <CategoryGrid />
-
 
       {/* <TrustBadgesSection /> */}
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 export default function NewsletterPopup() {
   const [open, setOpen] = useState(false);
@@ -8,15 +9,18 @@ export default function NewsletterPopup() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [showCoupon, setShowCoupon] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
+    if (pathname !== "/") return;
+
     // Show popup only if not submitted before
     const submitted = localStorage.getItem("newsletterSubmitted");
     if (!submitted) {
       const timer = setTimeout(() => setOpen(true), 2000);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [pathname]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,6 +54,7 @@ export default function NewsletterPopup() {
     }
   };
 
+  if (pathname !== "/") return null;
   if (!open && !showCoupon) return null;
 
   return (
