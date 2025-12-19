@@ -8,6 +8,11 @@ import "./globals.css";
 export const metadata = {
   title: "NatureMedica - Natural Wellness Products",
   description: "Premium Ayurvedic supplements and natural wellness products",
+  verification: {
+    other: {
+      "facebook-domain-verification": "qr33mnpi0ioqybmvdodr835b2djbc3",
+    },
+  },
 };
 
 export default function RootLayout({ children }) {
