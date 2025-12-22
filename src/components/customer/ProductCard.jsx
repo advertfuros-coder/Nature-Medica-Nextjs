@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '@/store/slices/cartSlice';
 import { ShoppingCart, Zap, Star, Heart, Leaf, Award } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { trackAddToCart } from '@/lib/gtm';
+import { useWishlist } from '@/hooks/useWishlist';
 
 // Custom Cloudinary loader function
 const cloudinaryLoader = ({ src, width, quality }) => {
@@ -31,17 +32,20 @@ export default function ProductCard({ product }) {
   const [adding, setAdding] = useState(false);
   const [quickBuying, setQuickBuying] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '', type: '' });
+
+  const { isInWishlist, toggleWishlist, showLoginPrompt } = useWishlist();
+  const isWishlisted = isInWishlist(product._id);
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     setAdding(true);
     dispatch(addToCart({ product, quantity: 1, variant: null }));
-    
+
     // Track add to cart event in GTM
     trackAddToCart(product, 1, null);
-    
+
     setTimeout(() => setAdding(false), 1500);
   };
 
@@ -50,18 +54,35 @@ export default function ProductCard({ product }) {
     e.stopPropagation();
     setQuickBuying(true);
     dispatch(addToCart({ product, quantity: 1, variant: null }));
-    
+
     // Track add to cart event for Buy Now (since it adds to cart before checkout)
     trackAddToCart(product, 1, null);
-    
+
     setTimeout(() => router.push('/checkout'), 500);
   };
 
-  const handleWishlist = (e) => {
+  const handleWishlist = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsWishlisted(!isWishlisted);
-    // TODO: Integrate with wishlist API
+
+    const result = await toggleWishlist(product);
+
+    // Show toast notification
+    if (result.success) {
+      setToast({
+        show: true,
+        message: result.message,
+        type: 'success'
+      });
+      setTimeout(() => setToast({ show: false, message: '', type: '' }), 2000);
+    } else {
+      setToast({
+        show: true,
+        message: result.message,
+        type: 'error'
+      });
+      setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000);
+    }
   };
 
   // Prepare Cloudinary image URL with transformation or fallback
@@ -114,8 +135,29 @@ export default function ProductCard({ product }) {
 
             <div className="flex-1"></div>
 
-
+            {/* Wishlist Button */}
+            <button
+              onClick={handleWishlist}
+              className={`relative z-10 p-2 rounded-full backdrop-blur-sm transition-all duration-300 transform hover:scale-110 ${isWishlisted
+                ? 'bg-red-500 text-white shadow-lg'
+                : 'bg-white/80 text-gray-600 hover:bg-white hover:text-red-500 shadow-md'
+                }`}
+              title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+              style={{ pointerEvents: 'auto' }}
+            >
+              <Heart
+                className={`w-4 h-4 transition-all ${isWishlisted ? 'fill-current' : ''}`}
+              />
+            </button>
           </div>
+
+          {/* Toast Notification */}
+          {toast.show && (
+            <div className={`absolute top-3 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg z-50 animate-slideDown ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+              } text-white text-xs font-medium`}>
+              {toast.message}
+            </div>
+          )}
 
           {/* Trust Badges */}
           <div className="absolute bottom-3 left-3 flex gap-1.5">

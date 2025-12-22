@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FiChevronDown } from 'react-icons/fi';
 
-const categories = [
+const allCategories = [
   {
     id: 1,
     name: 'Face Serum',
@@ -75,6 +75,76 @@ export default function CategoryGrid() {
   const scrollContainerRef = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
   const autoScrollRef = useRef(null);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch categories from database and products, then filter
+  useEffect(() => {
+    async function fetchCategoriesWithProducts() {
+      try {
+        // Fetch categories from database and products in parallel
+        const [categoriesResponse, productsResponse] = await Promise.all([
+          fetch('/api/categories'),
+          fetch('/api/products?visibility=true')
+        ]);
+        
+        const categoriesData = await categoriesResponse.json();
+        const productsData = await productsResponse.json();
+        
+        if (categoriesData.success && categoriesData.categories) {
+          const dbCategories = categoriesData.categories;
+          const products = productsData.products || [];
+          
+          // Merge database categories with hardcoded images
+          const mergedCategories = dbCategories.map((dbCat) => {
+            // Find matching hardcoded category by slug or name
+            const hardcodedCat = allCategories.find(
+              (hc) => hc.slug === dbCat.slug || hc.name.toLowerCase() === dbCat.name.toLowerCase()
+            );
+            
+            return {
+              id: dbCat._id,
+              name: dbCat.name,
+              slug: dbCat.slug,
+              image: hardcodedCat?.image || dbCat.image?.url || '/categories/default.png',
+              description: dbCat.description
+            };
+          });
+          
+          // Filter categories to only include those with at least one product
+          // This follows the same pattern as products/page.js (lines 66-77)
+          const categoriesWithProducts = mergedCategories.filter((category) => {
+            // Check if any product belongs to this category
+            const hasProducts = products.some((product) => {
+              // Match by category ID or slug
+              if (product.category) {
+                const categoryId = typeof product.category === 'object' ? product.category._id : product.category;
+                const categorySlug = typeof product.category === 'object' ? product.category.slug : null;
+                
+                if (categoryId === category.id || categorySlug === category.slug) {
+                  return true;
+                }
+              }
+              
+              return false;
+            });
+            
+            return hasProducts;
+          });
+          
+          setCategories(categoriesWithProducts);
+        }
+      } catch (error) {
+        console.error('Error fetching categories with products:', error);
+        // On error, show hardcoded categories as fallback
+        setCategories(allCategories);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCategoriesWithProducts();
+  }, []);
 
   // Auto-scroll effect
   useEffect(() => {
@@ -107,6 +177,23 @@ export default function CategoryGrid() {
     };
   }, [isPaused]);
 
+  if (loading) {
+    return (
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex gap-6 md:gap-8 lg:gap-10">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex flex-col items-center min-w-[90px]">
+                <div className="w-16 h-16 md:w-20 md:h-20 mb-2 bg-gray-200 rounded-full animate-pulse" />
+                <div className="w-16 h-4 bg-gray-200 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -121,7 +208,7 @@ export default function CategoryGrid() {
             {categories.map((category) => (
               <Link
                 key={category.id}
-                href={`/products?search=${encodeURIComponent(category.name)}`}
+                href={`/products?category=${category.slug}`}
                 className="group flex flex-col items-center min-w-[90px] md:min-w-0"
               >
                 {/* Image Container */}

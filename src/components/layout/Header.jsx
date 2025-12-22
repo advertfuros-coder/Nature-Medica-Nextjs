@@ -4,13 +4,14 @@ import Link from 'next/link';
 import { useSelector, useDispatch } from 'react-redux';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, ShoppingBag, Package, Sparkles, ChevronDown, LogOut, User } from 'lucide-react';
+import { Search, ShoppingBag, Package, Sparkles, ChevronDown, LogOut, User, Heart } from 'lucide-react';
 import { logout } from '@/store/slices/userSlice';
 import { clearCart } from '@/store/slices/cartSlice';
 import Image from 'next/image';
 import logo from '@/assets/logor.webp';
 import PromoStripSimple from '../customer/PromoStripSimple';
 import NewsletterPopup from '../customer/NewsletterPopup';
+import { useWishlist } from '@/hooks/useWishlist';
 
 export default function SearchFirstHeader() {
   const router = useRouter();
@@ -28,6 +29,9 @@ export default function SearchFirstHeader() {
 
   const userState = useSelector((state) => state.user || { user: null, isAuthenticated: false });
   const { user, isAuthenticated } = userState;
+
+  // Get wishlist count
+  const { wishlistCount } = useWishlist();
 
   const quickLinks = ['Cold Cream', 'Alovera Gel', 'Serum', "Facewash", "Sanitary", "Oral"];
 
@@ -159,6 +163,22 @@ export default function SearchFirstHeader() {
               <Package className="w-5 h-5 text-gray-600 group-hover:text-[#3a5d1e]" />
               <span className="text-sm font-medium text-gray-700 group-hover:text-[#3a5d1e]">Orders</span>
             </Link>
+
+            {/* Wishlist Link */}
+            {isAuthenticated && (
+              <Link
+                href="/wishlist"
+                className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors group"
+                title="My Wishlist"
+              >
+                <Heart className="w-6 h-6 text-gray-700 group-hover:text-red-500 transition-colors" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {wishlistCount > 9 ? '9+' : wishlistCount}
+                  </span>
+                )}
+              </Link>
+            )}
 
             {/* User Menu */}
             {isAuthenticated && user ? (
@@ -344,6 +364,19 @@ export default function SearchFirstHeader() {
             <Search className="w-5 h-5 text-gray-600 group-hover:text-[#3a5d1e]" />
             <span className="text-[10px] text-gray-600 group-hover:text-[#3a5d1e] mt-1">Search</span>
           </Link>
+
+          {/* Wishlist (Mobile) */}
+          {isAuthenticated && (
+            <Link href="/wishlist" className="flex flex-col items-center justify-center flex-1 group relative">
+              <Heart className="w-5 h-5 text-gray-600 group-hover:text-[#3a5d1e]" />
+              {wishlistCount > 0 && (
+                <span className="absolute top-0 right-1/4 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {wishlistCount}
+                </span>
+              )}
+              <span className="text-[10px] text-gray-600 group-hover:text-[#3a5d1e] mt-1">Wishlist</span>
+            </Link>
+          )}
 
           <Link href="/orders" className="flex flex-col items-center justify-center flex-1 group">
             <Package className="w-5 h-5 text-gray-600 group-hover:text-[#3a5d1e]" />
