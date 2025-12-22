@@ -194,6 +194,20 @@ export default function CheckoutPage() {
 
   const selectedAddress = addresses.find(addr => addr._id === selectedAddressId);
 
+  // Debug: Log button disabled state
+  useEffect(() => {
+    const isDisabled = loading ||
+      (isAuthenticated
+        ? !selectedAddress
+        : (!newAddress.name || !newAddress.phone ||
+          !newAddress.street || !newAddress.city || !newAddress.state || !newAddress.pincode)
+      );
+    console.log('Place Order Button Disabled:', isDisabled);
+    console.log('isAuthenticated:', isAuthenticated);
+    console.log('newAddress:', newAddress);
+    console.log('selectedAddress:', selectedAddress);
+  }, [loading, isAuthenticated, selectedAddress, newAddress]);
+
   const handleAddressInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -202,13 +216,25 @@ export default function CheckoutPage() {
 
       if (name === 'phone') {
         if (digitsOnly.length === 0 || /^[6-9]/.test(digitsOnly)) {
-          setNewAddress(prev => ({ ...prev, [name]: digitsOnly }));
+          setNewAddress(prev => {
+            const updated = { ...prev, [name]: digitsOnly };
+            console.log('Updated newAddress (phone):', updated);
+            return updated;
+          });
         }
       } else {
-        setNewAddress(prev => ({ ...prev, [name]: digitsOnly }));
+        setNewAddress(prev => {
+          const updated = { ...prev, [name]: digitsOnly };
+          console.log('Updated newAddress (pincode):', updated);
+          return updated;
+        });
       }
     } else {
-      setNewAddress(prev => ({ ...prev, [name]: value }));
+      setNewAddress(prev => {
+        const updated = { ...prev, [name]: value };
+        console.log('Updated newAddress:', updated);
+        return updated;
+      });
     }
   };
 
@@ -1022,6 +1048,28 @@ export default function CheckoutPage() {
                       </>
                     )}
                   </button>
+
+                  {/* Validation Message */}
+                  {!loading && (
+                    isAuthenticated ? (
+                      !selectedAddress && (
+                        <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                          <p className="text-[10px] text-amber-800 text-center">
+                            ⚠️ Please select a delivery address above to continue
+                          </p>
+                        </div>
+                      )
+                    ) : (
+                      (!newAddress.name || !newAddress.phone || !newAddress.street ||
+                        !newAddress.city || !newAddress.state || !newAddress.pincode) && (
+                        <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                          <p className="text-[10px] text-amber-800 text-center">
+                            ⚠️ Please fill in all delivery details above to continue
+                          </p>
+                        </div>
+                      )
+                    )
+                  )}
 
                   {/* Trust Badges */}
                   <div className="pt-3 space-y-2 border-t border-gray-100">

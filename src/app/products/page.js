@@ -7,7 +7,7 @@ import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
 
 // Force dynamic rendering
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function ProductsPage({ searchParams }) {
   await connectDB();
@@ -28,9 +28,19 @@ export default async function ProductsPage({ searchParams }) {
     }
   }
 
-  // Search filter
-  if (searchParams.search) {
-    query.$text = { $search: searchParams.search };
+  // Enhanced Search filter
+  // Only apply search when NO category is selected (to avoid confusing filters)
+  // If user selects a category, they see ALL products in that category
+  if (searchParams.search && !searchParams.category) {
+    const searchTerm = searchParams.search.trim();
+    
+    // Use regex search across multiple fields for partial matching
+    query.$or = [
+      { title: { $regex: searchTerm, $options: 'i' } },
+      { description: { $regex: searchTerm, $options: 'i' } },
+      { brand: { $regex: searchTerm, $options: 'i' } },
+      { ingredients: { $regex: searchTerm, $options: 'i' } }
+    ];
   }
 
   // Sort

@@ -11,6 +11,28 @@ export default function AdminLayout({ children }) {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
 
+  // Initialize GTM for admin pages
+  useEffect(() => {
+    // Initialize dataLayer
+    window.dataLayer = window.dataLayer || [];
+
+    // Check if GTM is already loaded
+    if (!window.gtmLoaded) {
+      // GTM script injection
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-TWJVCM2P');
+
+      window.gtmLoaded = true;
+    }
+  }, []);
+
   useEffect(() => {
     // Skip auth check on login page
     if (pathname === '/admin/login') {
@@ -45,6 +67,15 @@ export default function AdminLayout({ children }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        {/* GTM noscript for loading state */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-TWJVCM2P"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
@@ -55,7 +86,20 @@ export default function AdminLayout({ children }) {
 
   // If on login page, show without sidebar/header
   if (pathname === '/admin/login') {
-    return <>{children}</>;
+    return (
+      <>
+        {/* GTM noscript for login page */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-TWJVCM2P"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
+        {children}
+      </>
+    );
   }
 
   if (!authenticated) {
@@ -63,14 +107,25 @@ export default function AdminLayout({ children }) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <AdminSidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <AdminHeader />
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
+    <>
+      {/* GTM noscript for admin dashboard */}
+      <noscript>
+        <iframe
+          src="https://www.googletagmanager.com/ns.html?id=GTM-TWJVCM2P"
+          height="0"
+          width="0"
+          style={{ display: "none", visibility: "hidden" }}
+        />
+      </noscript>
+      <div className="flex h-screen bg-gray-100">
+        <AdminSidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AdminHeader />
+          <main className="flex-1 overflow-y-auto">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -30,9 +30,15 @@ export default function FilterSidebar({ categories }) {
 
   const applyFilter = (key, value) => {
     const params = new URLSearchParams(searchParams);
+
+    // When changing category, clear the search parameter
+    if (key === 'category') {
+      params.delete('search');
+    }
+
     if (value) params.set(key, value);
     else params.delete(key);
-    params.delete('page');
+    params.delete('page'); // Reset to page 1
     router.push(`?${params.toString()}`);
   };
 

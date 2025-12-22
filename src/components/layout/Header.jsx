@@ -17,7 +17,11 @@ export default function SearchFirstHeader() {
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState({ products: [], brands: [] });
+  const [isSearching, setIsSearching] = useState(false);
   const menuRef = useRef(null);
+  const searchRef = useRef(null);
 
   const cartState = useSelector((state) => state.cart || { items: [] });
   const totalItems = cartState.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
@@ -63,16 +67,60 @@ export default function SearchFirstHeader() {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setShowUserMenu(false);
       }
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSearchSuggestions(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Debounced search for autocomplete
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (searchQuery.trim().length < 2) {
+        setSearchSuggestions({ products: [], brands: [] });
+        setShowSearchSuggestions(false);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(searchQuery)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setSearchSuggestions(data);
+          setShowSearchSuggestions(true);
+        }
+      } catch (error) {
+        console.error('Search suggestions error:', error);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      setShowSearchSuggestions(false);
       router.push(`/products?search=${encodeURIComponent(searchQuery)}`);
     }
+  };
+
+  const handleSuggestionClick = (slug) => {
+    setShowSearchSuggestions(false);
+    setSearchQuery('');
+    router.push(`/products/${slug}`);
+  };
+
+  const handleBrandClick = (brand) => {
+    setShowSearchSuggestions(false);
+    setSearchQuery(brand);
+    router.push(`/products?search=${encodeURIComponent(brand)}`);
   };
 
   const handleLogout = async () => {
@@ -199,7 +247,7 @@ export default function SearchFirstHeader() {
 
         {/* Search Bar */}
         <form onSubmit={handleSearch}>
-          <div className="relative">
+          <div className="relative" ref={searchRef}>
             <div className="flex items-center bg-gray-100 rounded-full px-6 py-2 hover:shadow-md transition-shadow focus-within:shadow-md focus-within:bg-white focus-within:ring-2 focus-within:ring-[#3a5d1e]/20 text-sm">
               <Search className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
               <input
@@ -207,12 +255,74 @@ export default function SearchFirstHeader() {
                 placeholder={`Search for ${placeholder}...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => searchQuery.length >= 2 && setShowSearchSuggestions(true)}
                 className="flex-1 bg-transparent focus:outline-none text-xs text-gray-900 placeholder:text-gray-500"
               />
               <button type="submit" className="ml-3 flex-shrink-0">
                 <Sparkles className="w-5 h-5 text-yellow-500 hover:text-yellow-600 transition-colors" />
               </button>
             </div>
+
+            {/* Search Suggestions Dropdown */}
+            {showSearchSuggestions && (searchSuggestions.products.length > 0 || searchSuggestions.brands.length > 0) && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
+                {/* Brand Suggestions */}
+                {searchSuggestions.brands.length > 0 && (
+                  <div className="p-3 border-b border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Brands</p>
+                    <div className="flex flex-wrap gap-2">
+                      {searchSuggestions.brands.map((brand, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleBrandClick(brand)}
+                          className="px-3 py-1 bg-gray-100 hover:bg-[#3a5d1e]/10 text-sm rounded-full text-gray-700 hover:text-[#3a5d1e] transition-colors"
+                        >
+                          {brand}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Product Suggestions */}
+                {searchSuggestions.products.length > 0 && (
+                  <div className="p-2">
+                    <p className="text-xs font-semibold text-gray-500 uppercase mb-2 px-2">Products</p>
+                    {searchSuggestions.products.map((product) => (
+                      <button
+                        key={product.id}
+                        onClick={() => handleSuggestionClick(product.slug)}
+                        className="w-full flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors text-left"
+                      >
+                        {product.image && (
+                          <img
+                            src={product.image}
+                            alt={product.title}
+                            className="w-12 h-12 object-cover rounded-md"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{product.title}</p>
+                          <p className="text-xs text-gray-500">{product.brand}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-[#3a5d1e]">₹{product.price}</p>
+                          {product.mrp > product.price && (
+                            <p className="text-xs text-gray-400 line-through">₹{product.mrp}</p>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {isSearching && (
+                  <div className="p-4 text-center text-sm text-gray-500">
+                    Searching...
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Quick Links */}
 
@@ -264,7 +374,7 @@ export default function SearchFirstHeader() {
             </Link>
           )}
         </div>
-       </nav>
+      </nav>
 
       {/* Add animation styles */}
       <style jsx>{`

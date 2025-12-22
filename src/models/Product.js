@@ -43,8 +43,14 @@ const ProductSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Create text index for search
-ProductSchema.index({ title: "text", description: "text" });
+// Create comprehensive text index for search
+// This allows users to search by title, description, brand, AND ingredients
+ProductSchema.index({
+  title: "text",
+  description: "text",
+  brand: "text",
+  ingredients: "text",
+});
 
 // Indexes for filtering by badges
 ProductSchema.index({ isBestSeller: 1 });
