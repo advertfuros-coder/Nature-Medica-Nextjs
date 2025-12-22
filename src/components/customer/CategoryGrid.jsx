@@ -36,34 +36,41 @@ const allCategories = [
   },
   {
     id: 5,
+    name: 'Face Wash',
+    slug: 'face-wash',
+    image: '/categories/face-wash.png',
+    parentCategory: 'Face & Beauty Care'
+  },
+  {
+    id: 6,
     name: 'Oral Care',
     slug: 'oral-care',
     image: '/categories/oral.png',
     parentCategory: 'Health & Wellness'
   },
   {
-    id: 6,
+    id: 7,
     name: 'Shampoo',
     slug: 'shampoo',
     image: '/categories/shampoo.png',
     parentCategory: 'Hair Care'
   },
   {
-    id: 7,
+    id: 8,
     name: 'Effervescent Tablets',
     slug: 'effervescent-tablets',
     image: '/categories/effervescent.png',
     parentCategory: 'Health & Wellness'
   },
   {
-    id: 8,
+    id: 9,
     name: 'Ayurveda',
     slug: 'ayurvedic-remedies',
     image: '/categories/ayurveda.jpg',
     parentCategory: 'Health & Wellness'
   },
   {
-    id: 9,
+    id: 10,
     name: 'Pregnancy Kit',
     slug: 'pregnancy-kit',
     image: '/categories/pregnancy.avif',
@@ -87,21 +94,21 @@ export default function CategoryGrid() {
           fetch('/api/categories'),
           fetch('/api/products?visibility=true')
         ]);
-        
+
         const categoriesData = await categoriesResponse.json();
         const productsData = await productsResponse.json();
-        
+
         if (categoriesData.success && categoriesData.categories) {
           const dbCategories = categoriesData.categories;
           const products = productsData.products || [];
-          
+
           // Merge database categories with hardcoded images
           const mergedCategories = dbCategories.map((dbCat) => {
             // Find matching hardcoded category by slug or name
             const hardcodedCat = allCategories.find(
               (hc) => hc.slug === dbCat.slug || hc.name.toLowerCase() === dbCat.name.toLowerCase()
             );
-            
+
             return {
               id: dbCat._id,
               name: dbCat.name,
@@ -110,7 +117,7 @@ export default function CategoryGrid() {
               description: dbCat.description
             };
           });
-          
+
           // Filter categories to only include those with at least one product
           // This follows the same pattern as products/page.js (lines 66-77)
           const categoriesWithProducts = mergedCategories.filter((category) => {
@@ -120,18 +127,18 @@ export default function CategoryGrid() {
               if (product.category) {
                 const categoryId = typeof product.category === 'object' ? product.category._id : product.category;
                 const categorySlug = typeof product.category === 'object' ? product.category.slug : null;
-                
+
                 if (categoryId === category.id || categorySlug === category.slug) {
                   return true;
                 }
               }
-              
+
               return false;
             });
-            
+
             return hasProducts;
           });
-          
+
           setCategories(categoriesWithProducts);
         }
       } catch (error) {
@@ -156,7 +163,7 @@ export default function CategoryGrid() {
 
           // Check if we've reached the end
           const isAtEnd = container.scrollLeft >= container.scrollWidth - container.clientWidth - 10;
-          
+
           if (isAtEnd) {
             // Smoothly scroll back to start
             container.scrollTo({ left: 0, behavior: 'smooth' });
@@ -198,7 +205,7 @@ export default function CategoryGrid() {
     <div className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Category Grid - Horizontal Scrollable on Mobile */}
-        <div 
+        <div
           ref={scrollContainerRef}
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
@@ -221,7 +228,7 @@ export default function CategoryGrid() {
                     sizes="(max-width: 768px) 64px, 80px"
                   />
                 </div>
-                
+
                 {/* Category Name */}
                 <p className="text-xs md:text-sm font-medium text-gray-800 text-center group-hover:text-[#3a5d1e] transition-colors line-clamp-2">
                   {category.name}
