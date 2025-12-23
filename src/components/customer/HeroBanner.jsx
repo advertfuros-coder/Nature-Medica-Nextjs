@@ -4,14 +4,21 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
-const videoPaths = [
-  'https://res.cloudinary.com/dnhak76jd/video/upload/c_limit,f_auto,q_auto,w_1280/v1764007920/nature_medica_hero_all.mp4',
-  '/b3.mp4',
-  '/b4.mp4',
-  '/b1.mp4'
+// const videoPaths = [
+//   'https://res.cloudinary.com/dnhak76jd/video/upload/c_limit,f_auto,q_auto,w_1280/v1764007920/nature_medica_hero_all.mp4',
+//   '/b3.mp4',
+//   '/b4.mp4',
+//   '/b1.mp4'
+// ];
+
+const bannerImages = [
+  '/banner/WhatsApp Image 2025-12-22 at 23.56.08.jpeg',
+  '/banner/WhatsApp Image 2025-12-22 at 23.56.20.jpeg',
+  '/banner/WhatsApp Image 2025-12-23 at 00.13.17.jpeg'
 ];
 
 // Separate Video component to handle individual video playback
+/*
 function Video({ src, isActive }) {
   const videoRef = useRef(null);
 
@@ -48,17 +55,18 @@ function Video({ src, isActive }) {
     />
   );
 }
+*/
 
 export default function HeroBanner({ banners }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % banners.length);
-  }, [banners.length]);
+    setCurrentSlide((prev) => (prev + 1) % bannerImages.length);
+  }, []);
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length);
+    setCurrentSlide((prev) => (prev - 1 + bannerImages.length) % bannerImages.length);
   };
 
   const goToSlide = (index) => {
@@ -66,20 +74,20 @@ export default function HeroBanner({ banners }) {
   };
 
   useEffect(() => {
-    if (!isAutoPlaying || banners.length <= 1) return;
+    if (!isAutoPlaying || bannerImages.length <= 1) return;
 
     const interval = setInterval(() => {
       nextSlide();
-    }, 2000);
+    }, 4000); // Changed to 4s for images as 2s is too fast
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, banners.length, nextSlide]);
+  }, [isAutoPlaying, nextSlide]);
 
   // Pause auto-play on hover
   const handleMouseEnter = () => setIsAutoPlaying(false);
   const handleMouseLeave = () => setIsAutoPlaying(true);
 
-  if (!banners || banners.length === 0) {
+  if ((!banners || banners.length === 0) && bannerImages.length === 0) {
     return (
       <div className="w-full h-[400px] md:h-[500px] bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center">
         <div className="text-center text-white">
@@ -102,16 +110,27 @@ export default function HeroBanner({ banners }) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {videoPaths.map((video, index) => (
+
+      {/* {videoPaths.map((video, index) => (
         <Video
           key={index}
           src={video}
           isActive={index === currentSlide}
         />
+      ))} */}
+
+      {bannerImages.map((image, index) => (
+        <img
+          key={index}
+          src={image}
+          alt={`Banner ${index + 1}`}
+          className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-700 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+            }`}
+        />
       ))}
 
       {/* Navigation Arrows */}
-      {banners.length > 1 && (
+      {bannerImages.length > 1 && (
         <>
           <button
             onClick={prevSlide}
@@ -132,15 +151,15 @@ export default function HeroBanner({ banners }) {
       )}
 
       {/* Dots Indicator */}
-      {banners.length > 1 && (
+      {bannerImages.length > 1 && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-          {banners.map((_, index) => (
+          {bannerImages.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
               className={`transition-all rounded-full ${index === currentSlide
-                  ? 'bg-white w-8 h-3'
-                  : 'bg-white/50 hover:bg-white/75 w-3 h-3'
+                ? 'bg-white w-8 h-3'
+                : 'bg-white/50 hover:bg-white/75 w-3 h-3'
                 }`}
               aria-label={`Go to slide ${index + 1}`}
             />

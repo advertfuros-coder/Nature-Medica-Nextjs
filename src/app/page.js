@@ -25,6 +25,7 @@ import PromoStripSimple from "@/components/customer/PromoStripSimple";
 import CategoryGrid from "@/components/customer/CategoryGrid";
 import TrustBadgesSection from "@/components/customer/TrustBadgesSection";
 import PromoBanner from "@/components/customer/PromoBanner";
+import SnowfallWrapper from "@/components/customer/SnowfallWrapper";
 
 // Force dynamic rendering to avoid build-time DB queries
 export const dynamic = "force-dynamic";
@@ -55,7 +56,11 @@ export default async function HomePage() {
     .lean();
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white relative">
+      <SnowfallWrapper />
+   
+    
+
       {/* Hero Banner */}
       <section className="relative">
         <HeroBanner banners={JSON.parse(JSON.stringify(homeBanners))} />
