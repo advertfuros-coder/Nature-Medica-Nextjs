@@ -1,22 +1,23 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 // Create transporter
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: parseInt(process.env.SMTP_PORT),
-  secure: process.env.SMTP_SECURE === 'true',
+  secure: process.env.SMTP_SECURE === "true",
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
+    pass: process.env.SMTP_PASS,
+  },
 });
 
 // Send OTP email
-export async function sendOTPEmail(email, otp, type = 'verification') {
-  const subject = type === 'verification' 
-    ? 'Verify Your Email - NatureMedica' 
-    : 'Reset Your Password - NatureMedica';
-  
+export async function sendOTPEmail(email, otp, type = "verification") {
+  const subject =
+    type === "verification"
+      ? "Verify Your Email - NatureMedica"
+      : "Reset Your Password - NatureMedica";
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -41,9 +42,11 @@ export async function sendOTPEmail(email, otp, type = 'verification') {
         <div class="content">
           <h2 style="color: #333; margin-top: 0;">Hello!</h2>
           <p style="color: #666; line-height: 1.6;">
-            ${type === 'verification' 
-              ? 'Thank you for signing up with NatureMedica. Please use the OTP below to verify your email address.'
-              : 'We received a request to reset your password. Use the OTP below to proceed.'}
+            ${
+              type === "verification"
+                ? "Thank you for signing up with NatureMedica. Please use the OTP below to verify your email address."
+                : "We received a request to reset your password. Use the OTP below to proceed."
+            }
           </p>
           
           <div class="otp-box">
@@ -76,11 +79,11 @@ export async function sendOTPEmail(email, otp, type = 'verification') {
       from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
       to: email,
       subject,
-      html
+      html,
     });
     return { success: true };
   } catch (error) {
-    console.error('Email send error:', error);
+    console.error("Email send error:", error);
     return { success: false, error: error.message };
   }
 }
@@ -114,7 +117,9 @@ export async function sendWelcomeEmail(name, email) {
             Explore our range of premium Ayurvedic supplements and natural wellness products designed to help you live your healthiest life.
           </p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.NEXT_PUBLIC_SITE_URL}/products" class="button">Start Shopping</a>
+            <a href="${
+              process.env.NEXT_PUBLIC_SITE_URL
+            }/products" class="button">Start Shopping</a>
           </div>
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 30px;">
             <h3 style="margin: 0 0 10px 0; color: #3a5d1e;">Why Choose NatureMedica?</h3>
@@ -138,10 +143,99 @@ export async function sendWelcomeEmail(name, email) {
     await transporter.sendMail({
       from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
       to: email,
-      subject: 'Welcome to NatureMedica! 🌿',
-      html
+      subject: "Welcome to NatureMedica! 🌿",
+      html,
     });
   } catch (error) {
-    console.error('Welcome email error:', error);
+    console.error("Welcome email error:", error);
+  }
+}
+
+// Send order notification email to admins
+export async function sendOrderNotificationEmail(order, recipients) {
+  if (!recipients || recipients.length === 0) return;
+
+  const subject = `New Order Received - #${order.orderId}`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #3a5d1e, #5a7f3d); color: white; padding: 30px; text-align: center; }
+        .content { padding: 40px 30px; }
+        .order-details { background: #f8f9fa; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
+        .detail-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .label { color: #666; font-size: 14px; }
+        .value { color: #333; font-weight: bold; font-size: 14px; }
+        .button { display: inline-block; padding: 12px 30px; background: #3a5d1e; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0;">📦 New Order Alert!</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">Order #${
+            order.orderId
+          }</p>
+        </div>
+        <div class="content">
+          <h2 style="color: #333; margin-top: 0;">Hey Team!</h2>
+          <p style="color: #666; line-height: 1.6;">
+            A new order has just been placed. Here are the details:
+          </p>
+          
+          <div class="order-details">
+            <div class="detail-row">
+              <span class="label">Customer Name</span>
+              <span class="value">${order.shippingAddress?.name || order.userName || 'N/A'}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Total Amount</span>
+              <span class="value">₹${order.finalPrice}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Payment Method</span>
+              <span class="value">${order.paymentMode ? order.paymentMode.toUpperCase() : 'N/A'}</span>
+            </div>
+             <div class="detail-row">
+              <span class="label">Date</span>
+              <span class="value">${new Date(
+                order.createdAt
+              ).toLocaleDateString()}</span>
+            </div>
+          </div>
+          
+          <div style="text-align: center;">
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL}/admin/orders/${
+    order._id
+  }" class="button">View Order Details</a>
+          </div>
+        </div>
+        <div class="footer">
+          <p style="margin: 0;">NatureMedica Admin Notification System</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    // Send to all recipients
+    await transporter.sendMail({
+      from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
+      to: recipients.join(", "), // Send to all recipients at once, or loop if privacy needed (BCC)
+      subject,
+      html,
+    });
+    console.log(`Order notification sent to: ${recipients.join(", ")}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Order notification email error:", error);
+    return { success: false, error: error.message };
   }
 }

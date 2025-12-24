@@ -3,6 +3,8 @@ import connectDB from "@/lib/mongodb";
 import Order from "@/models/Order";
 import Product from "@/models/Product";
 import User from "@/models/User";
+import Settings from "@/models/Settings";
+import { sendOrderNotificationEmail } from "@/lib/email";
 
 export async function POST(req) {
   try {
@@ -214,6 +216,29 @@ export async function POST(req) {
       `✅ ${isGuest ? "Guest" : "User"} order created:`,
       newOrder.orderId
     );
+
+    // Send Admin Notification Email
+    try {
+      const settings = await Settings.findOne({ type: "general" });
+      if (
+        settings &&
+        settings.orderNotificationEmails &&
+        settings.orderNotificationEmails.length > 0
+      ) {
+        await sendOrderNotificationEmail(
+          newOrder,
+          settings.orderNotificationEmails
+        );
+        console.log(
+          `📧 Admin notification triggered for order ${newOrder.orderId}`
+        );
+      } else {
+        console.log("ℹ️ No admin emails configured for notifications");
+      }
+    } catch (emailError) {
+      console.error("⚠️ Failed to send admin notification email:", emailError);
+      // We don't block the response even if email fails
+    }
 
     // Return order details for frontend
     return NextResponse.json({
