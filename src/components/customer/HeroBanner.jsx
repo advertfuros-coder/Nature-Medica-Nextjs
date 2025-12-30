@@ -12,9 +12,9 @@ import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 // ];
 
 const bannerImages = [
-  '/banner/WhatsApp Image 2025-12-22 at 23.56.08.jpeg',
-  '/banner/WhatsApp Image 2025-12-22 at 23.56.20.jpeg',
-  '/banner/WhatsApp Image 2025-12-23 at 00.13.17.jpeg'
+  '/banner/WhatsApp Image 2025-12-30 at 11.59.03 (1).jpeg',
+  '/banner/WhatsApp Image 2025-12-30 at 11.59.03 (2).jpeg',
+  '/banner/WhatsApp Image 2025-12-30 at 11.59.03 (3).jpeg'
 ];
 
 // Separate Video component to handle individual video playback
