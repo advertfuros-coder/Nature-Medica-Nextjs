@@ -13,7 +13,16 @@ export async function GET(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const decoded = verify(token, process.env.JWT_SECRET);
+    let decoded;
+    try {
+      decoded = verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      console.error("❌ JWT Verification failed:", err.message);
+      return NextResponse.json(
+        { error: "Unauthorized - Invalid Token" },
+        { status: 401 }
+      );
+    }
     console.log("✅ Token decoded, userId:", decoded.userId);
 
     await connectDB();
@@ -68,15 +77,24 @@ export async function POST(request) {
   try {
     const token = request.cookies.get("token")?.value;
     if (!token) {
-      console.log('❌ POST: No token found');
+      console.log("❌ POST: No token found");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const decoded = verify(token, process.env.JWT_SECRET);
-    console.log('✅ POST: Token decoded, userId:', decoded.userId);
-    
+    let decoded;
+    try {
+      decoded = verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      console.error("❌ JWT Verification failed:", err.message);
+      return NextResponse.json(
+        { error: "Unauthorized - Invalid Token" },
+        { status: 401 }
+      );
+    }
+    console.log("✅ POST: Token decoded, userId:", decoded.userId);
+
     const { productId } = await request.json();
-    console.log('📦 POST: Product ID to add:', productId);
+    console.log("📦 POST: Product ID to add:", productId);
 
     if (!productId) {
       return NextResponse.json(
@@ -90,26 +108,26 @@ export async function POST(request) {
     // Check if product exists
     const product = await Product.findById(productId).populate("category");
     if (!product) {
-      console.log('❌ POST: Product not found:', productId);
+      console.log("❌ POST: Product not found:", productId);
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
-    console.log('✅ POST: Product found:', product.title);
+    console.log("✅ POST: Product found:", product.title);
 
     // Find or create wishlist
     let wishlist = await Wishlist.findOne({ user: decoded.userId });
-    console.log('📋 POST: Existing wishlist:', {
+    console.log("📋 POST: Existing wishlist:", {
       exists: !!wishlist,
-      productsCount: wishlist?.products?.length || 0
+      productsCount: wishlist?.products?.length || 0,
     });
 
     if (!wishlist) {
-      console.log('⚠️ POST: Creating new wishlist');
+      console.log("⚠️ POST: Creating new wishlist");
       wishlist = new Wishlist({ user: decoded.userId, products: [] });
     }
 
     // Check if product already in wishlist
     if (wishlist.hasProduct(productId)) {
-      console.log('⚠️ POST: Product already in wishlist');
+      console.log("⚠️ POST: Product already in wishlist");
       return NextResponse.json(
         {
           success: false,
@@ -121,10 +139,10 @@ export async function POST(request) {
 
     // Add product to wishlist
     wishlist.products.push({ product: productId });
-    console.log('➕ POST: Added product, saving...');
-    
+    console.log("➕ POST: Added product, saving...");
+
     await wishlist.save();
-    console.log('✅ POST: Wishlist saved successfully');
+    console.log("✅ POST: Wishlist saved successfully");
 
     // Populate and return
     await wishlist.populate({
@@ -136,7 +154,11 @@ export async function POST(request) {
       .map((item) => item.product)
       .filter(Boolean);
 
-    console.log('✅ POST: Returning wishlist with', validProducts.length, 'products');
+    console.log(
+      "✅ POST: Returning wishlist with",
+      validProducts.length,
+      "products"
+    );
 
     return NextResponse.json({
       success: true,
@@ -164,7 +186,13 @@ export async function DELETE(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const decoded = verify(token, process.env.JWT_SECRET);
+    let decoded;
+    try {
+      decoded = verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      console.error("❌ JWT Verification failed:", err.message);
+      return NextResponse.json({ error: "Unauthorized - Invalid Token" }, { status: 401 });
+    }
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get("productId");
 
