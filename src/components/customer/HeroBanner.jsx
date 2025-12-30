@@ -150,22 +150,6 @@ export default function HeroBanner({ banners }) {
         </>
       )}
 
-      {/* Dots Indicator */}
-      {bannerImages.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-          {bannerImages.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={`transition-all rounded-full ${index === currentSlide
-                ? 'bg-white w-8 h-3'
-                : 'bg-white/50 hover:bg-white/75 w-3 h-3'
-                }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
