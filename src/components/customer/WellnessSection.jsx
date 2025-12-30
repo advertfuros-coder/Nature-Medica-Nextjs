@@ -2,6 +2,7 @@
 import { Check, ShoppingBag, DollarSign } from 'lucide-react';
 import Image from 'next/image';
 import serum from "@/assets/serum.png"
+import serum2 from "@/assets/serum2.png"
 import Link from 'next/link';
 export default function WellnessSection() {
   return (
@@ -50,10 +51,10 @@ export default function WellnessSection() {
         <div className="lg:col-span-1 flex justify-center my-6 lg:my-0">
           <div className="relative h-80 w-80 -my-10 ">
             <Image 
-              src={serum}
+              src={serum2}
               alt="24K Gold Face Serum" 
               fill
-              className="object-contain animate-[float-slow_10s_ease-in-out_infinite]"
+              className="object-contain animate rounded-full -[float-slow_10s_ease-in-out_infinite]"
             />
           </div>
         </div>
