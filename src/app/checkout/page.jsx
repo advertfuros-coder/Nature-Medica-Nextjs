@@ -3,6 +3,7 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 import { clearCart, applyCoupon, removeCoupon, removeFromCart, updateQuantity } from '@/store/slices/cartSlice';
 import { Check, MapPin, Plus, Shield, Truck, Package, X, CreditCard, Loader2, Tag, Trash2, Minus } from 'lucide-react';
@@ -33,7 +34,7 @@ export default function CheckoutPage() {
   const [couponInput, setCouponInput] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' or 'cod'
+  const [paymentMethod, setPaymentMethod] = useState('partial_cod'); // 'online', 'cod', or 'partial_cod'
   const [isOrderPlacing, setIsOrderPlacing] = useState(false); // Flag to prevent cart redirect during order placement
 
   // Guest user details
@@ -53,6 +54,16 @@ export default function CheckoutPage() {
     landmark: '',
     type: 'home'
   });
+
+  // OTP Verification states
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const [verificationId, setVerificationId] = useState('');
+  const [otpCountdown, setOtpCountdown] = useState(0);
+  const [canResendOtp, setCanResendOtp] = useState(true);
 
   // Fetch pincode details using internal API route
   const fetchPincodeDetails = async (pincode) => {
@@ -125,6 +136,18 @@ export default function CheckoutPage() {
 
     return () => clearTimeout(timer);
   }, [newAddress.pincode]);
+
+  // OTP Countdown timer
+  useEffect(() => {
+    if (otpCountdown > 0) {
+      const timer = setTimeout(() => {
+        setOtpCountdown(otpCountdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (otpCountdown === 0 && otpSent) {
+      setCanResendOtp(true);
+    }
+  }, [otpCountdown, otpSent]);
 
   // Fetch all addresses from your API
   const fetchUserAddresses = async () => {
@@ -309,6 +332,93 @@ export default function CheckoutPage() {
     dispatch(removeCoupon());
   };
 
+  // Send OTP to phone number
+  const handleSendOTP = async () => {
+    const phone = isAuthenticated ? selectedAddress?.phone : newAddress.phone;
+
+    if (!phone || phone.length !== 10) {
+      setOtpError('Please enter a valid 10-digit phone number');
+      return;
+    }
+
+    setOtpLoading(true);
+    setOtpError('');
+
+    try {
+      const res = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setOtpSent(true);
+        setVerificationId(data.verification_id);
+        setOtpCountdown(30); // 30 seconds countdown
+        setCanResendOtp(false);
+        setOtpError('');
+        console.log('✅ OTP sent successfully');
+      } else {
+        setOtpError(data.error || 'Failed to send OTP');
+      }
+    } catch (error) {
+      console.error('Send OTP error:', error);
+      setOtpError('Failed to send OTP. Please try again.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  // Verify OTP entered by user
+  const handleVerifyOTP = async () => {
+    if (!otpValue || otpValue.length !== 6) {
+      setOtpError('Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    setOtpLoading(true);
+    setOtpError('');
+
+    try {
+      const phone = isAuthenticated ? selectedAddress?.phone : newAddress.phone;
+
+      const res = await fetch('/api/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          verification_id: verificationId,
+          otp: otpValue,
+          phone,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.verified) {
+        setOtpVerified(true);
+        setOtpError('');
+        console.log('✅ Phone number verified successfully');
+      } else {
+        setOtpError(data.error || 'Invalid OTP. Please try again.');
+        setOtpValue(''); // Clear OTP input on error
+      }
+    } catch (error) {
+      console.error('Verify OTP error:', error);
+      setOtpError('Failed to verify OTP. Please try again.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  // Resend OTP
+  const handleResendOTP = () => {
+    setOtpValue('');
+    setOtpError('');
+    handleSendOTP();
+  };
+
   const handleRemoveItem = (productId, variant) => {
     dispatch(removeFromCart({ productId, variant }));
     // Remove coupon when cart is modified
@@ -354,6 +464,10 @@ export default function CheckoutPage() {
       const userEmail = isAuthenticated ? user?.email : '';
       const userName = isAuthenticated ? user?.name : newAddress.name;
 
+      // Calculate partial COD amounts (20% advance)
+      const advanceAmount = Math.round(finalPrice * 0.20);
+      const codBalance = finalPrice - advanceAmount;
+
       // Prepare order data
       const orderPayload = {
         items: items.map(item => ({
@@ -368,11 +482,15 @@ export default function CheckoutPage() {
         discount,
         finalPrice,
         shippingAddress,
-        paymentMode: paymentMethod, // 'online' or 'cod'
+        paymentMode: paymentMethod, // 'online', 'cod', or 'partial_cod'
         couponCode,
         isGuest: !isAuthenticated,
         guestEmail: userEmail,
         guestName: userName,
+        // Partial COD specific fields
+        isPartialCOD: paymentMethod === 'partial_cod',
+        advancePaid: paymentMethod === 'partial_cod' ? advanceAmount : 0,
+        codAmountToCollect: paymentMethod === 'partial_cod' ? codBalance : 0,
       };
 
       // Handle COD orders differently - create order directly
@@ -421,7 +539,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Handle online payment orders
+      // Handle online payment orders (both full prepaid and partial COD)
       // Store order data in sessionStorage to create after payment success
       sessionStorage.setItem('pendingOrderData', JSON.stringify(orderPayload));
 
@@ -444,15 +562,20 @@ export default function CheckoutPage() {
         // Store the pre-generated order ID
         sessionStorage.setItem('preGeneratedOrderId', properOrderId);
 
+        // For partial COD, send only the advance amount to Cashfree
+        const amountToCharge = paymentMethod === 'partial_cod' ? advanceAmount : finalPrice;
+
         const sessionRes = await fetch('/api/cashfree/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            total: finalPrice,
+            total: amountToCharge,
             address: shippingAddress,
             items: items,
             email: userEmail,
-            orderId: properOrderId // Use proper NM ID for Cashfree
+            orderId: properOrderId, // Use proper NM ID for Cashfree
+            isPartialCOD: paymentMethod === 'partial_cod',
+            codBalance: paymentMethod === 'partial_cod' ? codBalance : 0
           }),
         });
 
@@ -564,20 +687,104 @@ export default function CheckoutPage() {
                         </div>
 
                         {/* Phone */}
-                        <div>
+                        <div className="sm:col-span-2">
                           <label className="block text-[10px] font-medium text-gray-700 mb-1">Phone</label>
-                          <input
-                            type="tel"
-                            name="phone"
-                            value={newAddress.phone}
-                            onChange={handleAddressInputChange}
-                            required
-                            maxLength={10}
-                            pattern="^[6-9][0-9]{9}$"
-                            placeholder="98XXXXXXXX"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d]"
-                          />
+                          <div className="flex gap-2">
+                            <input
+                              type="tel"
+                              name="phone"
+                              value={newAddress.phone}
+                              onChange={handleAddressInputChange}
+                              required
+                              maxLength={10}
+                              pattern="^[6-9][0-9]{9}$"
+                              placeholder="98XXXXXXXX"
+                              disabled={otpVerified}
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d] disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            />
+                            {!otpSent && !otpVerified && (
+                              <button
+                                type="button"
+                                onClick={handleSendOTP}
+                                disabled={!newAddress.phone || newAddress.phone.length !== 10 || otpLoading}
+                                className="px-4 py-2 bg-[#415f2d] text-white rounded-lg hover:bg-[#344b24] disabled:opacity-50 disabled:cursor-not-allowed transition-all text-[10px] font-semibold whitespace-nowrap"
+                              >
+                                {otpLoading ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  'Send OTP'
+                                )}
+                              </button>
+                            )}
+                            {otpVerified && (
+                              <div className="flex items-center gap-1 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
+                                <Check className="w-4 h-4 text-green-600" />
+                                <span className="text-[10px] font-semibold text-green-700">Verified</span>
+                              </div>
+                            )}
+                          </div>
                           <p className="text-[9px] text-gray-500 mt-0.5">Must start with 6, 7, 8, or 9</p>
+
+                          {/* OTP Input Section */}
+                          {otpSent && !otpVerified && (
+                            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                              <p className="text-[10px] font-semibold text-blue-900 mb-2">
+                                📱 OTP sent to +91{newAddress.phone}
+                              </p>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={otpValue}
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, '');
+                                    if (value.length <= 6) {
+                                      setOtpValue(value);
+                                    }
+                                  }}
+                                  placeholder="Enter 6-digit OTP"
+                                  maxLength={6}
+                                  className="flex-1 px-3 py-2 border border-blue-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d] font-mono tracking-wider"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={handleVerifyOTP}
+                                  disabled={otpValue.length !== 6 || otpLoading}
+                                  className="px-4 py-2 bg-[#415f2d] text-white rounded-lg hover:bg-[#344b24] disabled:opacity-50 disabled:cursor-not-allowed transition-all text-[10px] font-semibold"
+                                >
+                                  {otpLoading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    'Verify'
+                                  )}
+                                </button>
+                              </div>
+
+                              {/* Resend OTP */}
+                              <div className="mt-2 flex items-center justify-between">
+                                <button
+                                  type="button"
+                                  onClick={handleResendOTP}
+                                  disabled={!canResendOtp || otpLoading}
+                                  className="text-[10px] text-[#415f2d] hover:underline disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                                >
+                                  Resend OTP
+                                </button>
+                                {otpCountdown > 0 && (
+                                  <span className="text-[9px] text-gray-600">
+                                    Resend in {otpCountdown}s
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* OTP Error */}
+                              {otpError && (
+                                <div className="mt-2 flex items-center gap-1 text-[9px] text-red-600">
+                                  <X className="w-3 h-3" />
+                                  <span>{otpError}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         {/* Pincode - Smart Autocomplete */}
@@ -612,39 +819,22 @@ export default function CheckoutPage() {
                             <div className="mt-1 p-2 bg-green-50 border border-green-200 rounded-lg flex items-center gap-1">
                               <Check className="w-3 h-3 text-green-600" />
                               <span className="text-[9px] text-green-700 font-semibold">
-                                Pincode verified - {areaOptions.length} area(s) found
+                                Pincode verified
                               </span>
                             </div>
                           )}
                         </div>
 
-                        {/* City - Auto-filled */}
-                        <div>
-                          <label className="block text-[10px] font-semibold text-gray-700 mb-1">City/District</label>
+                        {/* City, State - Auto-filled Combined */}
+                        <div className="sm:col-span-2">
+                          <label className="block text-[10px] font-semibold text-gray-700 mb-1">City, State</label>
                           <input
                             type="text"
-                            name="city"
-                            value={newAddress.city}
-                            onChange={handleAddressInputChange}
+                            value={newAddress.city && newAddress.state ? `${newAddress.city}, ${newAddress.state}` : ''}
+                            readOnly
                             required
-                            className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d] ${areaOptions.length > 0 ? 'bg-gray-50 cursor-not-allowed' : ''
-                              }`}
-                            readOnly={areaOptions.length > 0}
-                          />
-                        </div>
-
-                        {/* State - Auto-filled */}
-                        <div>
-                          <label className="block text-[10px] font-semibold text-gray-700 mb-1">State</label>
-                          <input
-                            type="text"
-                            name="state"
-                            value={newAddress.state}
-                            onChange={handleAddressInputChange}
-                            required
-                            className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d] ${areaOptions.length > 0 ? 'bg-gray-50 cursor-not-allowed' : ''
-                              }`}
-                            readOnly={areaOptions.length > 0}
+                            placeholder="Will be auto-filled from pincode"
+                            className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d] ${areaOptions.length > 0 ? 'bg-gray-50 cursor-not-allowed' : 'bg-gray-50'}`}
                           />
                         </div>
 
@@ -712,14 +902,7 @@ export default function CheckoutPage() {
                         </button>
                       )}
 
-                      {/* Info message for guest users */}
-                      {!isAuthenticated && (
-                        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                          <p className="text-[10px] text-blue-800">
-                            ✓ Fill in your details above, then click <strong>"Place Order"</strong> button below to complete your purchase.
-                          </p>
-                        </div>
-                      )}
+
                     </form>
                   )}
 
@@ -825,14 +1008,82 @@ export default function CheckoutPage() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-1">
-                          <div>
+                          <div className="flex-1">
                             <p className="font-semibold text-gray-900 mb-1 text-[11px]">Online Payment</p>
-                            <p className="text-[10px] text-gray-600">UPI, Cards, Net Banking, Wallets</p>
+                            <p className="text-[10px] text-gray-600 mb-2">Pay full amount now - UPI, Cards, Net Banking</p>
+                            {/* UPI Logos */}
+                            <div className="mt-2">
+                              <Image
+                                src="/checkout/online.png"
+                                alt="Payment methods - UPI, Cards, Net Banking"
+                                width={200}
+                                height={30}
+                                className="h-6 w-auto object-contain"
+                              />
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-1 text-green-600 text-[10px] mt-2">
                           <Shield className="w-3 h-3" />
                           <span>100% Secure payment via Cashfree</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Partial COD Option - RECOMMENDED */}
+                  <div
+                    onClick={() => setPaymentMethod('partial_cod')}
+                    className={`cursor-pointer p-4 border-2 rounded-lg transition-all relative ${paymentMethod === 'partial_cod'
+                      ? 'border-[#415f2d] bg-[#415f2d]/5'
+                      : 'border-gray-200 hover:border-gray-300'}`}
+                  >
+                    {/* Recommended Badge */}
+                    <div className="absolute -top-2 right-4 bg-gradient-to-r from-[#415f2d] to-[#5a7d3e] text-white px-3 py-0.5 rounded-full text-[9px] font-bold shadow-md">
+                      ⭐ RECOMMENDED
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${paymentMethod === 'partial_cod'
+                        ? 'border-[#415f2d] bg-[#415f2d]'
+                        : 'border-gray-300'}`}>
+                        {paymentMethod === 'partial_cod' && <div className="w-2.5 h-2.5 rounded-full bg-white"></div>}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-1">
+                          <div>
+                            <p className="font-semibold text-gray-900 mb-1 text-[11px]">Partial Payment (20% Now + 80% on Delivery)</p>
+                            <p className="text-[10px] text-gray-600">Best of both worlds - secure booking + pay on delivery</p>
+                          </div>
+                        </div>
+
+                        {/* Payment Breakdown */}
+                        <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-100">
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                                <span className="text-[10px] font-semibold text-gray-700">Pay Now (Online)</span>
+                              </div>
+                              <span className="text-[11px] font-bold text-blue-600">
+                                ₹{Math.round(finalPrice * 0.20).toLocaleString('en-IN')}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Package className="w-3.5 h-3.5 text-green-600" />
+                                <span className="text-[10px] font-semibold text-gray-700">Pay on Delivery (Cash)</span>
+                              </div>
+                              <span className="text-[11px] font-bold text-green-600">
+                                ₹{(finalPrice - Math.round(finalPrice * 0.20)).toLocaleString('en-IN')}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 text-[#415f2d] text-[10px] mt-2 font-semibold">
+                          <Shield className="w-3 h-3" />
+                          <span>Secure your order + Flexibility to pay later</span>
                         </div>
                       </div>
                     </div>
@@ -854,7 +1105,7 @@ export default function CheckoutPage() {
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-1">
                           <div>
-                            <p className="font-semibold text-gray-900 mb-1 text-[11px]">Cash on Delivery</p>
+                            <p className="font-semibold text-gray-900 mb-1 text-[11px]"> Cash on Delivery</p>
                             <p className="text-[10px] text-gray-600">Pay when you receive your order</p>
                           </div>
                         </div>
@@ -1028,6 +1279,7 @@ export default function CheckoutPage() {
                     onClick={handlePlaceOrder}
                     disabled={
                       loading ||
+                      !otpVerified || // Require OTP verification for all users
                       (isAuthenticated
                         ? !selectedAddress
                         : (!newAddress.name || !newAddress.phone ||

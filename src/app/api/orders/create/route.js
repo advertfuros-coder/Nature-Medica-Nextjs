@@ -26,6 +26,10 @@ export async function POST(req) {
       cashfreePaymentId,
       paymentVerified,
       preGeneratedOrderId, // Pre-generated order ID from checkout
+      // Partial COD fields
+      isPartialCOD,
+      advancePaid,
+      codAmountToCollect,
     } = await req.json();
 
     let user = null;
@@ -103,7 +107,10 @@ export async function POST(req) {
 
     // CRITICAL VALIDATION: Prevent order creation for unverified online payments
     // Following Flipkart/Amazon model: Online payment orders should only be created after successful payment
-    if (paymentMode === "online" && !paymentVerified) {
+    if (
+      (paymentMode === "online" || paymentMode === "partial_cod") &&
+      !paymentVerified
+    ) {
       console.warn(
         "⚠️ Attempted to create order with unverified online payment"
       );
@@ -142,6 +149,16 @@ export async function POST(req) {
       orderId = `NM${String(orderCount + 1).padStart(6, "0")}`;
     }
 
+    // Determine payment status based on payment mode
+    let paymentStatus = "pending";
+    if (paymentMode === "online" && paymentVerified) {
+      paymentStatus = "paid";
+    } else if (paymentMode === "partial_cod" && paymentVerified) {
+      paymentStatus = "partially_paid";
+    } else if (paymentMode === "cod") {
+      paymentStatus = "pending";
+    }
+
     // Prepare order data
     const orderData = {
       orderId,
@@ -171,14 +188,15 @@ export async function POST(req) {
         type: shippingAddress.type || "home",
       },
       paymentMode,
-      paymentStatus:
-        paymentMode === "online" && paymentVerified
-          ? "paid"
-          : paymentMode === "cod"
-          ? "pending"
-          : "pending",
+      paymentStatus,
+      // Partial COD fields
+      isPartialCOD: isPartialCOD || false,
+      advancePaid: advancePaid || 0,
+      codAmountToCollect: codAmountToCollect || 0,
       orderStatus:
         paymentMode === "online" && paymentVerified
+          ? "Processing"
+          : paymentMode === "partial_cod" && paymentVerified
           ? "Processing"
           : paymentMode === "cod"
           ? "Processing"
@@ -191,6 +209,8 @@ export async function POST(req) {
           status:
             paymentMode === "online" && paymentVerified
               ? "Processing"
+              : paymentMode === "partial_cod" && paymentVerified
+              ? "Processing"
               : paymentMode === "cod"
               ? "Processing"
               : "Pending",
@@ -198,6 +218,8 @@ export async function POST(req) {
           note:
             paymentMode === "online" && paymentVerified
               ? `Payment verified - Order placed (Cashfree ID: ${cashfreePaymentId})`
+              : paymentMode === "partial_cod" && paymentVerified
+              ? `Partial payment verified - ₹${advancePaid} paid, ₹${codAmountToCollect} COD (Cashfree ID: ${cashfreePaymentId})`
               : paymentMode === "cod"
               ? isGuest
                 ? "COD order created (Guest)"

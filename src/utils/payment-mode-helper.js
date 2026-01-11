@@ -10,9 +10,11 @@
 function isCODOrder(order) {
   // COD if:
   // 1. Explicitly selected COD payment mode, OR
-  // 2. Online payment selected but not completed (fallback scenario)
+  // 2. Partial COD (advance paid, balance on delivery), OR
+  // 3. Online payment selected but not completed (fallback scenario)
   return (
     order.paymentMode === "cod" ||
+    order.paymentMode === "partial_cod" ||
     (order.paymentMode === "online" && order.paymentStatus === "pending")
   );
 }
@@ -34,6 +36,11 @@ function getPaymentMode(order) {
  * @returns {number} - Amount to collect (0 for prepaid)
  */
 function getCODAmount(order) {
+  // For partial COD, collect only the remaining balance
+  if (order.isPartialCOD && order.codAmountToCollect) {
+    return order.codAmountToCollect;
+  }
+  // For full COD, collect the entire amount
   return isCODOrder(order) ? order.finalPrice : 0;
 }
 

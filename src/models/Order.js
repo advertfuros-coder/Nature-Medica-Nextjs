@@ -63,15 +63,42 @@ const OrderSchema = new mongoose.Schema(
 
     paymentMode: {
       type: String,
-      enum: ["online", "cod"],
+      enum: ["online", "cod", "partial_cod"],
       required: true,
       default: "online",
     },
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid", "failed", "refunded"],
+      enum: ["pending", "paid", "failed", "refunded", "partially_paid"],
       default: "pending",
     },
+
+    // Partial COD fields
+    isPartialCOD: {
+      type: Boolean,
+      default: false,
+    },
+    advancePaid: {
+      type: Number,
+      default: 0,
+    },
+    codAmountToCollect: {
+      type: Number,
+      default: 0,
+    },
+
+    // Phone verification fields
+    phoneVerified: {
+      type: Boolean,
+      default: false,
+    },
+    otpVerifiedAt: {
+      type: Date,
+    },
+    otpVerificationId: {
+      type: String,
+    },
+
     orderStatus: {
       type: String,
       enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],

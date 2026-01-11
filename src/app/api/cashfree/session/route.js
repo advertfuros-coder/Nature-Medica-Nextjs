@@ -3,7 +3,8 @@ import axios from "axios";
 import crypto from "crypto";
 
 export async function POST(req) {
-  const { total, address, items, email, orderId } = await req.json();
+  const { total, address, items, email, orderId, isPartialCOD, codBalance } =
+    await req.json();
 
   // Check if credentials are available
   if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
@@ -18,7 +19,7 @@ export async function POST(req) {
     (email?.split("@")[0] || "guest").replace(/[^a-zA-Z0-9_-]/g, "") +
     "_" +
     Date.now();
-  
+
   // Create unique Cashfree order ID by adding timestamp
   // This prevents "order already exists" error on retries
   const cashfreeOrderId = `${orderId}_${Date.now()}`;
@@ -28,6 +29,12 @@ export async function POST(req) {
   const apiUrl = isProduction
     ? "https://api.cashfree.com/pg/orders"
     : "https://sandbox.cashfree.com/pg/orders";
+
+  // Create order note with partial COD info if applicable
+  let orderNote = `Internal Order ID: ${orderId}`;
+  if (isPartialCOD) {
+    orderNote += ` | Partial COD - Advance: ₹${total}, Balance on Delivery: ₹${codBalance}`;
+  }
 
   const payload = {
     order_id: cashfreeOrderId, // Use unique ID for Cashfree
@@ -47,14 +54,16 @@ export async function POST(req) {
       // Store original order ID in notes for reference
       notify_url: process.env.CASHFREE_WEBHOOK_URL || "",
     },
-    order_note: `Internal Order ID: ${orderId}`,
+    order_note: orderNote,
   };
 
   console.log(
     `🔐 Cashfree Environment: ${isProduction ? "PRODUCTION" : "TEST"}`
   );
   console.log(`🌐 API URL: ${apiUrl}`);
-  console.log(`📦 Creating payment session for order: ${orderId} (Cashfree ID: ${cashfreeOrderId})`);
+  console.log(
+    `📦 Creating payment session for order: ${orderId} (Cashfree ID: ${cashfreeOrderId})`
+  );
 
   try {
     const res = await axios.post(apiUrl, payload, {
