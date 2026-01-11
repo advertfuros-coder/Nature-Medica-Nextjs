@@ -13,15 +13,23 @@ export async function POST(req) {
     }
 
     // Check if Cashfree Verification credentials are available
-    if (!process.env.CASHFREE_VERIFICATION_APP_ID || !process.env.CASHFREE_VERIFICATION_SECRET_KEY) {
+    if (
+      !process.env.CASHFREE_VERIFICATION_APP_ID ||
+      !process.env.CASHFREE_VERIFICATION_SECRET_KEY
+    ) {
       console.error("❌ Cashfree Verification API credentials not found");
-      console.log("ℹ️ Please add CASHFREE_VERIFICATION_APP_ID and CASHFREE_VERIFICATION_SECRET_KEY to your .env file");
-      console.log("ℹ️ Get these from: https://merchant.cashfree.com/verificationsuite/developers/api-keys");
-      
+      console.log(
+        "ℹ️ Please add CASHFREE_VERIFICATION_APP_ID and CASHFREE_VERIFICATION_SECRET_KEY to your .env file"
+      );
+      console.log(
+        "ℹ️ Get these from: https://merchant.cashfree.com/verificationsuite/developers/api-keys"
+      );
+
       return NextResponse.json(
-        { 
-          error: "OTP service not configured. Please add Verification API credentials.",
-          hint: "Add CASHFREE_VERIFICATION_APP_ID and CASHFREE_VERIFICATION_SECRET_KEY to .env file"
+        {
+          error:
+            "OTP service not configured. Please add Verification API credentials.",
+          hint: "Add CASHFREE_VERIFICATION_APP_ID and CASHFREE_VERIFICATION_SECRET_KEY to .env file",
         },
         { status: 500 }
       );
@@ -39,21 +47,32 @@ export async function POST(req) {
     const payload = {
       verification_id: verificationId,
       mobile_number: phone, // 10 digits without +91
-      name: "Customer", // Optional but recommended
-      notification_modes: ["SMS"], // Can add "WHATSAPP" as fallback
+      name: "Nature Medica", // Company name - may appear in SMS
+      notification_modes: ["SMS"], // WhatsApp disabled to save costs during testing
       user_consent: {
         timestamp: new Date().toISOString(),
-        purpose: "User consent to fetch data.",
+        purpose: "Phone verification for order placement at Nature Medica",
         obtained: true,
         type: "EXPLICIT",
       },
     };
 
-    console.log(`📱 Sending OTP to: ${phone} (Verification ID: ${verificationId})`);
-    console.log(`🔑 Using Verification API credentials: ${process.env.CASHFREE_VERIFICATION_APP_ID?.substring(0, 10)}...`);
-
+    console.log(
+      `📱 Sending OTP to: ${phone} (Verification ID: ${verificationId})`
+    );
+    console.log(
+      `🔑 Using Verification API credentials: ${process.env.CASHFREE_VERIFICATION_APP_ID?.substring(
+        0,
+        10
+      )}...`
+    );
+    
+    // Development tip
+    if (!isProduction) {
+      console.log(`💡 TIP: Use test number 9999999999 in sandbox to avoid charges. Any 6-digit OTP works for test numbers.`);
+    }       
     const response = await fetch(apiUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
         "x-client-id": process.env.CASHFREE_VERIFICATION_APP_ID,
         "x-client-secret": process.env.CASHFREE_VERIFICATION_SECRET_KEY,
@@ -67,32 +86,33 @@ export async function POST(req) {
 
     if (!response.ok) {
       console.error("❌ Cashfree API Error:", data);
-      
+
       // Provide helpful error messages
       if (response.status === 401 || response.status === 403) {
         return NextResponse.json(
-          { 
-            error: "Invalid Verification API credentials. Please check your CASHFREE_VERIFICATION_APP_ID and CASHFREE_VERIFICATION_SECRET_KEY",
-            hint: "Get credentials from: https://merchant.cashfree.com/verificationsuite/developers/api-keys"
+          {
+            error:
+              "Invalid Verification API credentials. Please check your CASHFREE_VERIFICATION_APP_ID and CASHFREE_VERIFICATION_SECRET_KEY",
+            hint: "Get credentials from: https://merchant.cashfree.com/verificationsuite/developers/api-keys",
           },
           { status: 500 }
         );
       }
-      
+
       if (response.status === 404) {
         return NextResponse.json(
-          { 
+          {
             error: "Verification API not enabled on your Cashfree account",
-            hint: "Contact Cashfree support to enable Mobile 360 Verification API"
+            hint: "Contact Cashfree support to enable Mobile 360 Verification API",
           },
           { status: 500 }
         );
       }
 
       return NextResponse.json(
-        { 
+        {
           error: data.message || data.error_msg || "Failed to send OTP",
-          details: data
+          details: data,
         },
         { status: 500 }
       );
@@ -112,7 +132,7 @@ export async function POST(req) {
     return NextResponse.json(
       {
         error: "Failed to send OTP. Please try again.",
-        details: error.message
+        details: error.message,
       },
       { status: 500 }
     );
