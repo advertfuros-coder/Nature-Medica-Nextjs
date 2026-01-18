@@ -55,15 +55,7 @@ export default function CheckoutPage() {
     type: 'home'
   });
 
-  // OTP Verification states
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [otpValue, setOtpValue] = useState('');
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [otpError, setOtpError] = useState('');
-  const [verificationId, setVerificationId] = useState('');
-  const [otpCountdown, setOtpCountdown] = useState(0);
-  const [canResendOtp, setCanResendOtp] = useState(true);
+
 
   // Fetch pincode details using internal API route
   const fetchPincodeDetails = async (pincode) => {
@@ -137,17 +129,7 @@ export default function CheckoutPage() {
     return () => clearTimeout(timer);
   }, [newAddress.pincode]);
 
-  // OTP Countdown timer
-  useEffect(() => {
-    if (otpCountdown > 0) {
-      const timer = setTimeout(() => {
-        setOtpCountdown(otpCountdown - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (otpCountdown === 0 && otpSent) {
-      setCanResendOtp(true);
-    }
-  }, [otpCountdown, otpSent]);
+
 
   // Fetch all addresses from your API
   const fetchUserAddresses = async () => {
@@ -332,92 +314,7 @@ export default function CheckoutPage() {
     dispatch(removeCoupon());
   };
 
-  // Send OTP to phone number
-  const handleSendOTP = async () => {
-    const phone = isAuthenticated ? selectedAddress?.phone : newAddress.phone;
 
-    if (!phone || phone.length !== 10) {
-      setOtpError('Please enter a valid 10-digit phone number');
-      return;
-    }
-
-    setOtpLoading(true);
-    setOtpError('');
-
-    try {
-      const res = await fetch('/api/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setOtpSent(true);
-        setVerificationId(data.verification_id);
-        setOtpCountdown(30); // 30 seconds countdown
-        setCanResendOtp(false);
-        setOtpError('');
-        console.log('✅ OTP sent successfully');
-      } else {
-        setOtpError(data.error || 'Failed to send OTP');
-      }
-    } catch (error) {
-      console.error('Send OTP error:', error);
-      setOtpError('Failed to send OTP. Please try again.');
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  // Verify OTP entered by user
-  const handleVerifyOTP = async () => {
-    if (!otpValue || otpValue.length !== 6) {
-      setOtpError('Please enter a valid 6-digit OTP');
-      return;
-    }
-
-    setOtpLoading(true);
-    setOtpError('');
-
-    try {
-      const phone = isAuthenticated ? selectedAddress?.phone : newAddress.phone;
-
-      const res = await fetch('/api/otp/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          verification_id: verificationId,
-          otp: otpValue,
-          phone,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data.verified) {
-        setOtpVerified(true);
-        setOtpError('');
-        console.log('✅ Phone number verified successfully');
-      } else {
-        setOtpError(data.error || 'Invalid OTP. Please try again.');
-        setOtpValue(''); // Clear OTP input on error
-      }
-    } catch (error) {
-      console.error('Verify OTP error:', error);
-      setOtpError('Failed to verify OTP. Please try again.');
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  // Resend OTP
-  const handleResendOTP = () => {
-    setOtpValue('');
-    setOtpError('');
-    handleSendOTP();
-  };
 
   const handleRemoveItem = (productId, variant) => {
     dispatch(removeFromCart({ productId, variant }));
@@ -689,102 +586,18 @@ export default function CheckoutPage() {
                         {/* Phone */}
                         <div className="sm:col-span-2">
                           <label className="block text-[10px] font-medium text-gray-700 mb-1">Phone</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="tel"
-                              name="phone"
-                              value={newAddress.phone}
-                              onChange={handleAddressInputChange}
-                              required
-                              maxLength={10}
-                              pattern="^[6-9][0-9]{9}$"
-                              placeholder="98XXXXXXXX"
-                              disabled={otpVerified}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d] disabled:bg-gray-100 disabled:cursor-not-allowed"
-                            />
-                            {!otpSent && !otpVerified && (
-                              <button
-                                type="button"
-                                onClick={handleSendOTP}
-                                disabled={!newAddress.phone || newAddress.phone.length !== 10 || otpLoading}
-                                className="px-4 py-2 bg-[#415f2d] text-white rounded-lg hover:bg-[#344b24] disabled:opacity-50 disabled:cursor-not-allowed transition-all text-[10px] font-semibold whitespace-nowrap"
-                              >
-                                {otpLoading ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  'Send OTP'
-                                )}
-                              </button>
-                            )}
-                            {otpVerified && (
-                              <div className="flex items-center gap-1 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
-                                <Check className="w-4 h-4 text-green-600" />
-                                <span className="text-[10px] font-semibold text-green-700">Verified</span>
-                              </div>
-                            )}
-                          </div>
+                          <input
+                            type="tel"
+                            name="phone"
+                            value={newAddress.phone}
+                            onChange={handleAddressInputChange}
+                            required
+                            maxLength={10}
+                            pattern="^[6-9][0-9]{9}$"
+                            placeholder="98XXXXXXXX"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d]"
+                          />
                           <p className="text-[9px] text-gray-500 mt-0.5">Must start with 6, 7, 8, or 9</p>
-
-                          {/* OTP Input Section */}
-                          {otpSent && !otpVerified && (
-                            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                              <p className="text-[10px] font-semibold text-blue-900 mb-2">
-                                📱 OTP sent to +91{newAddress.phone}
-                              </p>
-                              <div className="flex gap-2">
-                                <input
-                                  type="text"
-                                  value={otpValue}
-                                  onChange={(e) => {
-                                    const value = e.target.value.replace(/\D/g, '');
-                                    if (value.length <= 6) {
-                                      setOtpValue(value);
-                                    }
-                                  }}
-                                  placeholder="Enter 6-digit OTP"
-                                  maxLength={6}
-                                  className="flex-1 px-3 py-2 border border-blue-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d] font-mono tracking-wider"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={handleVerifyOTP}
-                                  disabled={otpValue.length !== 6 || otpLoading}
-                                  className="px-4 py-2 bg-[#415f2d] text-white rounded-lg hover:bg-[#344b24] disabled:opacity-50 disabled:cursor-not-allowed transition-all text-[10px] font-semibold"
-                                >
-                                  {otpLoading ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                  ) : (
-                                    'Verify'
-                                  )}
-                                </button>
-                              </div>
-
-                              {/* Resend OTP */}
-                              <div className="mt-2 flex items-center justify-between">
-                                <button
-                                  type="button"
-                                  onClick={handleResendOTP}
-                                  disabled={!canResendOtp || otpLoading}
-                                  className="text-[10px] text-[#415f2d] hover:underline disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-                                >
-                                  Resend OTP
-                                </button>
-                                {otpCountdown > 0 && (
-                                  <span className="text-[9px] text-gray-600">
-                                    Resend in {otpCountdown}s
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* OTP Error */}
-                              {otpError && (
-                                <div className="mt-2 flex items-center gap-1 text-[9px] text-red-600">
-                                  <X className="w-3 h-3" />
-                                  <span>{otpError}</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
                         </div>
 
                         {/* Pincode - Smart Autocomplete */}
@@ -1089,33 +902,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  {/* Cash on Delivery Option */}
-                  <div
-                    onClick={() => setPaymentMethod('cod')}
-                    className={`cursor-pointer p-4 border-2 rounded-lg transition-all ${paymentMethod === 'cod'
-                      ? 'border-[#415f2d] bg-[#415f2d]/5'
-                      : 'border-gray-200 hover:border-gray-300'}`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${paymentMethod === 'cod'
-                        ? 'border-[#415f2d] bg-[#415f2d]'
-                        : 'border-gray-300'}`}>
-                        {paymentMethod === 'cod' && <div className="w-2.5 h-2.5 rounded-full bg-white"></div>}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-1">
-                          <div>
-                            <p className="font-semibold text-gray-900 mb-1 text-[11px]"> Cash on Delivery</p>
-                            <p className="text-[10px] text-gray-600">Pay when you receive your order</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 text-blue-600 text-[10px] mt-2">
-                          <Package className="w-3 h-3" />
-                          <span>Convenient and secure</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+
                 </div>
               </div>
             </div>
@@ -1279,7 +1066,6 @@ export default function CheckoutPage() {
                     onClick={handlePlaceOrder}
                     disabled={
                       loading ||
-                      !otpVerified || // Require OTP verification for all users
                       (isAuthenticated
                         ? !selectedAddress
                         : (!newAddress.name || !newAddress.phone ||

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { checkOTPRateLimit } from "@/utils/otp-rate-limit";
 
 export async function POST(req) {
   try {
@@ -11,6 +12,27 @@ export async function POST(req) {
         { status: 400 }
       );
     }
+
+    // Get client IP for rate limiting
+    const ip = req.headers.get('x-forwarded-for') || 
+               req.headers.get('x-real-ip') || 
+               'unknown';
+
+    // Check rate limit
+    const rateLimit = checkOTPRateLimit(phone, ip);
+    
+    if (!rateLimit.allowed) {
+      console.log(`⚠️ Rate limit exceeded for ${phone} from IP ${ip}`);
+      return NextResponse.json(
+        { 
+          error: rateLimit.message,
+          retryAfter: rateLimit.retryAfter
+        },
+        { status: 429 }
+      );
+    }
+
+    console.log(`✅ Rate limit OK for ${phone}: ${rateLimit.remainingAttempts} attempts remaining`);
 
     // Check if Cashfree Verification credentials are available
     if (
