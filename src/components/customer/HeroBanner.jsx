@@ -12,9 +12,9 @@ import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 // ];
 
 const bannerImages = [
-  '/banner/WhatsApp Image 2025-12-30 at 11.59.03 (1).jpeg',
-  '/banner/WhatsApp Image 2025-12-30 at 11.59.03 (2).jpeg',
-  '/banner/WhatsApp Image 2025-12-30 at 11.59.03 (3).jpeg'
+  '/banner/3.jpg',
+  '/banner/republic day facewash and serum web banner (1).jpg',
+  '/banner/republic day shampoo and oil web banner.jpg'
 ];
 
 // Separate Video component to handle individual video playback
