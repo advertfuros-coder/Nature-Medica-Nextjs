@@ -4,13 +4,14 @@ import Link from 'next/link';
 import { useSelector, useDispatch } from 'react-redux';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, ShoppingBag, Package, Sparkles, ChevronDown, LogOut, User, Heart } from 'lucide-react';
+import { Search, ShoppingBag, Package, Sparkles, ChevronDown, LogOut, User, Heart, Store } from 'lucide-react';
 import { logout } from '@/store/slices/userSlice';
 import { clearCart } from '@/store/slices/cartSlice';
 import Image from 'next/image';
 import logo from '@/assets/logor.webp';
 import PromoStripSimple from '../customer/PromoStripSimple';
 import NewsletterPopup from '../customer/NewsletterPopup';
+import FranchiseModal from '../customer/FranchiseModal';
 import { useWishlist } from '@/hooks/useWishlist';
 
 export default function SearchFirstHeader() {
@@ -21,6 +22,7 @@ export default function SearchFirstHeader() {
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState({ products: [], brands: [] });
   const [isSearching, setIsSearching] = useState(false);
+  const [isFranchiseModalOpen, setIsFranchiseModalOpen] = useState(false);
   const menuRef = useRef(null);
   const searchRef = useRef(null);
 
@@ -155,6 +157,15 @@ export default function SearchFirstHeader() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
+            {/* Take Franchise Button */}
+            <button
+              onClick={() => setIsFranchiseModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-lg hover:bg-emerald-100 hover:text-emerald-800 transition-all group shadow-sm hover:shadow"
+            >
+              <Store className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
+              <span className="text-xs font-bold tracking-tight">Take Franchise</span>
+            </button>
+
             {/* Orders Link */}
             <Link
               href="/orders"
@@ -432,6 +443,11 @@ export default function SearchFirstHeader() {
           scrollbar-width: none;
         }
       `}</style>
+
+      <FranchiseModal
+        isOpen={isFranchiseModalOpen}
+        onClose={() => setIsFranchiseModalOpen(false)}
+      />
     </header>
   );
 }

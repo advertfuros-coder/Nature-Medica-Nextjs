@@ -192,7 +192,7 @@ export async function sendOrderNotificationEmail(order, recipients) {
           <div class="order-details">
             <div class="detail-row">
               <span class="label">Customer Name</span>
-              <span class="value">${order.shippingAddress?.name || order.userName || 'N/A'}</span>
+              <span class="value">${order.shippingAddress?.name || order.userName || "N/A"}</span>
             </div>
             <div class="detail-row">
               <span class="label">Total Amount</span>
@@ -200,20 +200,20 @@ export async function sendOrderNotificationEmail(order, recipients) {
             </div>
             <div class="detail-row">
               <span class="label">Payment Method</span>
-              <span class="value">${order.paymentMode ? order.paymentMode.toUpperCase() : 'N/A'}</span>
+              <span class="value">${order.paymentMode ? order.paymentMode.toUpperCase() : "N/A"}</span>
             </div>
              <div class="detail-row">
               <span class="label">Date</span>
               <span class="value">${new Date(
-                order.createdAt
+                order.createdAt,
               ).toLocaleDateString()}</span>
             </div>
           </div>
           
           <div style="text-align: center;">
             <a href="${process.env.NEXT_PUBLIC_SITE_URL}/admin/orders/${
-    order._id
-  }" class="button">View Order Details</a>
+              order._id
+            }" class="button">View Order Details</a>
           </div>
         </div>
         <div class="footer">
@@ -236,6 +236,113 @@ export async function sendOrderNotificationEmail(order, recipients) {
     return { success: true };
   } catch (error) {
     console.error("Order notification email error:", error);
+    return { success: false, error: error.message };
+  }
+}
+// Send franchise inquiry notification email to admins
+export async function sendFranchiseNotificationEmail(inquiry, recipients) {
+  if (!recipients || recipients.length === 0) return;
+
+  const subject = `New Franchise Inquiry - ${inquiry.name}`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #3a5d1e, #5a7f3d); color: white; padding: 30px; text-align: center; }
+        .content { padding: 40px 30px; }
+        .details-box { background: #f8f9fa; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
+        .detail-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .label { color: #666; font-size: 14px; flex: 1; }
+        .value { color: #333; font-weight: bold; font-size: 14px; flex: 1; text-align: right; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0;">🤝 New Franchise Inquiry!</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">Nature Medica Franchise Opportunity</p>
+        </div>
+        <div class="content">
+          <h2 style="color: #333; margin-top: 0;">Business Lead Notification</h2>
+          <p style="color: #666; line-height: 1.6;">
+            A new franchise inquiry has been received. Here are the applicant's details:
+          </p>
+          
+          <div class="details-box">
+            <div class="detail-row">
+              <span class="label">Name</span>
+              <span class="value">${inquiry.name}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Email</span>
+              <span class="value">${inquiry.email}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Phone</span>
+              <span class="value">${inquiry.phone}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Location</span>
+              <span class="value">${inquiry.city}, ${inquiry.state} - ${inquiry.pincode}</span>
+            </div>
+             <div class="detail-row">
+              <span class="label">Investment Capacity</span>
+              <span class="value">${inquiry.investmentCapacity}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Property Status</span>
+              <span class="value">${inquiry.propertyStatus}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Shop Area</span>
+              <span class="value">${inquiry.shopArea} sq. ft.</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Profession</span>
+              <span class="value">${inquiry.profession || "N/A"}</span>
+            </div>
+          </div>
+
+          ${
+            inquiry.message
+              ? `
+          <div style="margin-top: 20px;">
+            <p style="color: #666; font-weight: bold; margin-bottom: 5px;">Applicant Message:</p>
+            <p style="color: #333; font-style: italic; background: #fff9e6; padding: 15px; border-radius: 6px; border-left: 4px solid #ffcc00;">
+              "${inquiry.message}"
+            </p>
+          </div>
+          `
+              : ""
+          }
+          
+        </div>
+        <div class="footer">
+          <p style="margin: 0;">NatureMedica Franchise Management System</p>
+          <p style="margin: 5px 0 0 0;">Received on: ${new Date().toLocaleString("en-IN")}</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
+      to: recipients.join(", "),
+      subject,
+      html,
+    });
+    console.log(`Franchise notification sent to: ${recipients.join(", ")}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Franchise notification email error:", error);
     return { success: false, error: error.message };
   }
 }
