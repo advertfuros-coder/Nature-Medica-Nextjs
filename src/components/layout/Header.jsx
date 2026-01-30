@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSelector, useDispatch } from 'react-redux';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, ShoppingBag, Package, Sparkles, ChevronDown, LogOut, User, Heart, Store } from 'lucide-react';
+import { Search, ShoppingBag, Package, Sparkles, ChevronDown, LogOut, User, Heart, Store, Menu, X, ChevronRight } from 'lucide-react';
 import { logout } from '@/store/slices/userSlice';
 import { clearCart } from '@/store/slices/cartSlice';
 import Image from 'next/image';
@@ -23,8 +23,12 @@ export default function SearchFirstHeader() {
   const [searchSuggestions, setSearchSuggestions] = useState({ products: [], brands: [] });
   const [isSearching, setIsSearching] = useState(false);
   const [isFranchiseModalOpen, setIsFranchiseModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
+  
   const menuRef = useRef(null);
   const searchRef = useRef(null);
+  const mobileMenuRef = useRef(null);
 
   const cartState = useSelector((state) => state.cart || { items: [] });
   const totalItems = cartState.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
@@ -36,6 +40,34 @@ export default function SearchFirstHeader() {
   const { wishlistCount } = useWishlist();
 
   const quickLinks = ['Cold Cream', 'Alovera Gel', 'Serum', "Facewash", "Sanitary", "Oral"];
+
+  // Fetch Categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        const data = await res.json();
+        if (data.success) {
+          setCategories(data.categories);
+        }
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Handle body scroll lock
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
 
   // Typing animation state
   const [placeholder, setPlaceholder] = useState('');
@@ -135,6 +167,7 @@ export default function SearchFirstHeader() {
       dispatch(logout());
       dispatch(clearCart());
       setShowUserMenu(false);
+      setIsMobileMenuOpen(false);
       router.push('/');
     } catch (error) {
       console.error('Logout error:', error);
@@ -145,7 +178,7 @@ export default function SearchFirstHeader() {
   const firstName = user?.name?.split(' ')[0] || 'User';
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
+    <header className={`sticky top-0 bg-white shadow-sm transition-all duration-300 ${isMobileMenuOpen ? 'z-[100]' : 'z-50'}`}>
       <PromoStripSimple />
       <div className="max-w-6xl mx-auto px-4 pb-2 -my-1">
         {/* Top Row */}
@@ -156,115 +189,117 @@ export default function SearchFirstHeader() {
           </Link>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-3">
-            {/* Take Franchise Button */}
-            <button
-              onClick={() => setIsFranchiseModalOpen(true)}
-              className='flex items-center gap-1 px- 4 py-2 rounded-lg hover:bg-gray-100 transition-colors group'
-             >
-              <Store className="w-4 h-4 flex text-emerald-600 group-hover:scale-110 transition-transform" />
-              <span className="text-xs font-semibold text-gray-700 group-hover:text-[#3a5d1e] tracking-tight"> Franchise</span>
-            </button>
-
-            {/* Orders Link */}
-            <Link
-              href="/orders"
-              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors group"
-            >
-              <Package className="w-5 h-5 text-gray-600 group-hover:text-[#3a5d1e]" />
-              <span className="text-sm font-medium text-gray-700 group-hover:text-[#3a5d1e]">Orders</span>
-            </Link>
-
-            {/* Wishlist Link */}
-            {isAuthenticated && (
-              <Link
-                href="/wishlist"
-                className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors group"
-                title="My Wishlist"
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Desktop-only Actions */}
+            <div className="hidden lg:flex items-center gap-3">
+              {/* Take Franchise Button */}
+              <button
+                onClick={() => setIsFranchiseModalOpen(true)}
+                className='flex items-center gap-1 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors group'
               >
-                <Heart className="w-6 h-6 text-gray-700 group-hover:text-red-500 transition-colors" />
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {wishlistCount > 9 ? '9+' : wishlistCount}
-                  </span>
-                )}
-              </Link>
-            )}
+                <Store className="w-4 h-4 flex text-emerald-600 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-semibold text-gray-700 group-hover:text-[#3a5d1e] tracking-tight"> Franchise</span>
+              </button>
 
-            {/* User Menu */}
-            {isAuthenticated && user ? (
-              <div className="relative" ref={menuRef}>
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+              {/* Orders Link */}
+              <Link
+                href="/orders"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors group"
+              >
+                <Package className="w-5 h-5 text-gray-600 group-hover:text-[#3a5d1e]" />
+                <span className="text-sm font-medium text-gray-700 group-hover:text-[#3a5d1e]">Orders</span>
+              </Link>
+
+              {/* Wishlist Link */}
+              {isAuthenticated && (
+                <Link
+                  href="/wishlist"
+                  className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors group"
+                  title="My Wishlist"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-[#3a5d1e] to-[#4a7d2e] rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                    {firstName.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="hidden sm:block text-left">
-                    <p className="text-xs text-gray-500">Hello,</p>
-                    <p className="text-sm font-semibold text-gray-900 flex items-center gap-1">
-                      {firstName}
-                      <ChevronDown className="w-3 h-3" />
-                    </p>
-                  </div>
-                </button>
+                  <Heart className="w-6 h-6 text-gray-700 group-hover:text-red-500 transition-colors" />
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                      {wishlistCount > 9 ? '9+' : wishlistCount}
+                    </span>
+                  )}
+                </Link>
+              )}
 
-                {/* Dropdown Menu */}
-                {showUserMenu && (
-                  <div className="absolute z-50 right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden animate-slideDown">
-                    {/* User Info */}
-                    <div className="p-4 bg-gradient-to-br from-[#3a5d1e] to-[#4a7d2e] text-white">
-                      <p className="font-bold text-sm">{user.name}</p>
-                      <p className="text-xs opacity-90 mt-1">{user.email}</p>
+              {/* User Menu (Desktop) */}
+              {isAuthenticated && user ? (
+                <div className="relative" ref={menuRef}>
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-gradient-to-br from-[#3a5d1e] to-[#4a7d2e] rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                      {firstName.charAt(0).toUpperCase()}
                     </div>
-
-                    {/* Menu Items */}
-                    <div className="py-2 ">
-                      <Link
-                        href="/profile"
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
-                        onClick={() => setShowUserMenu(false)}
-                      >
-                        <User className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm text-gray-700">My Profile</span>
-                      </Link>
-
-                      <Link
-                        href="/orders"
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
-                        onClick={() => setShowUserMenu(false)}
-                      >
-                        <Package className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm text-gray-700">My Orders</span>
-                      </Link>
-
-                      <div className="border-t border-gray-200 my-2"></div>
-
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors w-full text-left"
-                      >
-                        <LogOut className="w-4 h-4 text-red-600" />
-                        <span className="text-sm text-red-600 font-medium">Sign Out</span>
-                      </button>
+                    <div className="hidden sm:block text-left">
+                      <p className="text-xs text-gray-500">Hello,</p>
+                      <p className="text-sm font-semibold text-gray-900 flex items-center gap-1">
+                        {firstName}
+                        <ChevronDown className="w-3 h-3" />
+                      </p>
                     </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link
-                href="/auth"
-                className="px-4 py-2 bg-[#3a5d1e] text-white rounded-lg font-medium hover:bg-[#2d4818] transition-colors text-sm"
-              >
-                Sign In
-              </Link>
-            )}
+                  </button>
 
-            {/* Cart */}
+                  {/* Dropdown Menu */}
+                  {showUserMenu && (
+                    <div className="absolute z-50 right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden animate-slideDown">
+                      {/* User Info */}
+                      <div className="p-4 bg-gradient-to-br from-[#3a5d1e] to-[#4a7d2e] text-white">
+                        <p className="font-bold text-sm">{user.name}</p>
+                        <p className="text-xs opacity-90 mt-1">{user.email}</p>
+                      </div>
+
+                      <div className="py-2 ">
+                        <Link
+                          href="/profile"
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <User className="w-4 h-4 text-gray-600" />
+                          <span className="text-sm text-gray-700">My Profile</span>
+                        </Link>
+
+                        <Link
+                          href="/orders"
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Package className="w-4 h-4 text-gray-600" />
+                          <span className="text-sm text-gray-700">My Orders</span>
+                        </Link>
+
+                        <div className="border-t border-gray-200 my-2"></div>
+
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors w-full text-left"
+                        >
+                          <LogOut className="w-4 h-4 text-red-600" />
+                          <span className="text-sm text-red-600 font-medium">Sign Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  href="/auth"
+                  className="px-4 py-2 bg-[#3a5d1e] text-white rounded-lg font-medium hover:bg-[#2d4818] transition-colors text-sm"
+                >
+                  Sign In
+                </Link>
+              )}
+            </div>
+
+            {/* Cart - Always Visible */}
             <Link
               href="/cart"
-              className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
             >
               <ShoppingBag className="w-6 h-6 text-gray-700" />
               {totalItems > 0 && (
@@ -273,11 +308,20 @@ export default function SearchFirstHeader() {
                 </span>
               )}
             </Link>
+
+            {/* Hamburger Menu Button - Mobile Only */}
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu className="w-6 h-6 text-gray-700" />
+            </button>
           </div>
         </div>
 
         {/* Search Bar */}
-        <form onSubmit={handleSearch}>
+        <form onSubmit={handleSearch} className="mt-1">
           <div className="relative" ref={searchRef}>
             <div className="flex items-center bg-gray-100 rounded-full px-6 py-2 hover:shadow-md transition-shadow focus-within:shadow-md focus-within:bg-white focus-within:ring-2 focus-within:ring-[#3a5d1e]/20 text-sm">
               <Search className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
@@ -354,14 +398,136 @@ export default function SearchFirstHeader() {
                 )}
               </div>
             )}
-
-            {/* Quick Links */}
-
           </div>
         </form>
       </div>
 
-      {/* Mobile Bottom Navigation */}
+      {/* Mobile Drawer Navigation */}
+      <div 
+        className={`fixed inset-0 z-[60] lg:hidden transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        {/* Backdrop */}
+        <div 
+          className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+        
+        {/* Sidebar */}
+        <div className="relative w-[85%] sm:w-[350px] h-full bg-white flex flex-col shadow-2xl">
+          {/* Header */}
+          <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-[#3a5d1e] to-[#4a7d2e]">
+            <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="bg-white/90 p-1 px-2 rounded-lg">
+              <Image src={logo} alt="Nature Medica" className="h-10 w-auto" />
+            </Link>
+            <button 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto no-scrollbar py-4 px-6 pb-32">
+            {/* User Profile Hook */}
+            {isAuthenticated && user ? (
+              <div className="mb-8 p-4 bg-gray-50 rounded-2xl flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#3a5d1e] to-[#4a7d2e] rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  {firstName.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Welcome back,</p>
+                  <p className="text-lg font-bold text-gray-900">{firstName}</p>
+                </div>
+              </div>
+            ) : (
+                <div className="mb-8">
+                    <Link 
+                        href="/auth" 
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="w-full flex items-center justify-center gap-2 bg-[#3a5d1e] text-white py-4 rounded-xl font-bold shadow-lg shadow-[#3a5d1e]/20 active:scale-95 transition-all"
+                    >
+                        <User className="w-5 h-5" />
+                        Sign In / Register
+                    </Link>
+                </div>
+            )}
+
+            {/* Categories Section */}
+            <div>
+              <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4 px-2">Product Categories</h3>
+              <div className="space-y-1">
+                {categories.map((category) => (
+                  <Link
+                    key={category._id}
+                    href={`/products?category=${category._id}`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors group"
+                  >
+                    <span className="text-gray-700 font-semibold group-hover:text-[#3a5d1e]">{category.name}</span>
+                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#3a5d1e]" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Extra Links */}
+            <div className="mt-8 pt-8 border-t border-gray-100">
+               <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4 px-2">Account & Support</h3>
+               <div className="grid grid-cols-1 gap-2">
+                <button
+                    onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        setIsFranchiseModalOpen(true);
+                    }}
+                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-emerald-50 text-emerald-700 transition-colors font-semibold"
+                >
+                    <Store className="w-5 h-5" />
+                    Franchise Inquiry
+                </button>
+
+                <Link
+                    href="/orders"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors font-semibold"
+                >
+                    <Package className="w-5 h-5 text-gray-400" />
+                    My Orders
+                </Link>
+
+                <Link
+                    href="/wishlist"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors font-semibold"
+                >
+                    <Heart className="w-5 h-5 text-gray-400" />
+                    My Wishlist
+                </Link>
+
+                {isAuthenticated && (
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 text-red-600 transition-colors font-semibold mt-4"
+                  >
+                    <LogOut className="w-5 h-5" />
+                    Log Out
+                  </button>
+                )}
+               </div>
+            </div>
+          </div>
+
+          <div className="p-6 bg-gray-50 border-t border-gray-100">
+             <p className="text-[10px] text-center text-gray-400 font-bold uppercase tracking-widest">Nature Medica v1.0</p>
+          </div>
+        </div>
+      </div>
+
+      <FranchiseModal
+        isOpen={isFranchiseModalOpen}
+        onClose={() => setIsFranchiseModalOpen(false)}
+      />
+
+      {/* Mobile Bottom Navigation - RESTORED */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white shadow-t border-t border-gray-200">
         <div className="flex justify-around items-center h-16">
           <Link href="/" className="flex flex-col items-center justify-center flex-1 group">
@@ -420,7 +586,6 @@ export default function SearchFirstHeader() {
         </div>
       </nav>
 
-      {/* Add animation styles */}
       <style jsx>{`
         @keyframes slideDown {
           from {
@@ -443,11 +608,6 @@ export default function SearchFirstHeader() {
           scrollbar-width: none;
         }
       `}</style>
-
-      <FranchiseModal
-        isOpen={isFranchiseModalOpen}
-        onClose={() => setIsFranchiseModalOpen(false)}
-      />
     </header>
   );
 }

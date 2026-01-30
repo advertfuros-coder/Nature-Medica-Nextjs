@@ -303,7 +303,7 @@ export default function ProductInfo({ product }) {
           <button
             onClick={handleAddToCart}
             disabled={adding || currentStock === 0}
-            className={`col-span- 3 py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all ${adding
+            className={`py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all ${adding
               ? 'border-2 border-green-500 bg-green-50 text-green-700'
               : currentStock === 0
                 ? 'bg-gray-200 text-gray-400'
@@ -328,7 +328,7 @@ export default function ProductInfo({ product }) {
           <button
             onClick={handleQuickBuy}
             disabled={quickBuying || currentStock === 0}
-            className={`col-span -2  py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all ${currentStock === 0
+            className={`py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all ${currentStock === 0
               ? 'bg-gray-200 text-gray-400'
               : 'bg-[#4D6F36] text-white hover:bg-[#3d5829]'
               }`}
