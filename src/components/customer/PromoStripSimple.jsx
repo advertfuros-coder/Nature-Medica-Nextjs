@@ -8,7 +8,7 @@ export default function PromoStripSimple() {
   const [copied, setCopied] = useState(false);
 
   const copyCode = () => {
-    navigator.clipboard.writeText('NEWYEAR20');
+    navigator.clipboard.writeText('FLAT20');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -24,7 +24,7 @@ export default function PromoStripSimple() {
             onClick={copyCode}
             className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/20 rounded hover:bg-white/30 transition-colors mx-1"
           >
-            <span className="font-bold">NEWYEAR20</span>
+            <span className="font-bold">FLAT20</span>
             {copied ? (
               <Check className="w-3 h-3" />
             ) : (

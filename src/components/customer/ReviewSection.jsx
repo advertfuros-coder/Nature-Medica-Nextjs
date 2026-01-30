@@ -369,12 +369,7 @@ export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-3 flex-wrap">
-                        {renderStars(review.rating, false, 'w-4 h-4')}
-                        <span className="text-xs sm:text-sm text-gray-500">
-                          {format(new Date(review.createdAt), 'MMM dd, yyyy')}
-                        </span>
-                      </div>
+                      
                     </div>
                   </div>
 

@@ -158,7 +158,13 @@ export default function SearchFirstHeader() {
           {/* Right Actions */}
           <div className="flex items-center gap-3">
             {/* Take Franchise Button */}
-           
+            <button
+              onClick={() => setIsFranchiseModalOpen(true)}
+              className='flex items-center gap-1 px- 4 py-2 rounded-lg hover:bg-gray-100 transition-colors group'
+             >
+              <Store className="w-4 h-4 flex text-emerald-600 group-hover:scale-110 transition-transform" />
+              <span className="text-xs font-semibold text-gray-700 group-hover:text-[#3a5d1e] tracking-tight"> Franchise</span>
+            </button>
 
             {/* Orders Link */}
             <Link
