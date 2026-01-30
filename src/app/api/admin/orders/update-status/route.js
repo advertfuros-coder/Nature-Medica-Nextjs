@@ -3,6 +3,11 @@ import connectDB from "@/lib/mongodb";
 import Order from "@/models/Order";
 import ShiprocketService from "@/lib/shiprocket";
 import { requireAdmin } from "@/middleware/auth";
+import {
+  getPaymentMode,
+  getCODAmount,
+  logPendingPaymentWarning,
+} from "@/utils/payment-mode-helper";
 
 export async function POST(req) {
   try {
@@ -38,6 +43,11 @@ export async function POST(req) {
       console.log("🚀 Auto-creating shipment for order:", orderId);
 
       try {
+        // Determine payment mode
+        const paymentMode = getPaymentMode(order);
+        const codAmount = getCODAmount(order);
+        logPendingPaymentWarning(order);
+
         // Prepare Shiprocket order data
         const shiprocketOrderData = {
           order_id: order.orderId,
@@ -59,12 +69,7 @@ export async function POST(req) {
             units: item.quantity,
             selling_price: item.price,
           })),
-          payment_method:
-            order.paymentMode === "cod" ||
-            (order.paymentMode === "online" &&
-              order.paymentStatus === "pending")
-              ? "COD"
-              : "Prepaid",
+          payment_method: paymentMode,
           sub_total: order.totalPrice,
           length: 10,
           breadth: 10,
@@ -73,9 +78,8 @@ export async function POST(req) {
         };
 
         // Create order in Shiprocket
-        const shiprocketResponse = await ShiprocketService.createOrder(
-          shiprocketOrderData
-        );
+        const shiprocketResponse =
+          await ShiprocketService.createOrder(shiprocketOrderData);
 
         order.shiprocketOrderId = shiprocketResponse.order_id;
         order.shiprocketShipmentId = shiprocketResponse.shipment_id;
@@ -90,7 +94,7 @@ export async function POST(req) {
 
         console.log(
           "✅ Shipment auto-created:",
-          shiprocketResponse.shipment_id
+          shiprocketResponse.shipment_id,
         );
 
         // Try to auto-select cheapest courier and generate AWB
@@ -100,7 +104,7 @@ export async function POST(req) {
             order.shippingAddress.pincode,
             0.5,
             order.paymentMode === "cod",
-            order.finalPrice
+            order.finalPrice,
           );
 
           const cheapestCourier = couriers.available_courier_companies
@@ -110,7 +114,7 @@ export async function POST(req) {
           if (cheapestCourier) {
             const awbResponse = await ShiprocketService.generateAWB(
               shiprocketResponse.shipment_id,
-              cheapestCourier.courier_company_id
+              cheapestCourier.courier_company_id,
             );
 
             order.trackingId = awbResponse.response.data.awb_code;
@@ -119,7 +123,7 @@ export async function POST(req) {
 
             // Schedule pickup
             await ShiprocketService.schedulePickup(
-              shiprocketResponse.shipment_id
+              shiprocketResponse.shipment_id,
             );
 
             console.log("✅ AWB auto-generated:", order.trackingId);
@@ -149,7 +153,7 @@ export async function POST(req) {
       {
         error: error.message || "Failed to update status",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

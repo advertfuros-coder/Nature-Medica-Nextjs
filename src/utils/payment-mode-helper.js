@@ -15,6 +15,7 @@ function isCODOrder(order) {
   return (
     order.paymentMode === "cod" ||
     order.paymentMode === "partial_cod" ||
+    order.isPartialCOD === true ||
     (order.paymentMode === "online" && order.paymentStatus === "pending")
   );
 }
@@ -54,10 +55,10 @@ function logPendingPaymentWarning(order) {
   if (order.paymentMode === "online" && order.paymentStatus === "pending") {
     console.warn(
       "⚠️ WARNING: Shipping order with pending online payment as COD fallback:",
-      order.orderId
+      order.orderId,
     );
     console.warn(
-      "   This order should not have been created. Check order creation flow."
+      "   This order should not have been created. Check order creation flow.",
     );
   }
 }
@@ -143,9 +144,4 @@ if (paymentMode === 'online' && !paymentVerified) {
 }
 */
 
-module.exports = {
-  isCODOrder,
-  getPaymentMode,
-  getCODAmount,
-  logPendingPaymentWarning,
-};
+export { isCODOrder, getPaymentMode, getCODAmount, logPendingPaymentWarning };

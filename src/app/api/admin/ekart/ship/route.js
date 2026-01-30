@@ -3,6 +3,11 @@ import connectDB from "@/lib/mongodb";
 import Order from "@/models/Order";
 import Product from "@/models/Product";
 import ekartAPI from "@/lib/ekart";
+import {
+  getPaymentMode,
+  getCODAmount,
+  logPendingPaymentWarning,
+} from "@/utils/payment-mode-helper";
 
 /**
  * POST /api/admin/ekart/ship
@@ -17,7 +22,7 @@ export async function POST(req) {
     if (!orderId) {
       return NextResponse.json(
         { error: "Order ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -35,7 +40,7 @@ export async function POST(req) {
           error: "Order already shipped via Ekart",
           trackingId: order.ekart.trackingId,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -57,21 +62,12 @@ export async function POST(req) {
     };
 
     // Determine payment mode based on actual payment status
-    // COD if: explicitly COD OR online payment not completed (fallback scenario)
-    const isCOD =
-      order.paymentMode === "cod" ||
-      (order.paymentMode === "online" && order.paymentStatus === "pending");
+    // COD if: explicitly COD OR partial COD OR online payment not completed (fallback scenario)
+    const paymentMode = getPaymentMode(order);
+    const codAmount = getCODAmount(order);
 
     // Log warning for pending online payments (these shouldn't exist but handle gracefully)
-    if (order.paymentMode === "online" && order.paymentStatus === "pending") {
-      console.warn(
-        "⚠️ WARNING: Shipping order with pending online payment as COD fallback:",
-        order.orderId
-      );
-      console.warn(
-        "   This order should not have been created. Check order creation flow."
-      );
-    }
+    logPendingPaymentWarning(order);
 
     // Prepare shipment data for Ekart
     const shipmentData = {
@@ -89,8 +85,8 @@ export async function POST(req) {
       consignee_name: order.shippingAddress.name,
       consignee_gst_tin: "", // Optional
 
-      // Payment details - FIXED: Now based on actual payment status
-      payment_mode: isCOD ? "COD" : "Prepaid",
+      // Payment details - FIXED: Now based on actual payment status using helper
+      payment_mode: paymentMode,
 
       // Product details
       products_desc: order.items.map((item) => item.title).join(", "),
@@ -101,15 +97,15 @@ export async function POST(req) {
       taxable_amount: Math.round(order.finalPrice / 1.18), // Assuming 18% GST
       tax_value: Math.round(order.finalPrice - order.finalPrice / 1.18),
       commodity_value: String(Math.round(order.finalPrice / 1.18)),
-      cod_amount: isCOD ? order.finalPrice : 0,
+      cod_amount: codAmount,
 
       // GST amounts
       seller_gst_amount: 0,
       consignee_gst_amount: Math.round(
-        order.finalPrice - order.finalPrice / 1.18
+        order.finalPrice - order.finalPrice / 1.18,
       ),
       integrated_gst_amount: Math.round(
-        order.finalPrice - order.finalPrice / 1.18
+        order.finalPrice - order.finalPrice / 1.18,
       ),
 
       // Package details - use custom values
@@ -179,7 +175,7 @@ export async function POST(req) {
           error: "Failed to create Ekart shipment",
           details: ekartResponse.remark,
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -192,7 +188,7 @@ export async function POST(req) {
     // Use direct assignment to fix any legacy invalid data
     if (order.paymentMode !== "online") {
       console.log(
-        `⚠️  Fixing invalid paymentMode: ${order.paymentMode} → online`
+        `⚠️  Fixing invalid paymentMode: ${order.paymentMode} → online`,
       );
       order.paymentMode = "online";
     }
@@ -226,7 +222,7 @@ export async function POST(req) {
     } catch (saveError) {
       console.error(
         "❌ CRITICAL: Failed to save order to database:",
-        saveError
+        saveError,
       );
       console.error("Save error details:", saveError.message);
 
@@ -267,7 +263,7 @@ export async function POST(req) {
             "Your Ekart account doesn't have sufficient balance to create this prepaid shipment. Please recharge your Ekart wallet and try again.",
           ekartMessage: ekartError.description,
         },
-        { status: 402 } // 402 Payment Required
+        { status: 402 }, // 402 Payment Required
       );
     }
 
@@ -280,7 +276,7 @@ export async function POST(req) {
           message: ekartError.message,
           details: ekartError.description,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -290,7 +286,7 @@ export async function POST(req) {
         error: "Failed to create shipment",
         details: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

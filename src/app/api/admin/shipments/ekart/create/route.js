@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Order from "@/models/Order";
 import ekartEliteService from "@/lib/ekart-elite";
+import {
+  getPaymentMode,
+  getCODAmount,
+  logPendingPaymentWarning,
+} from "@/utils/payment-mode-helper";
 
 export async function POST(req) {
   try {
@@ -30,7 +35,7 @@ export async function POST(req) {
       const serviceCheck = await ekartEliteService.checkServiceability(
         originPincode,
         order.shippingAddress.pincode,
-        weight || 0.5
+        weight || 0.5,
       );
 
       if (!serviceCheck.serviceable) {
@@ -39,7 +44,7 @@ export async function POST(req) {
             error: `Ekart doesn't service pincode: ${order.shippingAddress.pincode}`,
             suggestion: "Try Shiprocket instead",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
     } catch (error) {
@@ -47,21 +52,12 @@ export async function POST(req) {
     }
 
     // Determine payment mode based on actual payment status
-    // COD if: explicitly COD OR online payment not completed (fallback scenario)
-    const isCOD =
-      order.paymentMode === "cod" ||
-      (order.paymentMode === "online" && order.paymentStatus === "pending");
+    // COD if: explicitly COD OR partial COD OR online payment not completed (fallback scenario)
+    const paymentMode = getPaymentMode(order);
+    const amountToCollect = getCODAmount(order);
 
-    // Log warning for pending online payments (these shouldn't exist but handle gracefully)
-    if (order.paymentMode === "online" && order.paymentStatus === "pending") {
-      console.warn(
-        "⚠️ WARNING: Shipping order with pending online payment as COD fallback:",
-        order.orderId
-      );
-      console.warn(
-        "   This order should not have been created. Check order creation flow."
-      );
-    }
+    // Log warning for pending online payments
+    logPendingPaymentWarning(order);
 
     // Prepare shipment data
     const shipmentData = {
@@ -69,7 +65,7 @@ export async function POST(req) {
       goods_category: "NON_ESSENTIAL",
       delivery_type: "SMALL",
       service_type: "FORWARD",
-      amount_to_collect: isCOD ? order.finalPrice : 0,
+      amount_to_collect: amountToCollect,
       source: {
         address: {
           first_name: process.env.BUSINESS_NAME || "Nature Medica",
@@ -156,7 +152,7 @@ export async function POST(req) {
         suggestion:
           "Please contact Account Manager: Vivek - vivekkumar27.vc@flipkart.com",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

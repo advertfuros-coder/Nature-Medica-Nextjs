@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Order from "@/models/Order";
 import shiprocketService from "@/lib/shiprocket";
+import {
+  getPaymentMode,
+  getCODAmount,
+  logPendingPaymentWarning,
+} from "@/utils/payment-mode-helper";
 
 export async function POST(req) {
   try {
@@ -21,6 +26,11 @@ export async function POST(req) {
         dashboardUrl: `https://app.shiprocket.in/seller/orders/details/${order.shiprocketOrderId}`,
       });
     }
+
+    // Determine payment mode
+    const paymentMode = getPaymentMode(order);
+    const codAmount = getCODAmount(order);
+    logPendingPaymentWarning(order);
 
     // Prepare Shiprocket order data
     const shiprocketData = {
@@ -49,11 +59,7 @@ export async function POST(req) {
         tax: 0,
         hsn: "",
       })),
-      payment_method:
-        order.paymentMode === "cod" ||
-        (order.paymentMode === "online" && order.paymentStatus === "pending")
-          ? "COD"
-          : "Prepaid",
+      payment_method: paymentMode,
       shipping_charges: 49,
       giftwrap_charges: 0,
       transaction_charges: 0,
@@ -96,7 +102,7 @@ export async function POST(req) {
         details: error.message,
         suggestion: "You can manually create the order in Shiprocket dashboard",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
