@@ -12,9 +12,9 @@ import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 // ];
 
 const bannerImages = [
-  '/banner/3.jpg',
-  '/banner/republic day facewash and serum web banner (1).jpg',
-  '/banner/republic day shampoo and oil web banner.jpg'
+  '/banner/1.jpeg',
+  '/banner/2.jpeg',
+  '/banner/3.jpeg',
 ];
 
 // Separate Video component to handle individual video playback
