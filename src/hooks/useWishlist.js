@@ -9,18 +9,19 @@ import {
   removeFromWishlist as removeFromWishlistAction,
   setLoading,
   setError,
-  selectIsInWishlist,
+  clearWishlist,
 } from "@/store/slices/wishlistSlice";
+import { logout } from "@/store/slices/userSlice";
 
 export function useWishlist() {
   const dispatch = useDispatch();
   const router = useRouter();
   const { items, loading, initialized } = useSelector(
     (state) =>
-      state.wishlist || { items: [], loading: false, initialized: false }
+      state.wishlist || { items: [], loading: false, initialized: false },
   );
   const { isAuthenticated } = useSelector(
-    (state) => state.user || { isAuthenticated: false }
+    (state) => state.user || { isAuthenticated: false },
   );
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
@@ -47,21 +48,24 @@ export function useWishlist() {
         ok: response.ok,
       });
 
+      if (response.status === 401) {
+        console.warn("⚠️ Received 401. Logging out user...");
+        dispatch(logout());
+        dispatch(clearWishlist());
+        return;
+      }
+
       const data = await response.json();
       console.log("📦 Raw data from API:", data);
-      console.log("📦 Wishlist array:", data.wishlist);
-      console.log("📦 Count:", data.count);
 
       if (response.ok && data.success) {
         const wishlistItems = data.wishlist || [];
         console.log("✅ Setting wishlist with items:", wishlistItems);
-        console.log("✅ Number of products:", wishlistItems.length);
-        console.log("✅ First product:", wishlistItems[0]);
-
         dispatch(setWishlist(wishlistItems));
-        console.log("✅ Redux dispatch completed");
       } else {
         console.error("❌ Wishlist fetch failed:", data.error);
+        // Still set initialized to true to prevent infinite loop
+        dispatch(setWishlist([]));
         throw new Error(data.error || "Failed to fetch wishlist");
       }
     } catch (error) {
@@ -114,7 +118,7 @@ export function useWishlist() {
         `/api/user/wishlist?productId=${productId}`,
         {
           method: "DELETE",
-        }
+        },
       );
 
       const data = await response.json();

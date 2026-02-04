@@ -135,6 +135,8 @@ const OrderSchema = new mongoose.Schema(
       cancelledAt: Date, // Cancellation timestamp (if applicable)
       deliveredAt: Date, // Delivery timestamp (if delivered)
     },
+    ekartTrackingId: String, // Complementary field for Ekart Elite integration
+    ekartReferenceId: String, // Complementary field for Ekart Elite integration
 
     // Delhivery specific
     delhiveryWaybill: String,
@@ -161,11 +163,12 @@ const OrderSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 OrderSchema.index({ user: 1 });
 OrderSchema.index({ "ekart.trackingId": 1 });
+OrderSchema.index({ ekartTrackingId: 1 });
 
 // Delete the model from cache in development to pick up schema changes
 if (process.env.NODE_ENV !== "production" && mongoose.models.Order) {

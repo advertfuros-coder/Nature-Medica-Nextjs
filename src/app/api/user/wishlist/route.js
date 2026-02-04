@@ -2,33 +2,24 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Wishlist from "@/models/Wishlist";
 import Product from "@/models/Product";
-import { verify } from "jsonwebtoken";
+import { authenticate } from "@/middleware/auth";
 
 // GET - Fetch user's wishlist
 export async function GET(request) {
   try {
-    const token = request.cookies.get("token")?.value;
-    if (!token) {
-      console.log("❌ No token found in cookies");
+    const auth = await authenticate(request);
+    if (!auth.authenticated) {
+      console.log("❌ No token found in cookies or invalid token");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let decoded;
-    try {
-      decoded = verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-      console.error("❌ JWT Verification failed:", err.message);
-      return NextResponse.json(
-        { error: "Unauthorized - Invalid Token" },
-        { status: 401 }
-      );
-    }
-    console.log("✅ Token decoded, userId:", decoded.userId);
+    const userId = auth.user.userId;
+    console.log("✅ Token decoded, userId:", userId);
 
     await connectDB();
     console.log("✅ Database connected");
 
-    let wishlist = await Wishlist.findOne({ user: decoded.userId }).populate({
+    let wishlist = await Wishlist.findOne({ user: userId }).populate({
       path: "products.product",
       populate: { path: "category" },
     });
@@ -52,7 +43,7 @@ export async function GET(request) {
     console.log("✅ Valid products:", validProducts.length);
     console.log(
       "📋 Product IDs:",
-      validProducts.map((p) => p._id)
+      validProducts.map((p) => p._id),
     );
 
     return NextResponse.json({
@@ -67,7 +58,7 @@ export async function GET(request) {
         error: "Failed to fetch wishlist",
         details: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -75,23 +66,13 @@ export async function GET(request) {
 // POST - Add product to wishlist
 export async function POST(request) {
   try {
-    const token = request.cookies.get("token")?.value;
-    if (!token) {
+    const auth = await authenticate(request);
+    if (!auth.authenticated) {
       console.log("❌ POST: No token found");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    let decoded;
-    try {
-      decoded = verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-      console.error("❌ JWT Verification failed:", err.message);
-      return NextResponse.json(
-        { error: "Unauthorized - Invalid Token" },
-        { status: 401 }
-      );
-    }
-    console.log("✅ POST: Token decoded, userId:", decoded.userId);
+    const userId = auth.user.userId;
+    console.log("✅ POST: Token decoded, userId:", userId);
 
     const { productId } = await request.json();
     console.log("📦 POST: Product ID to add:", productId);
@@ -99,7 +80,7 @@ export async function POST(request) {
     if (!productId) {
       return NextResponse.json(
         { error: "Product ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -114,7 +95,7 @@ export async function POST(request) {
     console.log("✅ POST: Product found:", product.title);
 
     // Find or create wishlist
-    let wishlist = await Wishlist.findOne({ user: decoded.userId });
+    let wishlist = await Wishlist.findOne({ user: userId });
     console.log("📋 POST: Existing wishlist:", {
       exists: !!wishlist,
       productsCount: wishlist?.products?.length || 0,
@@ -122,7 +103,7 @@ export async function POST(request) {
 
     if (!wishlist) {
       console.log("⚠️ POST: Creating new wishlist");
-      wishlist = new Wishlist({ user: decoded.userId, products: [] });
+      wishlist = new Wishlist({ user: userId, products: [] });
     }
 
     // Check if product already in wishlist
@@ -133,7 +114,7 @@ export async function POST(request) {
           success: false,
           message: "Product already in wishlist",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -157,7 +138,7 @@ export async function POST(request) {
     console.log(
       "✅ POST: Returning wishlist with",
       validProducts.length,
-      "products"
+      "products",
     );
 
     return NextResponse.json({
@@ -173,7 +154,7 @@ export async function POST(request) {
         error: "Failed to add to wishlist",
         details: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -181,41 +162,34 @@ export async function POST(request) {
 // DELETE - Remove product from wishlist
 export async function DELETE(request) {
   try {
-    const token = request.cookies.get("token")?.value;
-    if (!token) {
+    const auth = await authenticate(request);
+    if (!auth.authenticated) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    let decoded;
-    try {
-      decoded = verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-      console.error("❌ JWT Verification failed:", err.message);
-      return NextResponse.json({ error: "Unauthorized - Invalid Token" }, { status: 401 });
-    }
+    const userId = auth.user.userId;
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get("productId");
 
     if (!productId) {
       return NextResponse.json(
         { error: "Product ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     await connectDB();
 
-    const wishlist = await Wishlist.findOne({ user: decoded.userId });
+    const wishlist = await Wishlist.findOne({ user: userId });
     if (!wishlist) {
       return NextResponse.json(
         { error: "Wishlist not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Remove product
     wishlist.products = wishlist.products.filter(
-      (item) => item.product.toString() !== productId
+      (item) => item.product.toString() !== productId,
     );
     await wishlist.save();
 
@@ -241,7 +215,7 @@ export async function DELETE(request) {
         error: "Failed to remove from wishlist",
         details: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

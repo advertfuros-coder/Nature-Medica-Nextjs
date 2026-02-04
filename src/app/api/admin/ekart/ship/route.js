@@ -33,12 +33,12 @@ export async function POST(req) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    // Check if already shipped via Ekart
-    if (order.ekart?.trackingId) {
+    // Check if already shipped via Ekart (checking both field variations used in codebase)
+    if (order.ekart?.trackingId || order.ekartTrackingId) {
       return NextResponse.json(
         {
           error: "Order already shipped via Ekart",
-          trackingId: order.ekart.trackingId,
+          trackingId: order.ekart?.trackingId || order.ekartTrackingId,
         },
         { status: 400 },
       );

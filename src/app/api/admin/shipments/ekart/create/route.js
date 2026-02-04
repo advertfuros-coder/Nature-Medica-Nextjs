@@ -20,12 +20,13 @@ export async function POST(req) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    // Check if already shipped
-    if (order.ekartTrackingId) {
+    // Check if already shipped (check both potential fields for consistency)
+    const existingTrackingId = order.ekartTrackingId || order.ekart?.trackingId;
+    if (existingTrackingId) {
       return NextResponse.json({
         success: true,
         message: "Ekart shipment already exists",
-        trackingId: order.ekartTrackingId,
+        trackingId: existingTrackingId,
       });
     }
 
