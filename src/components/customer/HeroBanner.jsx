@@ -12,9 +12,12 @@ import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 // ];
 
 const bannerImages = [
+  '/banner/5.jpeg',
   '/banner/1.jpeg',
   '/banner/2.jpeg',
   '/banner/3.jpeg',
+  '/banner/4.jpeg',
+  '/banner/6.jpeg',
 ];
 
 // Separate Video component to handle individual video playback
