@@ -91,7 +91,7 @@ export default function CheckoutPage() {
 
         setPincodeError('');
       } else {
-        setPincodeError('Invalid pincode or no data found');
+        setPincodeError('Pincode details not found. Please enter City and State manually.');
         setNewAddress(prev => ({
           ...prev,
           state: '',
@@ -638,16 +638,30 @@ export default function CheckoutPage() {
                           )}
                         </div>
 
-                        {/* City, State - Auto-filled Combined */}
-                        <div className="sm:col-span-2">
-                          <label className="block text-[10px] font-semibold text-gray-700 mb-1">City, State</label>
+                        {/* City & State - Separate editable fields */}
+                        <div className="sm:col-span-1">
+                          <label className="block text-[10px] font-semibold text-gray-700 mb-1">City</label>
                           <input
                             type="text"
-                            value={newAddress.city && newAddress.state ? `${newAddress.city}, ${newAddress.state}` : ''}
-                            readOnly
+                            name="city"
+                            value={newAddress.city}
+                            onChange={handleAddressInputChange}
                             required
-                            placeholder="Will be auto-filled from pincode"
-                            className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d] ${areaOptions.length > 0 ? 'bg-gray-50 cursor-not-allowed' : 'bg-gray-50'}`}
+                            placeholder="City"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d]"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-1">
+                          <label className="block text-[10px] font-semibold text-gray-700 mb-1">State</label>
+                          <input
+                            type="text"
+                            name="state"
+                            value={newAddress.state}
+                            onChange={handleAddressInputChange}
+                            required
+                            placeholder="State"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-[11px] focus:outline-none focus:border-[#415f2d] focus:ring-1 focus:ring-[#415f2d]"
                           />
                         </div>
 
