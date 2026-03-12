@@ -92,7 +92,7 @@ export default function HeroBanner({ banners }) {
 
   if ((!banners || banners.length === 0) && bannerImages.length === 0) {
     return (
-      <div className="w-full h-[400px] md:h-[500px] bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center">
+      <div className="w-full h-[450px] md:h-[500px] bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center">
         <div className="text-center text-white">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">Welcome to NatureMedica</h1>
           <p className="text-xl md:text-2xl mb-8">Your Trusted Source for Natural Wellness</p>
