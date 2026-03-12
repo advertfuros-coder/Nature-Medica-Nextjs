@@ -34,7 +34,7 @@ export default function CheckoutPage() {
   const [couponInput, setCouponInput] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('partial_cod'); // 'online', 'cod', or 'partial_cod'
+  const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' or 'cod' (partial_cod removed)
   const [isOrderPlacing, setIsOrderPlacing] = useState(false); // Flag to prevent cart redirect during order placement
 
   // Guest user details
@@ -361,9 +361,11 @@ export default function CheckoutPage() {
       const userEmail = isAuthenticated ? user?.email : '';
       const userName = isAuthenticated ? user?.name : newAddress.name;
 
+      /* 
       // Calculate partial COD amounts (20% advance)
       const advanceAmount = Math.round(finalPrice * 0.20);
       const codBalance = finalPrice - advanceAmount;
+      */
 
       // Prepare order data
       const orderPayload = {
@@ -384,10 +386,12 @@ export default function CheckoutPage() {
         isGuest: !isAuthenticated,
         guestEmail: userEmail,
         guestName: userName,
+        /*
         // Partial COD specific fields
         isPartialCOD: paymentMethod === 'partial_cod',
         advancePaid: paymentMethod === 'partial_cod' ? advanceAmount : 0,
         codAmountToCollect: paymentMethod === 'partial_cod' ? codBalance : 0,
+        */
       };
 
       // Handle COD orders differently - create order directly
@@ -459,8 +463,9 @@ export default function CheckoutPage() {
         // Store the pre-generated order ID
         sessionStorage.setItem('preGeneratedOrderId', properOrderId);
 
-        // For partial COD, send only the advance amount to Cashfree
-        const amountToCharge = paymentMethod === 'partial_cod' ? advanceAmount : finalPrice;
+        // For partial COD, send only the advance amount to Cashfree (Commented out partial logic)
+        // const amountToCharge = paymentMethod === 'partial_cod' ? advanceAmount : finalPrice;
+        const amountToCharge = finalPrice;
 
         const sessionRes = await fetch('/api/cashfree/session', {
           method: 'POST',
@@ -471,8 +476,10 @@ export default function CheckoutPage() {
             items: items,
             email: userEmail,
             orderId: properOrderId, // Use proper NM ID for Cashfree
+            /*
             isPartialCOD: paymentMethod === 'partial_cod',
             codBalance: paymentMethod === 'partial_cod' ? codBalance : 0
+            */
           }),
         });
 
@@ -858,14 +865,42 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  {/* Partial COD Option - RECOMMENDED */}
+                  {/* Cash on Delivery Option */}
+                  <div
+                    onClick={() => setPaymentMethod('cod')}
+                    className={`cursor-pointer p-4 border-2 rounded-lg transition-all ${paymentMethod === 'cod'
+                      ? 'border-[#415f2d] bg-[#415f2d]/5'
+                      : 'border-gray-200 hover:border-gray-300'}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${paymentMethod === 'cod'
+                        ? 'border-[#415f2d] bg-[#415f2d]'
+                        : 'border-gray-300'}`}>
+                        {paymentMethod === 'cod' && <div className="w-2.5 h-2.5 rounded-full bg-white"></div>}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-1">
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-900 mb-1 text-[11px]">Cash on Delivery (COD)</p>
+                            <p className="text-[10px] text-gray-600 mb-2">Pay when you receive the order</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-[#415f2d] text-[10px] mt-2">
+                          <Truck className="w-3 h-3" />
+                          <span>Reliable delivery service</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Partial COD Option - Commented out as per request */}
+                  {/* 
                   <div
                     onClick={() => setPaymentMethod('partial_cod')}
                     className={`cursor-pointer p-4 border-2 rounded-lg transition-all relative ${paymentMethod === 'partial_cod'
                       ? 'border-[#415f2d] bg-[#415f2d]/5'
                       : 'border-gray-200 hover:border-gray-300'}`}
                   >
-                    {/* Recommended Badge */}
                     <div className="absolute -top-2 right-4 bg-gradient-to-r from-[#415f2d] to-[#5a7d3e] text-white px-3 py-0.5 rounded-full text-[9px] font-bold shadow-md">
                       ⭐ RECOMMENDED
                     </div>
@@ -884,7 +919,6 @@ export default function CheckoutPage() {
                           </div>
                         </div>
 
-                        {/* Payment Breakdown */}
                         <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-100">
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
@@ -915,6 +949,7 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                   </div>
+                  */}
 
 
                 </div>
