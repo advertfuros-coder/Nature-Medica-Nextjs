@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function PromoBanner({
-  src = "/2027/ChatGPT Image Sep 2, 2026, 04_16_00 PM.png",
+  src = "https://res.cloudinary.com/dnhak76jd/image/upload/v1788359374/naturemedica/banners/hero-glutathione-wash.png",
   alt = "Nature Medica Special Offer",
   href = "/products"
 }) {
@@ -23,6 +23,7 @@ export default function PromoBanner({
           sizes="100vw"
           className="w-full h-auto block"
           priority={false}
+          unoptimized
         />
       </Link>
     </section>

@@ -9,7 +9,7 @@ import { Sparkles, ArrowUpRight } from 'lucide-react';
 const leftSlides = [
   {
     type: 'image',
-    image: '/2027/ChatGPT Image Sep 2, 2026, 04_16_00 PM.png',
+    image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359374/naturemedica/banners/hero-glutathione-wash.png',
     badge: '100% Ayurvedic & Natural',
     title: 'Pure Herbal Formulations',
     subtitle: 'Crafted for daily radiance & deep nourishment',
@@ -18,7 +18,7 @@ const leftSlides = [
    
   {
     type: 'image',
-    image: '/2027/ChatGPT Image Sep 2, 2026, 04_19_52 PM.png',
+    image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359371/naturemedica/banners/hero-glow-wellness.png',
     badge: 'Clean & Toxin-Free',
     title: 'Glow That Speaks For Itself',
     subtitle: 'Gentle, potent, and restorative wellness',
@@ -29,25 +29,25 @@ const leftSlides = [
 // Right Side Media (Smaller Rectangle) - Product & Face care spotlight
 const rightSlides = [
   {
-    image: '/2027/ChatGPT Image Sep 2, 2026, 04_34_31 PM.png',
+    image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359369/naturemedica/banners/hero-face-care-serums.png',
     tagline: "products that work hard, so you don't have to",
     category: 'Face Care & Serums',
     link: '/products',
   },
   {
-    image: '/2027/ChatGPT Image Sep 2, 2026, 04_45_56 PM.png',
+    image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359367/naturemedica/banners/hero-daily-skincare.png',
     tagline: 'pure natural ingredients, real lasting glow',
     category: 'Daily Skincare Routine',
     link: '/products',
   },
   {
-    image: '/2027/ChatGPT Image Sep 2, 2026, 04_28_34 PM.png',
+    image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359378/naturemedica/banners/hero-herbal-hydration.png',
     tagline: 'nourish your skin from deep within',
     category: 'Herbal Hydration',
     link: '/products?sort=bestseller',
   },
   {
-    image: '/2027/ChatGPT Image Sep 2, 2026, 04_23_29 PM.png',
+    image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359383/naturemedica/banners/hero-mango-cream.png',
     tagline: 'experience authentic ayurvedic harmony',
     category: 'Wellness & Body',
     link: '/products',
