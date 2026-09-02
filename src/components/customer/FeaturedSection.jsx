@@ -78,8 +78,8 @@ export default function FeaturedSection({ products }) {
   }
 
   return (
-    <section className="bg-[#F8F6F3]">
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+    <section className=" ">
+      <div className="  mx-auto px-4 py-6 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -121,7 +121,7 @@ export default function FeaturedSection({ products }) {
             onScroll={checkScrollability}
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
-            className="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+            className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4 px-1"
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
@@ -129,7 +129,7 @@ export default function FeaturedSection({ products }) {
             }}
           >
             {products.map((product) => (
-              <div key={product._id} className="flex-shrink-0 w-40 md:w-72 ">
+              <div key={product._id} className="flex-shrink-0 w-52 sm:w-64 md:w-72 lg:w-80">
                 <ProductCard product={product} />
               </div>
             ))}

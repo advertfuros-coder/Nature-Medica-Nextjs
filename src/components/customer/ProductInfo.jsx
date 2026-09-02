@@ -64,17 +64,32 @@ export default function ProductInfo({ product }) {
 
   return (
     <div className="flex flex-col h-full pb-24 lg:pb-0">
-      {/* Brand Badge */}
-      <div className="mb-3">
-        <span className="inline-block px-3 py-1 bg-green-50 text-[#4D6F36] text-xs font-semibold rounded-full border border-green-100">
-          {product.brand}
+      {/* Brand & Badges */}
+      <div className="flex flex-wrap items-center gap-2 mb-2">
+        <span className="inline-block px-3 py-0.5 bg-[#eef5ec] text-[#2d4e24] text-xs font-bold rounded-full border border-[#2d4e24]/20">
+          {product.brand || 'Nature Medica'}
         </span>
+        {product.netQuantity && (
+          <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-0.5 rounded-full">
+            {product.netQuantity}
+          </span>
+        )}
+        {product.customBadge && (
+          <span className="text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full">
+            {product.customBadge}
+          </span>
+        )}
       </div>
 
-      {/* Product Title */}
-      <h1 className="text-xl lg:text-xl font-semibold text-gray-900 mb-3 leading-tight">
+      {/* Product Title & Tagline */}
+      <h1 className="text-xl lg:text-2xl font-bold text-gray-900 mb-1 leading-tight">
         {product.title}
       </h1>
+      {product.tagline && (
+        <p className="text-xs sm:text-sm text-gray-600 mb-3 font-medium">
+          {product.tagline}
+        </p>
+      )}
 
       {/* Price Section */}
       <div className="mb-3">

@@ -65,13 +65,15 @@ export default async function HomePage() {
         <HeroBanner banners={JSON.parse(JSON.stringify(homeBanners))} />
       </section>
 
+            <BrandMarquee />
+
+
       <CategoryGrid />
 
       {/* <TrustBadgesSection /> */}
 
-      <BrandMarquee />
 
-      <WellnessGoalCarousel />
+      {/* <WellnessGoalCarousel /> */}
 
       {/* Shop by Category */}
 
@@ -96,7 +98,7 @@ export default async function HomePage() {
 
       {/* Customer Reviews */}
       <section className="bg-gradient-to-b from-white to-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 ">
           <CustomerReviews />
         </div>
       </section>

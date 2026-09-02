@@ -54,7 +54,7 @@ const reviews = [
 export default function CustomerReviewsCompact() {
   return (
     <section className="bg-white pt-8">
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="  mx-auto px-4">
         <div className="text-center mb-5">
           <h2 className="text-base font-semibold text-gray-900 mb-1">Reviews</h2>
           <p className="text-[10px] text-gray-500">What customers say</p>

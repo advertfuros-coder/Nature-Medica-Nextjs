@@ -68,13 +68,14 @@ export async function POST(req) {
     });
 
     // Generate JWT
+    const jwtSecret = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'nature-medica-jwt-secret-key-production-32charsmin';
     const token = jwt.sign(
       { 
         userId: user._id.toString(), 
         email: user.email, 
         role: user.role 
       },
-      process.env.JWT_SECRET,
+      jwtSecret,
       { expiresIn: '7d' }
     );
 

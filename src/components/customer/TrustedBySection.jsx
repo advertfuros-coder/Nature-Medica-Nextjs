@@ -12,7 +12,7 @@ export default function TrustedByBanner() {
 
   return (
     <section className="bg-gradient-to-r from-[#3C5D27]/5 to-white py-6 border-y border-gray-200">
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="  mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-6">
           {/* Image */}
           <div className="relative w-32 h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-4 border-white shadow-lg flex-shrink-0">

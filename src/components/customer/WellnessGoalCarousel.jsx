@@ -52,9 +52,9 @@ export default function WellnessGoalCarousel() {
   };
 
   return (
-    <section className="w-full pt-3 px-4 mx-auto justify-center flex bg-white">
+    <section className="w-full pt-3 px-4   justify-center flex bg-white">
       {/* Scrollable Carousel */}
-      <div className="relative w-full max-w-7xl">
+      <div className="relative w-full  ">
         <div
           ref={scrollContainerRef}
           onScroll={checkScrollability}

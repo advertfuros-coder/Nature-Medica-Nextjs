@@ -1,4 +1,15 @@
 import mongoose from "mongoose";
+import dns from "node:dns";
+
+// Fix for querySrv ECONNREFUSED error on Node.js / macOS
+try {
+  dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+  if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder("ipv4first");
+  }
+} catch (err) {
+  console.warn("DNS server override not applied:", err.message);
+}
 
 // Support both MONGODB_URI and MONGO_URI
 const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
@@ -39,6 +50,8 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 15000,
+      family: 4,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {

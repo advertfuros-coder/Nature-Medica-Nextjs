@@ -16,30 +16,40 @@ export default function PromoStripSimple() {
   if (!isVisible) return null;
 
   return (
-    <div className="bg-gradient-to-r from-[#618449] to-[#144F0B] text-white py-2 px-4 relative">
-      <div className="max-w-6xl mx-auto flex items-center justify-center gap-3 text-center">
-         <p className="text-[10px] font-medium">
-           
+    <div className="relative bg-[#dce9d8] text-[#223d1b] py-2 px-4 text-xs font-semibold tracking-wide border-b border-[#c8debf]/80 transition-all">
+      <div className="max-w-7xl mx-auto flex items-center justify-between relative">
+        {/* Left spacer for symmetry on desktop */}
+        <div className="hidden lg:block w-8" />
+
+        {/* Center Announcement Text */}
+        <div className="flex-1 flex items-center justify-center gap-2 text-center text-[11px] sm:text-xs">
+          <span>NEW LAUNCH: Pure Ayurvedic & Glow Essentials • Use code</span>
           <button
             onClick={copyCode}
-            className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/20 rounded hover:bg-white/30 transition-colors mx-1"
+            title="Click to copy FLAT20"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/80 hover:bg-white text-[#223d1b] font-bold border border-[#b9d3ad] shadow-xs active:scale-95 transition-all cursor-pointer"
           >
-            <span className="font-bold">FLAT20</span>
+            <Tag className="w-2.5 h-2.5 text-[#2d4e24]" />
+            <span>FLAT20</span>
             {copied ? (
-              <Check className="w-3 h-3" />
+              <Check className="w-3 h-3 text-emerald-600 animate-in fade-in" />
             ) : (
-              <Copy className="w-3 h-3" />
+              <Copy className="w-2.5 h-2.5 text-gray-500" />
             )}
           </button>
-          {' '}for 20% discount on your first order!   
-        </p>
+          <span>for 20% OFF 🤍</span>
+        </div>
+
+        {/* Right close button */}
         <button
           onClick={() => setIsVisible(false)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-white/20 rounded transition-colors"
+          aria-label="Dismiss banner"
+          className="p-1 rounded-full text-[#385b2e]/80 hover:text-[#223d1b] hover:bg-black/5 transition-colors"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>
   );
 }
+

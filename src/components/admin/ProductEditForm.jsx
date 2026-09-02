@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { FiUpload, FiX, FiSave, FiTrash2, FiPlus, FiMinus } from 'react-icons/fi';
+import { FiUpload, FiX, FiSave, FiTrash2, FiPlus, FiMinus, FiStar, FiCheck } from 'react-icons/fi';
 
 export default function ProductEditForm({ product, categories }) {
   const router = useRouter();
@@ -70,6 +70,28 @@ export default function ProductEditForm({ product, categories }) {
 
   const removeNewImage = (index) => {
     setNewImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const setAsPrimary = (index) => {
+    if (index === 0) return;
+    setImages((prev) => {
+      const updated = [...prev];
+      const [selected] = updated.splice(index, 1);
+      updated.forEach((img) => (img.isPrimary = false));
+      selected.isPrimary = true;
+      updated.unshift(selected);
+      return updated;
+    });
+  };
+
+  const setNewAsPrimary = (index) => {
+    if (index === 0) return;
+    setNewImages((prev) => {
+      const updated = [...prev];
+      const [selected] = updated.splice(index, 1);
+      updated.unshift(selected);
+      return updated;
+    });
   };
 
   // Specifications
@@ -152,10 +174,12 @@ export default function ProductEditForm({ product, categories }) {
     formDataToSend.append('existingImages', JSON.stringify(images));
 
     // Add new image files
-    for (const base64Image of newImages) {
-      // Convert base64 to blob
-      const blob = await fetch(base64Image).then(r => r.blob());
-      formDataToSend.append('newImages', blob, `image-${Date.now()}.jpg`);
+    if (newImages && newImages.length > 0) {
+      for (const base64Image of newImages) {
+        // Convert base64 to blob
+        const blob = await fetch(base64Image).then(r => r.blob());
+        formDataToSend.append('newImages', blob, `image-${Date.now()}.jpg`);
+      }
     }
 
     const res = await fetch(`/api/admin/products/${product._id}`, {
@@ -587,55 +611,108 @@ export default function ProductEditForm({ product, categories }) {
         {/* Right Column - Images & Settings */}
         <div className="space-y-6">
           {/* Product Images */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold mb-4">Product Images</h2>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-lg font-bold text-gray-900">Product Images</h2>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                {images.length + newImages.length} images
+              </span>
+            </div>
+            
+            <p className="text-xs text-gray-500 mb-4">
+              Click <strong className="text-[#2d4e24]">"★ Set as Primary"</strong> on any image to make it the main thumbnail shown in product cards across the store.
+            </p>
             
             {/* Existing Images */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              {images.map((img, index) => (
-                <div key={index} className="relative aspect-square group">
-                  <img
-                    src={img.url}
-                    alt="Product"
-                    fill
-                    className="object-cover rounded"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeExistingImage(index)}
-                    className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
-                  >
-                    <FiX size={16} />
-                  </button>
-                </div>
-              ))}
-            </div>
+            {images.length > 0 && (
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                {images.map((img, index) => {
+                  const isPrimary = index === 0;
+                  return (
+                    <div
+                      key={index}
+                      className={`relative aspect-square rounded-xl overflow-hidden group transition-all duration-200 bg-gray-50 ${
+                        isPrimary
+                          ? 'ring-3 ring-[#2d4e24] shadow-md'
+                          : 'border border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <img
+                        src={img.url}
+                        alt={`Product image ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+
+                      {/* Primary / Feature Badge for Index 0 */}
+                      {isPrimary ? (
+                        <div className="absolute top-2 left-2 z-10">
+                          <span className="inline-flex items-center gap-1 bg-[#2d4e24] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">
+                            <FiStar className="w-3 h-3 fill-amber-300 text-amber-300" />
+                            <span>Primary</span>
+                          </span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setAsPrimary(index)}
+                          className="absolute bottom-2 left-2 right-2 z-10 bg-white/95 hover:bg-[#2d4e24] text-[#2d4e24] hover:text-white text-[11px] font-bold py-1.5 px-2 rounded-lg shadow-md transition-all flex items-center justify-center gap-1 border border-[#2d4e24]/20 cursor-pointer opacity-90 group-hover:opacity-100 active:scale-95"
+                          title="Make this the main product card thumbnail"
+                        >
+                          <FiStar className="w-3 h-3 text-amber-500" />
+                          <span>Set as Primary</span>
+                        </button>
+                      )}
+
+                      {/* Remove Image Button */}
+                      <button
+                        type="button"
+                        onClick={() => removeExistingImage(index)}
+                        className="absolute top-2 right-2 z-10 bg-red-600/90 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition shadow-sm cursor-pointer"
+                        title="Delete image"
+                      >
+                        <FiX size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* New Images */}
             {newImages.length > 0 && (
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                {newImages.map((img, index) => (
-                  <div key={index} className="relative aspect-square group">
-                    <img src={img} alt="New" className="w-full h-full object-cover rounded" />
-                    <button
-                      type="button"
-                      onClick={() => removeNewImage(index)}
-                      className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-gray-500 mb-2">New Uploads (Pending Save)</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {newImages.map((img, index) => (
+                    <div
+                      key={index}
+                      className="relative aspect-square rounded-xl overflow-hidden group border border-gray-200 bg-gray-50"
                     >
-                      <FiX size={16} />
-                    </button>
-                    <span className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                      New
-                    </span>
-                  </div>
-                ))}
+                      <img src={img} alt="New" className="w-full h-full object-cover" />
+                      
+                      <button
+                        type="button"
+                        onClick={() => removeNewImage(index)}
+                        className="absolute top-2 right-2 z-10 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition shadow-sm cursor-pointer"
+                        title="Remove upload"
+                      >
+                        <FiX size={14} />
+                      </button>
+
+                      <span className="absolute bottom-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                        New
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
             {/* Upload Button */}
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:border-green-500 transition">
-              <FiUpload className="text-3xl text-gray-400 mb-2" />
-              <span className="text-sm text-gray-600">Click to upload images</span>
+            <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-[#2d4e24] hover:bg-[#eef5ec]/30 transition group">
+              <FiUpload className="text-2xl text-gray-400 mb-1 group-hover:text-[#2d4e24] transition-colors" />
+              <span className="text-xs font-semibold text-gray-600 group-hover:text-[#2d4e24]">Click to upload new images</span>
+              <span className="text-[10px] text-gray-400">PNG, JPG, WEBP</span>
               <input
                 type="file"
                 multiple

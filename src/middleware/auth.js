@@ -12,7 +12,8 @@ export async function authenticate(req) {
     }
 
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const jwtSecret = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'nature-medica-jwt-secret-key-production-32charsmin';
+    const decoded = jwt.verify(token, jwtSecret);
     return { authenticated: true, user: decoded };
   } catch (error) {
     console.error('Auth error:', error.message);

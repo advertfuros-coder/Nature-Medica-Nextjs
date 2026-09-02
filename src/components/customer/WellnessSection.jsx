@@ -7,7 +7,7 @@ import Link from 'next/link';
 export default function WellnessSection() {
   return (
     <section className="bg-gradient-to-br from-amber-50 to-white py-8 px-4 sm:px-6">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+      <div className=" mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
         
         {/* Left Content */}
         <div className="lg:col-span-1">

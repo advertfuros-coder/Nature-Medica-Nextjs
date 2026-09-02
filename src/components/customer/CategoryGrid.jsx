@@ -187,7 +187,7 @@ export default function CategoryGrid() {
   if (loading) {
     return (
       <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex gap-6 md:gap-8 lg:gap-10">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex flex-col items-center min-w-[90px]">
@@ -203,7 +203,7 @@ export default function CategoryGrid() {
 
   return (
     <div className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="  mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Category Grid - Horizontal Scrollable on Mobile */}
         <div
           ref={scrollContainerRef}

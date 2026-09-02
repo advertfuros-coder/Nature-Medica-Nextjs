@@ -111,8 +111,9 @@ export default async function ProductDetailPage({ params }) {
           {/* Product Details Tabs */}
           <div className="mb-12">
             <ProductTabs
+              product={serializedProduct}
               description={serializedProduct.description || ''}
-              ingredients={serializedProduct.ingredients || []}
+              ingredients={serializedProduct.ingredients || ''}
               specifications={serializedProduct.specifications || {}}
             />
           </div>

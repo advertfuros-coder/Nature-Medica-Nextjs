@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '@/store/slices/cartSlice';
-import { ShoppingCart, Zap, Star, Heart, Leaf, Award } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Heart, Check, ShoppingBag, Sparkles } from 'lucide-react';
+import { useState } from 'react';
 import { trackAddToCart } from '@/lib/gtm';
 import { useWishlist } from '@/hooks/useWishlist';
 
@@ -30,35 +30,26 @@ export default function ProductCard({ product }) {
   const dispatch = useDispatch();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
-  const [quickBuying, setQuickBuying] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-  const { isInWishlist, toggleWishlist, showLoginPrompt } = useWishlist();
-  const isWishlisted = isInWishlist(product._id);
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const isWishlisted = isInWishlist(product?._id);
+
+  if (!product) return null;
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (adding) return;
+
     setAdding(true);
     dispatch(addToCart({ product, quantity: 1, variant: null }));
 
     // Track add to cart event in GTM
     trackAddToCart(product, 1, null);
 
-    setTimeout(() => setAdding(false), 1500);
-  };
-
-  const handleQuickBuy = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setQuickBuying(true);
-    dispatch(addToCart({ product, quantity: 1, variant: null }));
-
-    // Track add to cart event for Buy Now (since it adds to cart before checkout)
-    trackAddToCart(product, 1, null);
-
-    setTimeout(() => router.push('/checkout'), 500);
+    setTimeout(() => setAdding(false), 1400);
   };
 
   const handleWishlist = async (e) => {
@@ -67,206 +58,142 @@ export default function ProductCard({ product }) {
 
     const result = await toggleWishlist(product);
 
-    // Show toast notification
     if (result.success) {
       setToast({
         show: true,
         message: result.message,
-        type: 'success'
+        type: 'success',
       });
       setTimeout(() => setToast({ show: false, message: '', type: '' }), 2000);
     } else {
       setToast({
         show: true,
         message: result.message,
-        type: 'error'
+        type: 'error',
       });
       setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000);
     }
   };
 
   // Prepare Cloudinary image URL with transformation or fallback
-  const rawImage = product.images?.[0]?.url;
+  const rawImage = product.images?.[0]?.url || product.image;
   const hasCloudinaryImage = rawImage && rawImage.includes('cloudinary.com');
   const publicId = hasCloudinaryImage ? getCloudinaryPublicId(rawImage) : null;
   const imageSrc = hasCloudinaryImage
-    ? cloudinaryLoader({ src: publicId, width: 400 })
+    ? cloudinaryLoader({ src: publicId, width: 600 })
     : rawImage || '/placeholder.png';
 
-  // Calculate discount percentage if not provided
-  const discountPercent = product.discountPercent ||
-    (product.mrp > product.price ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0);
+  // Calculate discount percentage
+  const discountPercent =
+    product.discountPercent ||
+    (product.mrp > product.price
+      ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
+      : 0);
 
-  // Calculate savings
-  const savings = product.mrp > product.price ? product.mrp - product.price : 0;
+  // Subtitle / category / short description
+  const subtitle =
+    product.shortDescription ||
+    product.category?.name ||
+    product.brand ||
+    'Ayurvedic Formulation';
 
   return (
     <Link
-      href={`/products/${product.slug}`}
-      className="group block h-full"
+      href={`/products/${product.slug || product._id}`}
+      className="group block h-full select-none"
       prefetch={false}
     >
-      <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-gray-100 hover:border-[#4D6F36]/30">
-        {/* Image Container */}
-        <div className="relative w-full aspect-square overflow-hidden bg-gradient-to-br from-green-50 to-gray-50">
-          <Image
-            src={imageError ? "/placeholder.png" : imageSrc}
-            alt={product.title}
-            width={400}
-            height={400}
-            quality={80}
-            loader={() => imageSrc}
-            placeholder="blur"
-            blurDataURL="/placeholder.png"
-            onError={() => setImageError(true)}
-            loading="lazy"
-            className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
-            priority={false}
-          />
-
-          {/* Badges Container */}
-          <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
-            {/* Discount Badge */}
-            {discountPercent > 0 && (
-              <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-2.5 py-1 rounded-lg text-[9px] font-semibold shadow-md backdrop-blur-sm">
-                {discountPercent}% OFF
-              </div>
-            )}
-
-            <div className="flex-1"></div>
-
-            {/* Wishlist Button */}
-            <button
-              onClick={handleWishlist}
-              className={`relative z-10 p-2 rounded-full backdrop-blur-sm transition-all duration-300 transform hover:scale-110 ${isWishlisted
-                ? 'bg-red-500 text-white shadow-lg'
-                : 'bg-white/80 text-gray-600 hover:bg-white hover:text-red-500 shadow-md'
-                }`}
-              title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-              style={{ pointerEvents: 'auto' }}
-            >
-              <Heart
-                className={`w-4 h-4 transition-all ${isWishlisted ? 'fill-current' : ''}`}
-              />
-            </button>
+      <div className="flex flex-col h-full">
+        
+        {/* =========================================
+            IMAGE CONTAINER (D'you Rounded Box Style)
+           ========================================= */}
+        <div className="relative w-full aspect-[4/5] rounded-3xl sm:rounded-[28px] overflow-hidden bg-[#f4f7f2] shadow-xs group-hover:shadow-md transition-all duration-500">
+          
+          {/* Main Product Image */}
+          <div className="relative w-full h-full overflow-hidden">
+            <Image
+              src={imageError ? '/placeholder.png' : imageSrc}
+              alt={product.title || 'Product'}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              quality={85}
+              loader={() => imageSrc}
+              placeholder="blur"
+              blurDataURL="/placeholder.png"
+              onError={() => setImageError(true)}
+              loading="lazy"
+              className="object-cover w-full h-full transform scale-100 group-hover:scale-105 transition-transform duration-700 ease-out"
+            />
           </div>
 
-          {/* Toast Notification */}
+   
+          {/* Toast Notification inside card */}
           {toast.show && (
-            <div className={`absolute top-3 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg z-50 animate-slideDown ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
-              } text-white text-xs font-medium`}>
+            <div
+              className={`absolute top-4 left-1/2 transform -translate-x-1/2 px-3.5 py-1.5 rounded-full shadow-lg z-30 animate-in fade-in zoom-in-95 duration-200 ${
+                toast.type === 'success' ? 'bg-[#2d4e24]' : 'bg-rose-600'
+              } text-white text-[11px] font-bold`}
+            >
               {toast.message}
             </div>
           )}
 
-          {/* Trust Badges */}
-          <div className="absolute bottom-3 left-3 flex gap-1.5">
-            {product.isOrganic && (
-              <div className="bg-green-600/90 backdrop-blur-sm text-white px-2 py-1 rounded text-[9px] font-semisemibold flex items-center gap-1">
-                <Leaf className="w-3 h-3" />
-                Organic
-              </div>
+          {/* Floating 'Add to Bag' Button (Exact D'you Style at Bottom-Right) */}
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={adding}
+            className={`absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 px-4 sm:px-5 py-2 rounded-full font-bold text-xs sm:text-[13px] tracking-tight shadow-md hover:shadow-lg transition-all duration-300 active:scale-95 flex items-center gap-1.5 cursor-pointer ${
+              adding
+                ? 'bg-[#2d4e24] text-white'
+                : 'bg-white text-[#2d4e24] hover:bg-[#2d4e24] hover:text-white border border-gray-100'
+            }`}
+          >
+            {adding ? (
+              <>
+                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                <span>Added</span>
+              </>
+            ) : (
+              <span>Add to Bag</span>
             )}
-            {product.isBestSeller && (
-              <div className="bg-amber-500/90 backdrop-blur-sm text-white px-2 py-1 rounded text-[9px] font-semisemibold flex items-center gap-1">
-                <Award className="w-3 h-3" />
-                Bestseller
-              </div>
-            )}
-          </div>
-
-          {/* Quick View Overlay (appears on hover) */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300"></div>
+          </button>
         </div>
 
-        {/* Content */}
-        <div className="flex flex-col flex-1 p-4">
-          {/* Category Badge */}
-          {product.category?.name && (
-            <div className="mb-2">
-              <span className="text-[10px] text-[#4D6F36] font-semisemibold uppercase tracking-wide">
-                {product.category.name}
-              </span>
-            </div>
-          )}
 
-          {/* Product Title */}
-          <h3 className="font-semisemibold text-[13px] text-gray-900 mb-2 line-clamp-2 leading-snug group-hover:text-[#4D6F36] transition-colors">
+        {/* =========================================
+            BOTTOM PRODUCT DETAILS
+           ========================================= */}
+        <div className="pt-3.5 pb-1 px-1 space-y-1">
+          {/* Main Title (Personality style in brand color) */}
+          <h3 className="text-lg sm:text-xl font-semibold tracking-tight text-[#2d4e24] group-hover:text-[#1e3617] transition-colors line-clamp-2 leading-snug">
             {product.title}
           </h3>
 
-          {/* Rating */}
-          {product.reviewCount > 0 && (
-            <div className="flex items-center gap-1.5 mb-3">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-3 h-3 ${i < Math.round(product.ratingAvg)
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'fill-gray-200 text-gray-200'
-                      }`}
-                  />
-                ))}
-              </div>
-              <span className="text-[11px] text-gray-600 font-medium">
-                {product.ratingAvg.toFixed(1)}
-              </span>
-              <span className="text-[10px] text-gray-400">
-                ({product.reviewCount})
-              </span>
-            </div>
-          )}
+          {/* Subtitle & Price Row */}
+          <div className="flex items-center justify-between gap-2 pt-0.5">
+            {/* Description / Category */}
+            <p className="text-[10px] sm:text-xs font-semibold tracking-wider text-gray-500 uppercase truncate">
+              {subtitle}
+            </p>
 
-          {/* Spacer */}
-          <div className="flex-1"></div>
-
-          {/* Price Section */}
-          <div className="mb-3">
-            <div className="flex items-baseline gap-2 mb-1">
-              <span className="text- font-semibold text-gray-900">
-                ₹{product.price.toLocaleString('en-IN')}
+            {/* Price */}
+            <div className="flex items-baseline gap-1.5 flex-shrink-0 text-right">
+              <span className="text-sm sm:text-base font-bold text-gray-900 tracking-tight">
+                ₹{Number(product.price || 0).toLocaleString('en-IN')}
               </span>
               {product.mrp > product.price && (
-                <span className="text-sm text-gray-500 line-through">
-                  ₹{product.mrp.toLocaleString('en-IN')}
+                <span className="text-xs text-gray-400 line-through font-medium">
+                  ₹{Number(product.mrp).toLocaleString('en-IN')}
                 </span>
               )}
             </div>
-            {savings > 0 && (
-              <p className="text-[11px] text-green-600 font-semisemibold">
-                Save ₹{savings.toLocaleString('en-IN')}
-              </p>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="space-y-2">
-            {/* Add to Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              disabled={adding}
-              className={`w-full border-2 py-2.5 rounded-xl text-[12px] font-semisemibold flex items-center justify-center gap-2 transition-all ${adding
-                ? 'border-green-500 bg-green-50 text-green-700'
-                : 'border-gray-200 bg-white hover:border-[#4D6F36] hover:bg-green-50 text-gray-900'
-                }`}
-            >
-              <ShoppingCart className="w-4 h-4" />
-              {adding ? 'Added to Cart! ✓' : 'Add to Cart'}
-            </button>
-
-            {/* Quick Buy Button */}
-            <button
-              onClick={handleQuickBuy}
-              disabled={quickBuying}
-              className="w-full bg-[#4D6F36] hover:bg-[#3d5829] text-white py-2.5 rounded-xl text-[12px] font-semisemibold flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow-md disabled:opacity-70"
-            >
-              <Zap className="w-4 h-4" />
-              {quickBuying ? 'Redirecting...' : 'Buy Now'}
-            </button>
           </div>
         </div>
+
       </div>
     </Link>
   );
 }
+

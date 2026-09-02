@@ -3,156 +3,245 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { Sparkles, ArrowUpRight } from 'lucide-react';
 
-// const videoPaths = [
-//   'https://res.cloudinary.com/dnhak76jd/video/upload/c_limit,f_auto,q_auto,w_1280/v1764007920/nature_medica_hero_all.mp4',
-//   '/b3.mp4',
-//   '/b4.mp4',
-//   '/b1.mp4'
-// ];
-
-const bannerImages = [
-  '/banner/5.jpeg',
-  '/banner/1.jpeg',
-  '/banner/2.jpeg',
-  '/banner/3.jpeg',
-  '/banner/4.jpeg',
-  '/banner/6.jpeg',
+// Left Side Media (Larger Rectangle) - Video & Lifestyle visuals
+const leftSlides = [
+  {
+    type: 'image',
+    image: '/2027/ChatGPT Image Sep 2, 2026, 04_16_00 PM.png',
+    badge: '100% Ayurvedic & Natural',
+    title: 'Pure Herbal Formulations',
+    subtitle: 'Crafted for daily radiance & deep nourishment',
+    link: '/products',
+  },
+   
+  {
+    type: 'image',
+    image: '/2027/ChatGPT Image Sep 2, 2026, 04_19_52 PM.png',
+    badge: 'Clean & Toxin-Free',
+    title: 'Glow That Speaks For Itself',
+    subtitle: 'Gentle, potent, and restorative wellness',
+    link: '/products',
+  },
 ];
 
-// Separate Video component to handle individual video playback
-/*
-function Video({ src, isActive }) {
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (isActive) {
-      // Play the video when it becomes active
-      video.play().catch(error => {
-        console.log('Video autoplay prevented:', error);
-        // Autoplay was prevented, user interaction needed
-      });
-    } else {
-      // Pause and reset when not active
-      video.pause();
-      video.currentTime = 0;
-    }
-  }, [isActive]);
-
-  return (
-    <video
-      ref={videoRef}
-      src={src}
-      muted
-      playsInline
-      loop
-      preload="auto"
-      className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-700 ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
-        }`}
-      onError={(e) => {
-        console.error('Video failed to load:', src, e);
-      }}
-    />
-  );
-}
-*/
+// Right Side Media (Smaller Rectangle) - Product & Face care spotlight
+const rightSlides = [
+  {
+    image: '/2027/ChatGPT Image Sep 2, 2026, 04_34_31 PM.png',
+    tagline: "products that work hard, so you don't have to",
+    category: 'Face Care & Serums',
+    link: '/products',
+  },
+  {
+    image: '/2027/ChatGPT Image Sep 2, 2026, 04_45_56 PM.png',
+    tagline: 'pure natural ingredients, real lasting glow',
+    category: 'Daily Skincare Routine',
+    link: '/products',
+  },
+  {
+    image: '/2027/ChatGPT Image Sep 2, 2026, 04_28_34 PM.png',
+    tagline: 'nourish your skin from deep within',
+    category: 'Herbal Hydration',
+    link: '/products?sort=bestseller',
+  },
+  {
+    image: '/2027/ChatGPT Image Sep 2, 2026, 04_23_29 PM.png',
+    tagline: 'experience authentic ayurvedic harmony',
+    category: 'Wellness & Body',
+    link: '/products',
+  },
+];
 
 export default function HeroBanner({ banners }) {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  // Left Section State
+  const [leftIndex, setLeftIndex] = useState(0);
+  const [isLeftHovered, setIsLeftHovered] = useState(false);
 
-  const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % bannerImages.length);
-  }, []);
+  // Right Section State
+  const [rightIndex, setRightIndex] = useState(0);
+  const [isRightHovered, setIsRightHovered] = useState(false);
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + bannerImages.length) % bannerImages.length);
-  };
+  const leftVideoRefs = useRef([]);
 
-  const goToSlide = (index) => {
-    setCurrentSlide(index);
-  };
-
+  // Auto-play Left Slides
   useEffect(() => {
-    if (!isAutoPlaying || bannerImages.length <= 1) return;
-
+    if (isLeftHovered) return;
     const interval = setInterval(() => {
-      nextSlide();
-    }, 4000); // Changed to 4s for images as 2s is too fast
-
+      setLeftIndex((prev) => (prev + 1) % leftSlides.length);
+    }, 6000);
     return () => clearInterval(interval);
-  }, [isAutoPlaying, nextSlide]);
+  }, [isLeftHovered]);
 
-  // Pause auto-play on hover
-  const handleMouseEnter = () => setIsAutoPlaying(false);
-  const handleMouseLeave = () => setIsAutoPlaying(true);
+  // Handle Video Playback on Left Side
+  useEffect(() => {
+    leftVideoRefs.current.forEach((video, idx) => {
+      if (video) {
+        if (idx === leftIndex) {
+          video.currentTime = 0;
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(() => {});
+          }
+        } else {
+          video.pause();
+        }
+      }
+    });
+  }, [leftIndex]);
 
-  if ((!banners || banners.length === 0) && bannerImages.length === 0) {
-    return (
-      <div className="w-full h-[450px] md:h-[500px] bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center">
-        <div className="text-center text-white">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">Welcome to NatureMedica</h1>
-          <p className="text-xl md:text-2xl mb-8">Your Trusted Source for Natural Wellness</p>
-          <Link
-            href="/products"
-            className="bg-white text-green-600 px-8 py-3 rounded-full font-semibold hover:bg-green-50 transition inline-block"
-          >
-            Shop Now
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // Auto-play Right Slides
+  useEffect(() => {
+    if (isRightHovered) return;
+    const interval = setInterval(() => {
+      setRightIndex((prev) => (prev + 1) % rightSlides.length);
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [isRightHovered]);
+
+  const handlePrevLeft = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLeftIndex((prev) => (prev - 1 + leftSlides.length) % leftSlides.length);
+  };
+
+  const handleNextLeft = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLeftIndex((prev) => (prev + 1) % leftSlides.length);
+  };
 
   return (
-    <div
-      className="relative w-full h-[150px] md:h-[500px]  overflow-hidden bg-gray-200"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <div className="w-full px-2 sm:px-3 lg:px-4 py-2 sm:py-3">
+      <div className="w-full flex flex-col lg:flex-row items-stretch gap-2.5 sm:gap-3.5 h-auto lg:h-[600px] xl:h-[660px]">
+        
+        {/* =========================================
+            LEFT SECTION: Thoda sa Bada Rectangle (~58%)
+           ========================================= */}
+        <div
+          className="w-full lg:w-[58%] h-[400px] sm:h-[480px] md:h-[540px] lg:h-full relative rounded-2xl sm:rounded-3xl overflow-hidden bg-neutral-900 shadow-sm group select-none"
+          onMouseEnter={() => setIsLeftHovered(true)}
+          onMouseLeave={() => setIsLeftHovered(false)}
+        >
+          {/* Media Slides (Videos with Fallback Images) */}
+          {leftSlides.map((slide, idx) => (
+            <div
+              key={idx}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                idx === leftIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+              }`}
+            >
+              {slide.type === 'video' ? (
+                <video
+                  ref={(el) => (leftVideoRefs.current[idx] = el)}
+                  src={slide.src}
+                  muted
+                  playsInline
+                  loop
+                  preload="metadata"
+                  poster={slide.fallbackImage}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img
+                  src={slide.image || slide.fallbackImage}
+                  alt={slide.title}
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+          ))}
 
-      {/* {videoPaths.map((video, index) => (
-        <Video
-          key={index}
-          src={video}
-          isActive={index === currentSlide}
-        />
-      ))} */}
+      
 
-      {bannerImages.map((image, index) => (
-        <img
-          key={index}
-          src={image}
-          alt={`Banner ${index + 1}`}
-          className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-700 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-            }`}
-        />
-      ))}
+          {/* Navigation Arrows (Desktop hover) */}
+          <div className="hidden sm:flex items-center gap-2 absolute bottom-6 right-6 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <button
+              onClick={handlePrevLeft}
+              className="p-2.5 rounded-full bg-white/30 backdrop-blur-md hover:bg-white text-white hover:text-gray-900 transition-all shadow-md active:scale-90"
+              aria-label="Previous slide"
+            >
+              <FiChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleNextLeft}
+              className="p-2.5 rounded-full bg-white/30 backdrop-blur-md hover:bg-white text-white hover:text-gray-900 transition-all shadow-md active:scale-90"
+              aria-label="Next slide"
+            >
+              <FiChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
 
-      {/* Navigation Arrows */}
-      {bannerImages.length > 1 && (
-        <>
-          <button
-            onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white rounded-full p-2 md:p-3 transition shadow-lg"
-            aria-label="Previous slide"
-          >
-            <FiChevronLeft className="text-gray-800 text-xl md:text-2xl" />
-          </button>
 
-          <button
-            onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white rounded-full p-2 md:p-3 transition shadow-lg"
-            aria-label="Next slide"
-          >
-            <FiChevronRight className="text-gray-800 text-xl md:text-2xl" />
-          </button>
-        </>
-      )}
+        {/* =========================================
+            RIGHT SECTION: Chota sa Rectangle (~42%)
+            (Matches D'you style reference image)
+           ========================================= */}
+        <div
+          className="w-full lg:w-[42%] h-[400px] sm:h-[480px] md:h-[540px] lg:h-full relative rounded-2xl sm:rounded-3xl overflow-hidden bg-neutral-900 shadow-sm group select-none cursor-pointer"
+          onMouseEnter={() => setIsRightHovered(true)}
+          onMouseLeave={() => setIsRightHovered(false)}
+        >
+          {/* Images Carousel */}
+          {rightSlides.map((slide, idx) => (
+            <div
+              key={idx}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                idx === rightIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+              }`}
+            >
+              <img
+                src={slide.image}
+                alt={slide.category}
+                className="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-transform duration-1000 ease-out"
+              />
+            </div>
+          ))}
 
+          {/* Subtle Bottom Vignette for Tagline Contrast */}
+ 
+          {/* Right Section Content */}
+          <Link href={rightSlides[rightIndex].link} className="absolute inset-0 z-20 flex flex-col justify-between p-5 sm:p-7 md:p-8">
+            {/* Top Category Tag */}
+            <div className="flex justify-end">
+              <span className="text-[11px] sm:text-xs font-semibold   backdrop-blur-md border border-white/20 text-white">
+               </span>
+            </div>
+
+            {/* Bottom Tagline & Slide Pill Indicators */}
+            <div className="text-center space-y-4 pb-2">
+              <h3 className="text-2xl sm:text-3xl md:text-4xl font-serif italic text-white tracking-wide leading-tight drop-shadow-lg px-2 max-w-lg mx-auto">
+                &ldquo;{rightSlides[rightIndex].tagline}&rdquo;
+              </h3>
+
+              {/* Minimalist Pill Progress Indicators (Exact D'you reference design) */}
+              <div className="flex items-center justify-center gap-1.5 pt-1">
+                {rightSlides.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setRightIndex(idx);
+                    }}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      idx === rightIndex
+                        ? 'w-7 bg-white shadow-sm'
+                        : 'w-2 bg-white/50 hover:bg-white/80'
+                    }`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </Link>
+        </div>
+
+      </div>
     </div>
   );
 }
+
