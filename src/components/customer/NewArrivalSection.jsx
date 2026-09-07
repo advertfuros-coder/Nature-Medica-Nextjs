@@ -83,7 +83,7 @@ export default function NewArrivalSection({ products }) {
         {/* Section Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-base lg:text-xl font- bg-yellow-00  text-gray-900 mb-">
+            <h2 className="text-lg sm:text-xl   font-bold text-gray-900 tracking-tight">
               New Arrivals
             </h2>
             <p className="text-gray-600 text-[12px]">Fresh additions to our wellness collection</p>

@@ -26,7 +26,7 @@ export default function TrustedByBanner() {
           {/* Content */}
           <div className="flex-1 text-center lg:text-left">
             <div className="mb-3">
-              <h2 className="text-base font-bold text-gray-900 mb-1">
+              <h2 className="text-lg sm:text-xl   font-bold text-gray-900 tracking-tight mb-1">
                 Trusted by 50K+ Consumers
               </h2>
               <p className="text-[10px] text-gray-500">

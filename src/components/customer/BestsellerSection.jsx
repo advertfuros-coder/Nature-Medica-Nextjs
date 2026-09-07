@@ -83,7 +83,7 @@ export default function BestSellerSection({ products }) {
         {/* Section Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-base lg:text-xl font-  text-gray-900 mb-">
+            <h2 className="text-lg sm:text-xl   font-bold text-gray-900 tracking-tight">
               Best Sellers
             </h2>
             <p className="text-gray-600 text-xs">Our most loved products by customers</p>

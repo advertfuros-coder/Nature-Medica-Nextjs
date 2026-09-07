@@ -1,132 +1,130 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-  ChevronRight, 
-  CreditCard, 
-  Truck, 
-  RefreshCw,
-  Shield,
-  Gift,
-  Package,
-  AlertCircle,
-  Phone,
-  Clock
-} from 'lucide-react';
+import { Plus, Minus, ChevronUp } from 'lucide-react';
 
-const faqs = [
+const defaultFaqs = [
   {
-    icon: CreditCard,
-    question: "What payment methods do you accept?",
-    answer: "We accept Credit/Debit Cards, UPI, Net Banking, Wallets, and Cash on Delivery (COD).",
+    question: "Description & Botanical Science",
+    answer: `Your daily Ayurvedic wellness ritual, crafted without compromises.
+    
+Meet Nature Medica Botanical Care—an authentic synergy of time-honored Vedic herbs and pure cold-pressed botanical extracts designed to restore natural vitality.
+
+Every formulation opens with pure cold-pressed botanicals, herbal infusions, and therapeutic essential oils that deeply nourish the skin barrier and hair roots from within.
+
+Sure, our formulations feel exceptionally gentle and luxurious—but that's not all they do. Infused with standardized botanical actives and essential vitamins, every bottle helps rejuvenate, protect against environmental stressors, and deliver long-lasting visible results.
+
+And the best part? All Nature Medica formulations are 100% AYUSH certified, cruelty-free, and free of sulfates, parabens, and mineral oils.`
   },
   {
-    icon: Truck,
-    question: "How long does shipping take?",
-    answer: "Standard delivery: 3-5 days. Express shipping: 1-2 days for metro cities.",
+    question: "Experience Nature Medica Ayurvedic Formulations",
+    answer: "Crafted with pure whole-plant extracts including Bhringraj, Organic Amla, Hibiscus, Shikakai, and cold-pressed Virgin Coconut Oil. Experience deep hydration, root strengthening, and natural radiance without any synthetic residue or heavy silicones."
   },
   {
-    icon: RefreshCw,
-    question: "What is your return policy?",
-    answer: "7-day return policy for unopened products. Contact within 48 hours for damaged items.",
+    question: "Who Is It Best For?",
+    answer: "Our formulations are pH-balanced, dermatologically tested, and suitable for all hair and skin types—including sensitive skin, colored hair, and treated scalp. Perfect for anyone seeking clean, restorative, authentic Ayurvedic care."
   },
   {
-    icon: Shield,
-    question: "Are products certified?",
-    answer: "Yes, all products are 100% natural, lab-tested, and certified.",
+    question: "How to Use in Your Daily Ritual",
+    answer: "Step 1: Dispense a coin-sized amount into damp hands.\nStep 2: Gently massage onto scalp or skin using upward circular motions for 2-3 minutes to stimulate circulation.\nStep 3: Allow the botanical actives to absorb before rinsing thoroughly with cool or lukewarm water. For best results, use 2-3 times weekly."
   },
   {
-    icon: Gift,
-    question: "Do you offer free shipping?",
-    answer: "Yes! Free shipping on orders above ₹499.",
+    question: "100% Transparent Ingredients List",
+    answer: "Key Actives: Eclipta Alba (Bhringraj) Extract, Phyllanthus Emblica (Amla) Fruit Extract, Hibiscus Rosa-Sinensis Flower Extract, Acacia Concinna (Shikakai) Extract, Aloe Barbadensis Leaf Juice, Cold-Pressed Cocos Nucifera (Coconut) Oil, Rosmarinus Officinalis (Rosemary) Leaf Oil, Vegetable Glycerin, Purified Aqua. Zero Sulfates (SLS/SLES), Zero Parabens, Zero Mineral Oils, Zero Artificial Colors."
   },
   {
-    icon: Package,
-    question: "How to track my order?",
-    answer: "Tracking number sent via email/SMS. Check 'My Orders' section.",
+    question: "Shipping Timelines & Free Delivery",
+    answer: "We offer Free Pan-India Shipping on all orders above ₹499. Orders placed before 2 PM are dispatched the same day. Standard delivery takes 2-4 business days for metro cities and 4-6 business days for the rest of India with end-to-end SMS tracking."
   },
   {
-    icon: AlertCircle,
-    question: "Any side effects?",
-    answer: "Natural ingredients, generally safe. Consult doctor before use.",
-  },
-  {
-    icon: Clock,
-    question: "Can I cancel my order?",
-    answer: "Cancel within 2 hours by contacting support.",
-  },
-  {
-    icon: Gift,
-    question: "Any discounts available?",
-    answer: "Yes! First-time customers get 10% off with code WELCOME10.",
-  },
-  {
-    icon: Phone,
-    question: "How to contact support?",
-    answer: "Email: support@naturemedica.com or call +91-XXXXXXXXXX.",
+    question: "Returns, Replacements & Guarantee",
+    answer: "We offer a hassle-free 7-day return policy for unopened products. In the unlikely event of transit damage or missing items, contact our support team at naturemedica09@gmail.com within 48 hours for immediate priority replacement."
   }
 ];
 
-export default function FAQCompactList() {
-  const [openIndex, setOpenIndex] = useState(null);
+export default function FAQ({ 
+  badge = "MORE INFO",
+  title = "Everything about Nature Medica",
+  subtitle = "Frequently asked questions about our formulas, rituals and orders",
+  faqs = defaultFaqs
+}) {
+  // Initialize with the first item open to match the reference UI
+  const [openIndex, setOpenIndex] = useState(0);
+
+  const toggleItem = (index) => {
+    setOpenIndex((prev) => (prev === index ? null : index));
+  };
 
   return (
-    <section className="py-8 bg-[#FFFDF7]">
-      <div className="max-w-3xl mx-auto px-4">
-        <div className="mb-5">
-          <h2 className="text-sm font-semibold text-gray-900 mb-1">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-[10px] text-gray-500">Find quick answers below</p>
-        </div>
+    <section className="w-full py-8 sm:py-12 bg-white">
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="  mx-auto">
+          {/* Section Header matching homepage components */}
+          <div className="flex items-start justify-between mb-6 sm:mb-8 pb-3 border-b border-gray-100">
+            <div>
+              
+              <h2 className="text-lg sm:text-xl   font-bold text-gray-900 tracking-tight">
+                {title}
+              </h2>
+              {subtitle && (
+                <p className="text-gray-600 text-[12px] sm:text-[13px] mt-0.5">
+                  {subtitle}
+                </p>
+              )}
+            </div>
 
-        <div className="space-y-1 grid grid-cols-1 md:grid-cols-2">
-          {faqs.map((faq, index) => {
-            const Icon = faq.icon;
-            const isOpen = openIndex === index;
+            <button 
+              onClick={() => setOpenIndex((prev) => (prev === null ? 0 : null))}
+              aria-label="Toggle all FAQ items"
+              className="p-1.5 text-gray-400 hover:text-gray-900 transition-colors"
+            >
+              <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-gray-900" />
+            </button>
+          </div>
 
-            return (
-              <div
-                key={index}
-                className={`rounded-lg transition-all duration-300 ${
-                  isOpen ? 'bg-gray-50' : 'bg-white hover:bg-gray-50'
-                }`}
-              >
-                <button
-                  onClick={() => setOpenIndex(isOpen ? null : index)}
-                  className="w-full p-2.5 flex items-center gap-3 text-left"
-                >
-                  <div className={`flex-shrink-0 w-6 h-6 rounded flex items-center justify-center ${
-                    isOpen ? 'bg-[#415f2d]/10' : 'bg-gray-100'
-                  }`}>
-                    <Icon className={`w-3 h-3 ${
-                      isOpen ? 'text-[#415f2d]' : 'text-gray-600'
-                    }`} />
-                  </div>
+          {/* FAQ Accordion List */}
+          <div className="divide-y divide-gray-200">
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
 
-                  <span className="flex-1 text-[11px] font-medium text-gray-900">
-                    {faq.question}
-                  </span>
+              return (
+                <div key={index} className="transition-colors">
+                  <button
+                    onClick={() => toggleItem(index)}
+                    className="w-full py-3.5 sm:py-4 flex items-center justify-between text-left group transition-colors"
+                    aria-expanded={isOpen}
+                  >
+                    <span className="text-[13px] sm:text-sm font-bold text-gray-900 group-hover:text-black transition-colors pr-6">
+                      {faq.question}
+                    </span>
 
-                  <ChevronRight
-                    className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-300 flex-shrink-0 ${
-                      isOpen ? 'rotate-90 text-[#415f2d]' : ''
+                    <span className="flex-shrink-0 text-gray-800 transition-transform duration-200">
+                      {isOpen ? (
+                        <Minus className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+                      ) : (
+                        <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+                      )}
+                    </span>
+                  </button>
+
+                  {/* Expanded Content */}
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      isOpen ? 'max-h-[800px] opacity-100 pb-4' : 'max-h-0 opacity-0'
                     }`}
-                  />
-                </button>
-
-                <div
-                  className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    isOpen ? 'max-h-96 pb-2.5' : 'max-h-0'
-                  }`}
-                >
-                  <p className="text-[10px] text-gray-600 leading-relaxed px-2.5 pl-11">
-                    {faq.answer}
-                  </p>
+                  >
+                    <div className="border-l-2 border-gray-300 pl-3.5 sm:pl-4 my-1 text-[12px] sm:text-[13px] text-gray-600 leading-relaxed font-normal space-y-2.5">
+                      {faq.answer.split('\n\n').map((paragraph, pIdx) => (
+                        <p key={pIdx} className="whitespace-pre-line">
+                          {paragraph}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

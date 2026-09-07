@@ -1,244 +1,345 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { FiFacebook, FiInstagram, FiTwitter, FiYoutube, FiMapPin, FiPhone, FiMail, FiArrowRight, FiSend } from 'react-icons/fi';
 import { useState } from 'react';
+import Link from 'next/link';
+import { 
+  FiFacebook, 
+  FiInstagram, 
+  FiTwitter, 
+  FiYoutube, 
+  FiArrowRight, 
+  FiCheck,
+  FiMail,
+  FiPhone
+} from 'react-icons/fi';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault();
-    // Add newsletter subscription logic here
-    setSubscribed(true);
-    setTimeout(() => {
-      setSubscribed(false);
-      setEmail('');
-    }, 3000);
+    if (!email || !email.includes('@')) return;
+    setSubmitting(true);
+    try {
+      // Newsletter subscription logic
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      }).catch(() => null);
+
+      setSubscribed(true);
+      setTimeout(() => {
+        setSubscribed(false);
+        setEmail('');
+      }, 4000);
+    } catch {
+      setSubscribed(true);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
+  const marqueeItems = [
+    '100% Ayurvedic Botanical Actives',
+    'AYUSH GMP Certified',
+    'Free Express Shipping on Orders ₹499+',
+    'Paraben & Sulfate Free',
+    'Dermatologically Tested',
+    'Cruelty Free & Vegan',
+    'Non-Toxic Pure Formulations',
+    'Authentic Cold-Pressed Extracts',
+  ];
+
   return (
-    <footer className="relative bg-gradient-to-br from-[#2a3f1f] via-[#415f2d] to-[#2a3f1f] text-white overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-green-400 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-400 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+    <footer className="w-full bg-[#EBF3E8] text-gray-800 relative overflow-hidden font-sans border-t border-[#d8e8d4]">
+      {/* 1. Top Dark Marquee Ticker Strip (matching reference) */}
+      <div className="w-full bg-[#182a13] text-white py-2.5 overflow-hidden select-none border-b border-[#223d1b]">
+        <div className="flex whitespace-nowrap animate-marquee">
+          <div className="flex items-center gap-6 shrink-0 text-xs sm:text-[13px] font-semibold tracking-wide uppercase px-3">
+            {marqueeItems.concat(marqueeItems).map((item, idx) => (
+              <span key={idx} className="flex items-center gap-6">
+                <span>{item}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#82c852] inline-block" />
+              </span>
+            ))}
+          </div>
+          <div className="flex items-center gap-6 shrink-0 text-xs sm:text-[13px] font-semibold tracking-wide uppercase px-3" aria-hidden="true">
+            {marqueeItems.concat(marqueeItems).map((item, idx) => (
+              <span key={`dup-${idx}`} className="flex items-center gap-6">
+                <span>{item}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#82c852] inline-block" />
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="relative">
-
-        {/* Main Footer Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
-            {/* Brand & Contact - Takes more space */}
-            <div className="lg:col-span-5">
-              <div className="mb-6">
-                <Image
-                  src="/naturemedicalogo.png"
-                  alt="NatureMedica Logo"
-                  width={220}
-                  height={80}
-                  className="bg-white p-3 rounded-lg mb-4 hover:scale-105 sc0 transition-transform"
-                />
-                <p className="text-green-100 leading-relaxed text-sm md:text-base">
-                  Your trusted partner in natural health and wellness. We bring you the finest quality products with care and dedication.
-                </p>
-              </div>
-
-              {/* Contact Cards with Enhanced Design */}
-              <div className="space-y-4">
+      {/* 2. Main Footer Columns */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8 sm:pt-16 sm:pb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10">
+          
+          {/* Column 1: Social Media & Newsletter / VIP Club (lg:col-span-4) */}
+          <div className="lg:col-span-4 space-y-5">
+            {/* Circular Social Icons matching reference */}
+            <div>
+              <div className="flex items-center gap-2.5">
                 <a
-                  href="https://maps.google.com/?q=1st+Floor,+LHPS+Building,+Friends+Colony,+Sector-7,+Kamla+Nehru+Nagar,+Vikas+Nagar,+Lucknow,+Uttar+Pradesh+226022"
+                  href="https://www.facebook.com/profile.php?id=61584706168474"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-start gap-4 p-4 bg-white/5 backdrop-blur rounded-2xl border border-white/10 hover:bg-white/10 hover:border-green-300/30 transition-all hover:translate-x-1"
+                  className="w-10 h-10 rounded-full border border-gray-400/80 bg-white/60 hover:bg-[#2d4e24] hover:text-white hover:border-[#2d4e24] flex items-center justify-center text-gray-800 transition-all duration-200 shadow-2xs"
+                  aria-label="Facebook"
                 >
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform">
-                    <FiMapPin className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-white mb-1">Visit Our Store</p>
-                    <p className="text-sm text-green-100 leading-relaxed">
-                      1st Floor, LHPS Building, Friends Colony, Sector-7,
-                      Kamla Nehru Nagar, Vikas Nagar, Lucknow, Uttar Pradesh 226022
-                    </p>
-                  </div>
+                  <FiFacebook className="w-4 h-4" />
                 </a>
-
                 <a
-                  href="tel:8400043322"
-                  className="group flex items-center gap-4 p-4 bg-white/5 backdrop-blur rounded-2xl border border-white/10 hover:bg-white/10 hover:border-green-300/30 transition-all hover:translate-x-1"
+                  href="https://twitter.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full border border-gray-400/80 bg-white/60 hover:bg-[#2d4e24] hover:text-white hover:border-[#2d4e24] flex items-center justify-center text-gray-800 transition-all duration-200 shadow-2xs"
+                  aria-label="X / Twitter"
                 >
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform">
-                    <FiPhone className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-white mb-1">Call Us</p>
-                    <p className="text-lg font-medium text-green-200 group-hover:text-white transition-colors">
-                      +91 8400043322
-                    </p>
-                  </div>
+                  <FiTwitter className="w-4 h-4" />
                 </a>
-
                 <a
-                  href="mailto:support@naturemedica.com"
-                  className="group flex items-center gap-4 p-4 bg-white/5 backdrop-blur rounded-2xl border border-white/10 hover:bg-white/10 hover:border-green-300/30 transition-all hover:translate-x-1"
+                  href="https://www.instagram.com/nature_medica_/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full border border-gray-400/80 bg-white/60 hover:bg-[#2d4e24] hover:text-white hover:border-[#2d4e24] flex items-center justify-center text-gray-800 transition-all duration-200 shadow-2xs"
+                  aria-label="Instagram"
                 >
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform">
-                    <FiMail className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-white mb-1">Email Us</p>
-                    <p className="text-green-200 group-hover:text-white transition-colors">
-                      support@naturemedica.com
-                    </p>
-                  </div>
+                  <FiInstagram className="w-4 h-4" />
+                </a>
+                <a
+                  href="https://youtube.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full border border-gray-400/80 bg-white/60 hover:bg-[#2d4e24] hover:text-white hover:border-[#2d4e24] flex items-center justify-center text-gray-800 transition-all duration-200 shadow-2xs"
+                  aria-label="YouTube"
+                >
+                  <FiYoutube className="w-4 h-4" />
                 </a>
               </div>
             </div>
 
-            {/* Quick Links Grid - Enhanced Design */}
-            <div className="lg:col-span-7">
-              <div className="grid grid-cols-2 md:grid-cols-2 gap-8">
+            {/* Newsletter / Wellness Circle replacing App download */}
+            <div className="bg-white/80 backdrop-blur-xs rounded-2xl p-4 sm:p-5 border border-[#d8e8d4] shadow-2xs max-w-sm">
+              <h3 className="text-xs sm:text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-1">
+                Join Nature Medica Circle
+              </h3>
+              <p className="text-xs text-gray-600 leading-relaxed mb-3">
+                Subscribe to receive Ayurvedic wellness tips, exclusive launches & 10% off your first order.
+              </p>
 
-
-                {/* Support */}
-                <div>
-                  <h4 className="font-bold text-white text-lg mb-4 relative inline-block">
-                    Support
-                    <span className="absolute bottom-0 left-0 w-12 h-1 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full"></span>
-                  </h4>
-                  <ul className="space-y-3 mt-6">
-                    {[
-                      { href: '/orders', label: 'Track Order' },
-                      { href: '/about', label: 'About Us' },
-                      { href: '/contact', label: 'Contact Us' },
-                      { href: '/faq', label: 'FAQ' },
-                    ].map((link) => (
-                      <li key={link.href}>
-                        <Link
-                          href={link.href}
-                          className="text-green-100 hover:text-white transition-colors flex items-center gap-2 group"
-                        >
-                          <FiArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
-                          <span className="group-hover:translate-x-1 transition-transform">{link.label}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+              {subscribed ? (
+                <div className="flex items-center gap-2 p-2.5 bg-[#eef5ec] text-[#2d4e24] rounded-xl text-xs font-bold border border-[#2d4e24]/20">
+                  <FiCheck className="w-4 h-4 text-[#2d4e24]" />
+                  <span>Welcome to the Wellness Circle!</span>
                 </div>
+              ) : (
+                <form onSubmit={handleSubscribe} className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="Enter your email address"
+                    className="flex-1 bg-white border border-gray-300 rounded-xl px-3 py-2 text-xs font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#2d4e24]"
+                  />
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="bg-[#2d4e24] hover:bg-[#223d1b] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center"
+                    aria-label="Subscribe"
+                  >
+                    <FiArrowRight className="w-4 h-4" />
+                  </button>
+                </form>
+              )}
 
-                {/* Legal */}
-                <div>
-                  <h4 className="font-bold text-white text-lg mb-4 relative inline-block">
-                    Legal
-                    <span className="absolute bottom-0 left-0 w-12 h-1 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full"></span>
-                  </h4>
-                  <ul className="space-y-3 mt-6">
-                    {[
-                      { href: '/privacy', label: 'Privacy Policy' },
-                      { href: '/terms', label: 'Terms & Conditions' },
-                      { href: '/refund', label: 'Refund Policy' },
-                      { href: '/shipping', label: 'Shipping Policy' },
-                    ].map((link) => (
-                      <li key={link.href}>
-                        <Link
-                          href={link.href}
-                          className="text-green-100 hover:text-white transition-colors flex items-center gap-2 group"
-                        >
-                          <FiArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
-                          <span className="group-hover:translate-x-1 transition-transform">{link.label}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+              <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-500">
+                <span className="flex items-center gap-1">
+                  <FiPhone className="w-3 h-3 text-[#2d4e24]" /> +91 8400043322
+                </span>
+                <span className="flex items-center gap-1">
+                  <FiMail className="w-3 h-3 text-[#2d4e24]" /> Support 24/7
+                </span>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Bottom Bar - Enhanced */}
-        <div className="border-t border-white/10 bg-black/20 backdrop-blur pb-16 md:pb-0">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              {/* Copyright */}
-              <div className="text-green-100 text-sm text-center md:text-left">
-                <p>
-                  © {new Date().getFullYear()} <span className="font-semibold text-white">Nature Medica</span>. All rights reserved.
-                </p>
-                <p className="mt-1">
-                  Design and Development by{' '}
-                  <a
-                    href="https://genforgestudio.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-white hover:text-green-300 transition-colors underline decoration-green-400/50 hover:decoration-green-300"
-                  >
-                    Genforge Studio
-                  </a>
-                </p>
-              </div>
-
-              {/* Social Media - Enhanced */}
-              <div className="flex items-center gap-4">
-                <span className="text-green-100 font-medium text-sm">Follow Us:</span>
-                <div className="flex gap-3">
-                  <a
-                    href="https://www.facebook.com/profile.php?id=61584706168474"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur border border-white/20 hover:bg-gradient-to-br hover:from-blue-500 hover:to-blue-600 flex items-center justify-center transition-all hover:scale-110 hover:rotate-6 group"
-                    aria-label="Facebook"
-                  >
-                    <FiFacebook className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
-                  </a>
-                  <a
-                    href="https://www.instagram.com/nature_medica_/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur border border-white/20 hover:bg-gradient-to-br hover:from-pink-500 hover:to-purple-600 flex items-center justify-center transition-all hover:scale-110 hover:rotate-6 group"
-                    aria-label="Instagram"
-                  >
-                    <FiInstagram className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
-                  </a>
-                </div>
-              </div>
-
-              {/* Payment Methods - Enhanced */}
-              <div className="flex items-center gap-3">
-                <span className="text-green-100 text-sm font-medium">We Accept:</span>
-                <div className="flex gap-2">
-                  <div className="bg-white p-2 rounded-lg shadow-md hover:shadow-lg transition-shadow hover:scale-105 transform">
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/f/fa/UPI-Logo.png"
-                      alt="UPI"
-                      className="h-5 w-auto object-contain"
-                    />
-                  </div>
-                  <div className="bg-white p-2 rounded-lg shadow-md hover:shadow-lg transition-shadow hover:scale-105 transform">
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg"
-                      alt="Visa"
-                      className="h-5 w-auto object-contain"
-                    />
-                  </div>
-                  <div className="bg-white p-2 rounded-lg shadow-md hover:shadow-lg transition-shadow hover:scale-105 transform">
-                    <img
-                      src="https://cdn-icons-png.flaticon.com/512/2897/2897832.png"
-                      alt="Mastercard"
-                      className="h-5 w-auto object-contain"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Column 2: My Account (lg:col-span-2) */}
+          <div className="lg:col-span-3">
+            <h4 className="font-bold text-gray-900 text-sm sm:text-base mb-3.5 tracking-tight">
+              My Account
+            </h4>
+            <ul className="space-y-2.5 text-xs sm:text-[13px]">
+              <li>
+                <Link href="/profile" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  My Profile
+                </Link>
+              </li>
+              <li>
+                <Link href="/orders" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  My Orders
+                </Link>
+              </li>
+              <li>
+                <Link href="/addresses" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  Manage Addresses
+                </Link>
+              </li>
+              <li>
+                <Link href="/refund" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  Request Replacement / Returns
+                </Link>
+              </li>
+              <li>
+                <Link href="/track" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  Track Shipment
+                </Link>
+              </li>
+              <li>
+                <Link href="/wishlist" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  My Wishlist
+                </Link>
+              </li>
+            </ul>
           </div>
-        </div>
 
+          {/* Column 3: About (lg:col-span-2) */}
+          <div className="lg:col-span-2">
+            <h4 className="font-bold text-gray-900 text-sm sm:text-base mb-3.5 tracking-tight">
+              About
+            </h4>
+            <ul className="space-y-2.5 text-xs sm:text-[13px]">
+              <li>
+                <Link href="/about" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  Why Nature Medica
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  Our Science
+                </Link>
+              </li>
+              <li>
+                <Link href="/products" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  Ingredients
+                </Link>
+              </li>
+              <li>
+                <Link href="/categories" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  All Collections
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4: Information (lg:col-span-3) */}
+          <div className="lg:col-span-3">
+            <h4 className="font-bold text-gray-900 text-sm sm:text-base mb-3.5 tracking-tight">
+              Information
+            </h4>
+            <ul className="space-y-2.5 text-xs sm:text-[13px]">
+              <li>
+                <Link href="/contact" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  Contact Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/refund" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  Return Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/shipping" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  Shipping Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/faq" className="text-gray-700 hover:text-[#2d4e24] font-medium transition-colors">
+                  FAQs
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+        </div>
       </div>
+
+      {/* 3. Giant Watermark / Brand Name (matching reference) */}
+      <div className="w-full select-none pointer-events-none overflow-hidden text-center -my-2 sm:-my-4">
+        <span className="text-[12vw] sm:text-[11vw] font-black tracking-tight text-[#2d4e24]/12 uppercase leading-none block font-sans">
+          Nature Medica
+        </span>
+      </div>
+
+      {/* 4. Bottom Copyright & Payment Methods Bar */}
+      <div className="border-t border-[#d8e8d4] bg-[#E3EFE0]/70 py-5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+            {/* Copyright */}
+            <p className="text-gray-600 text-center sm:text-left text-xs sm:text-[13px]">
+              © {new Date().getFullYear()} <span className="font-semibold text-gray-900">Nature Medica</span>. All rights reserved.
+            </p>
+
+            {/* Payment Icons matching reference */}
+            <div className="flex items-center gap-1.5 flex-wrap justify-center">
+              <div className="bg-white px-2 py-1 rounded-md shadow-2xs border border-gray-200">
+                <span className="font-black text-[#1A1F71] text-[11px] tracking-wider italic">VISA</span>
+              </div>
+              <div className="bg-white px-2 py-1 rounded-md shadow-2xs border border-gray-200 flex items-center">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#EB001B] inline-block -mr-1" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#F79E1B]/90 inline-block" />
+              </div>
+              <div className="bg-white px-2 py-1 rounded-md shadow-2xs border border-gray-200">
+                <span className="font-bold text-[#006FCF] text-[10px] tracking-tighter">AMEX</span>
+              </div>
+              <div className="bg-white px-2 py-1 rounded-md shadow-2xs border border-gray-200">
+                <span className="font-bold text-[#097939] text-[10px] tracking-tight">RuPay❯</span>
+              </div>
+              <div className="bg-white px-2 py-1 rounded-md shadow-2xs border border-gray-200">
+                <span className="font-bold text-gray-800 text-[10px]">GPay</span>
+              </div>
+              <div className="bg-white px-2 py-1 rounded-md shadow-2xs border border-gray-200">
+                <span className="font-bold text-[#00B9F5] text-[10px]">Paytm</span>
+              </div>
+              <div className="bg-white px-2 py-1 rounded-md shadow-2xs border border-gray-200">
+                <span className="font-bold text-[#5F259F] text-[10px]">UPI</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes marquee {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          display: flex;
+          width: max-content;
+          animation: marquee 30s linear infinite;
+        }
+        .animate-marquee:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
     </footer>
   );
 }

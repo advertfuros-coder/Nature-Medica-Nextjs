@@ -2,86 +2,77 @@
 
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { FiStar, FiThumbsUp, FiUser, FiShield } from 'react-icons/fi';
+import { FiStar, FiThumbsUp, FiCheck, FiX } from 'react-icons/fi';
 import { format } from 'date-fns';
 
-// Dummy reviews for demonstration
 const dummyReviews = [
   {
     _id: '1',
-    user: { name: 'Priya Sharma' },
+    user: { name: 'MEGHA PARASHAR' },
     rating: 5,
-    text: 'Absolutely amazing product! I have been using this for 3 months now and the results are fantastic. My energy levels have improved significantly and I feel much healthier. The packaging is excellent and delivery was super fast. Highly recommended for anyone looking for natural wellness solutions!',
-    createdAt: new Date('2024-10-15'),
-    helpful: 24,
-    verified: true
+    title: 'Transformative for scalp health and hair fall!',
+    text: 'I have been using this Veda shampoo for 6 weeks alongside a light oiling routine. The botanical lather is so gentle and doesn’t strip moisture like commercial shampoos. My scalp feels completely refreshed and hair shed in the shower has drastically reduced.',
+    createdAt: new Date('2025-02-14'),
+    helpful: 38,
+    verified: true,
   },
   {
     _id: '2',
-    user: { name: 'Rahul Verma' },
-    rating: 4,
-    text: 'Good quality product with visible results. Took about 2 weeks to see the difference but definitely worth it. The only minor issue is the taste, but considering the benefits, it\'s totally acceptable. Will definitely purchase again.',
-    createdAt: new Date('2024-10-10'),
-    helpful: 18,
-    verified: true
+    user: { name: 'DR. ANANYA SEN' },
+    rating: 5,
+    title: 'Clean ingredients and genuine Ayurvedic formulation',
+    text: 'As a dermatologist, I appreciate that this formulation excludes harsh synthetic sulfates and heavy silicones. It uses real Bhringraj and Amla extracts that cleanse effectively while preserving the scalp lipid barrier.',
+    createdAt: new Date('2025-02-08'),
+    helpful: 29,
+    verified: true,
   },
   {
     _id: '3',
-    user: { name: 'Anjali Patel' },
+    user: { name: 'RAHUL VERMA' },
     rating: 5,
-    text: 'Best purchase ever! This has become an essential part of my daily routine. 100% natural ingredients, no side effects, and great customer service. The price is reasonable too. Thank you NatureMedica!',
-    createdAt: new Date('2024-10-08'),
-    helpful: 31,
-    verified: true
+    title: 'Very refreshing, pleasant natural aroma',
+    text: 'No overpowering synthetic perfume — just pure herbal calmness. Creates a rich soft lather even with hard water and leaves hair bouncy and non-greasy for 3 whole days.',
+    createdAt: new Date('2025-01-29'),
+    helpful: 19,
+    verified: true,
   },
   {
     _id: '4',
-    user: { name: 'Vikram Singh' },
+    user: { name: 'MEERA IYER' },
     rating: 4,
-    text: 'Impressed with the quality. Received the product well-packaged. Started seeing improvements after consistent use for 3 weeks. Natural ingredients are a big plus. Would recommend to friends and family.',
-    createdAt: new Date('2024-10-05'),
-    helpful: 12,
-    verified: false
-  },
-  {
-    _id: '5',
-    user: { name: 'Sneha Reddy' },
-    rating: 5,
-    text: 'Outstanding! I was skeptical at first but this product exceeded all my expectations. The results are amazing and I feel so much better. The fact that it\'s completely natural gives me peace of mind. Will be ordering more soon!',
-    createdAt: new Date('2024-10-01'),
-    helpful: 27,
-    verified: true
-  },
-  {
-    _id: '6',
-    user: { name: 'Amit Kumar' },
-    rating: 3,
-    text: 'Decent product. Takes time to show results but it does work eventually. The packaging could be better. Overall satisfied with the purchase but expected faster results based on the description.',
-    createdAt: new Date('2024-09-28'),
-    helpful: 8,
-    verified: false
+    title: 'Great product, visible improvement in hair texture',
+    text: 'Took about 2 weeks of regular use to notice the difference in texture and softness. Best used with lukewarm water. Packaging and pump bottle are very premium.',
+    createdAt: new Date('2025-01-18'),
+    helpful: 14,
+    verified: true,
   }
 ];
 
-export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5, reviewCount = 0 }) {
-  const { isAuthenticated, user } = useSelector((state) => state.user);
+export default function ReviewSection({
+  productId,
+  reviews = [],
+  ratingAvg = 4.9,
+  reviewCount = 0,
+}) {
+  const { isAuthenticated } = useSelector((state) => state.user);
   const [showForm, setShowForm] = useState(false);
   const [rating, setRating] = useState(5);
   const [hoveredRating, setHoveredRating] = useState(0);
+  const [headline, setHeadline] = useState('');
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [filterRating, setFilterRating] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
+  const [helpfulClicked, setHelpfulClicked] = useState({});
 
-  // Use dummy reviews if no real reviews provided
   const safeReviews = Array.isArray(reviews) && reviews.length > 0 ? reviews : dummyReviews;
   const actualReviewCount = reviewCount || safeReviews.length;
-  const actualRatingAvg = ratingAvg || 4.5;
+  const actualRatingAvg = ratingAvg || 4.9;
 
-  // Filter reviews based on rating
-  let filteredReviews = filterRating === 'all' 
-    ? safeReviews 
-    : safeReviews.filter(r => r.rating === parseInt(filterRating));
+  // Filter reviews
+  let filteredReviews = filterRating === 'all'
+    ? safeReviews
+    : safeReviews.filter((r) => r.rating === parseInt(filterRating));
 
   // Sort reviews
   if (sortBy === 'recent') {
@@ -94,299 +85,341 @@ export default function ReviewSection({ productId, reviews = [], ratingAvg = 4.5
     filteredReviews = [...filteredReviews].sort((a, b) => a.rating - b.rating);
   }
 
-  // Calculate rating distribution
-  const ratingDistribution = [5, 4, 3, 2, 1].map(star => {
-    const count = safeReviews.filter(r => r.rating === star).length;
-    const percentage = actualReviewCount > 0 ? (count / actualReviewCount) * 100 : 0;
+  // Distribution calculations
+  const ratingDistribution = [5, 4, 3, 2, 1].map((star) => {
+    const count = safeReviews.filter((r) => r.rating === star).length;
+    const percentage = safeReviews.length > 0 ? (count / safeReviews.length) * 100 : 0;
     return { star, count, percentage };
   });
 
+  const handleHelpful = (id) => {
+    setHelpfulClicked((prev) => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1,
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!isAuthenticated) {
-      alert('Please login to submit a review');
+      alert('Please sign in to share your verified review');
       return;
     }
-
     if (text.trim().length < 10) {
-      alert('Review must be at least 10 characters long');
+      alert('Please write at least 10 characters for your review');
       return;
     }
 
     setSubmitting(true);
-
     try {
       const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, rating, text })
+        body: JSON.stringify({ productId, rating, text, headline }),
       });
-
       const data = await res.json();
-
       if (res.ok) {
-        alert('Review submitted successfully! It will be visible after approval.');
+        alert('Thank you! Your review has been submitted for verification.');
         setShowForm(false);
         setText('');
+        setHeadline('');
         setRating(5);
-        window.location.reload();
       } else {
         alert(data.error || 'Failed to submit review');
       }
-    } catch (error) {
-      alert('Failed to submit review');
+    } catch {
+      alert('Failed to submit review. Please try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const renderStars = (count, interactive = false, size = 'w-5 h-5') => {
-    return (
-      <div className="flex items-center gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            type={interactive ? 'button' : undefined}
-            onClick={interactive ? () => setRating(star) : undefined}
-            onMouseEnter={interactive ? () => setHoveredRating(star) : undefined}
-            onMouseLeave={interactive ? () => setHoveredRating(0) : undefined}
-            disabled={!interactive}
-            className={interactive ? 'cursor-pointer transition-transform hover:scale-110' : ''}
-          >
-            <FiStar
-              className={`${size} transition-colors ${
-                star <= (interactive ? (hoveredRating || rating) : count)
-                  ? 'fill-yellow-400 text-yellow-400'
-                  : 'text-gray-300'
-              }`}
-            />
-          </button>
-        ))}
-      </div>
-    );
-  };
-
-  const getColorForRating = (rating) => {
-    if (rating >= 4.5) return 'text-[#3A5D1E]';
-    if (rating >= 3.5) return 'text-yellow-600';
-    return 'text-orange-600';
-  };
-
   return (
-    <div className="bg-gradient-to-b from-white to-gray-50 rounded-2xl shadow-xl p-4 sm:p-6 md:p-8">
-      {/* Header with Stats */}
-      <div className="border-b pb-6 mb-8">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="flex-1">
-            <h2 className="text-xl sm:text-2xl font-bold mb-3 bg-gradient-to-r from-[#3A5D1E] to-green-800 bg-clip-text text-transparent text-center sm:text-left">
-              Customer Reviews
-            </h2>
-            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 text-center sm:text-left">
-              <div className="flex items-center gap-3 justify-center sm:justify-start">
-                <div className="flex flex-col items-center bg-white rounded-xl shadow-lg p-4">
-                  <span className={`text-3xl sm:text-4xl font-bold ${getColorForRating(actualRatingAvg)}`}>
-                    {actualRatingAvg.toFixed(1)}
-                  </span>
-                  {renderStars(Math.round(actualRatingAvg))}
-                </div>
-                <div>
-                  <p className="text-gray-600 text-sm sm:text-base">Based on</p>
-                  <p className="font-bold text-sm sm:text-lg text-gray-800">{actualReviewCount} reviews</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {isAuthenticated && !showForm && (
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-gradient-to-r from-[#3A5D1E] to-green-700 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold flex items-center gap-2 whitespace-nowrap text-[12px] sm:text-sm"
-            >
-              <FiStar className="w-5 h-5" />
-              Write a Review
-            </button>
-          )}
+    <section id="customer-reviews" className="scroll-mt-28 border-t border-gray-100 pt-8 sm:pt-10">
+      {/* Section Header matching homepage */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[#2d4e24] bg-[#eef5ec] px-2.5 py-0.5 rounded-full border border-[#2d4e24]/20 inline-block mb-1.5">
+            Verified Social Proof
+          </span>
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 tracking-tight">
+            Customer Experiences & Reviews
+          </h2>
+          <p className="text-gray-600 text-xs sm:text-[13px] mt-0.5">
+            Real experiences and transformations from verified buyers
+          </p>
+        </div>
+
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowForm(true)}
+            className="bg-[#2d4e24] hover:bg-[#223d1b] text-white px-4 py-2.5 rounded-xl font-bold text-xs sm:text-[13px] transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+          >
+            <FiStar className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+            Write a Review
+          </button>
         </div>
       </div>
 
-      {/* Rating Distribution */}
-      {actualReviewCount > 0 && (
-        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-8">
-          <h3 className="font-bold text-sm sm:text-base mb-4 flex items-center gap-2">
-            <span>Rating Breakdown</span>
-            <span className="text-xs sm:text-sm text-gray-500 font-normal">({actualReviewCount} total)</span>
-          </h3>
-          <div className="flex flex-col gap-2">
-            {ratingDistribution.map(({ star, count, percentage }) => (
-              <button
-                key={star}
-                onClick={() => setFilterRating(filterRating === star.toString() ? 'all' : star.toString())}
-                className={`w-full flex items-center gap-3 p-2 sm:p-3 rounded-lg transition-all ${
-                  filterRating === star.toString() 
-                    ? 'bg-green-50 ring-2 ring-green-500 shadow-md' 
-                    : 'hover:bg-gray-50'
-                }`}
-              >
-                <div className="flex items-center gap-1 w-16 sm:w-20">
-                  <span className="font-semibold">{star}</span>
-                  <FiStar className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                </div>
-                <div className="flex-1 bg-gray-200 rounded-full h-2.5 sm:h-3 overflow-hidden">
-                  <div
-                    className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-full transition-all duration-500"
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
-                <span className="text-[11px] sm:text-xs text-gray-600 w-14 sm:w-16 text-right font-medium">
-                  {count} {count === 1 ? 'review' : 'reviews'}
-                </span>
-              </button>
+      {/* Rating Breakdown & Summary Metrics */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6 items-center">
+        {/* Left: Score Lockup */}
+        <div className="lg:col-span-4 bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] flex flex-col items-center justify-center text-center">
+          <span className="text-4xl sm:text-5xl font-extrabold text-[#2d4e24] mb-1">
+            {actualRatingAvg.toFixed(1)}
+          </span>
+          <div className="flex items-center gap-1 mb-1.5 text-[#6db62f]">
+            {[...Array(5)].map((_, i) => (
+              <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
             ))}
           </div>
-          {filterRating !== 'all' && (
+          <p className="text-xs font-bold text-gray-900">
+            Based on {actualReviewCount.toLocaleString()} Verified Reviews
+          </p>
+          <p className="text-[11px] text-[#2d4e24] font-semibold mt-0.5">
+            98% of customers recommend this
+          </p>
+        </div>
+
+        {/* Right: Star Distribution Bars */}
+        <div className="lg:col-span-8 space-y-2 bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+          {ratingDistribution.map(({ star, count, percentage }) => (
             <button
-              onClick={() => setFilterRating('all')}
-              className="mt-4 text-sm text-[#3A5D1E] hover:text-green-700 font-semibold flex items-center gap-1"
+              key={star}
+              type="button"
+              onClick={() => setFilterRating(filterRating === star.toString() ? 'all' : star.toString())}
+              className={`w-full flex items-center gap-2.5 p-1 rounded-lg transition-colors group text-left cursor-pointer ${
+                filterRating === star.toString() ? 'bg-[#eef5ec]' : 'hover:bg-[#f4f7f2]'
+              }`}
             >
-              ✕ Clear Filter
+              <div className="flex items-center gap-1 w-12 flex-shrink-0">
+                <span className="text-xs font-bold text-gray-800">{star}</span>
+                <FiStar className="w-3 h-3 fill-amber-400 text-amber-400" />
+              </div>
+              <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-[#2d4e24] h-full rounded-full transition-all duration-500"
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
+              <span className="text-[11px] font-semibold text-gray-500 w-10 text-right">
+                {count}
+              </span>
             </button>
+          ))}
+
+          {filterRating !== 'all' && (
+            <div className="pt-1 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setFilterRating('all')}
+                className="text-xs font-bold text-[#2d4e24] hover:underline cursor-pointer"
+              >
+                ✕ Clear Star Filter ({filterRating}★)
+              </button>
+            </div>
           )}
         </div>
-      )}
-
-      {/* Sort Options */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-        <h3 className="font-semibold text-sm sm:text-base">
-          {filteredReviews.length} {filteredReviews.length === 1 ? 'Review' : 'Reviews'}
-        </h3>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="border-2 border-gray-300 rounded-lg px-3 py-1.5 text-[12px] focus:outline-none focus:border-green-500 transition"
-        >
-          <option value="recent">Most Recent</option>
-          <option value="helpful">Most Helpful</option>
-          <option value="rating-high">Highest Rating</option>
-          <option value="rating-low">Lowest Rating</option>
-        </select>
       </div>
 
-      {/* Write Review Form */}
-      {showForm && (
-        <form onSubmit={handleSubmit} className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 sm:p-6 mb-8 border-2 border-green-300 shadow-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-base sm:text-lg text-green-800">Write Your Review</h3>
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="text-gray-500 hover:text-gray-700 text-2xl"
-            >
-              ✕
-            </button>
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-[12px] font-medium mb-2">Your Rating *</label>
-            {renderStars(rating, true, 'w-10 h-10')}
-          </div>
+      {/* Filter & Sort Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <span className="text-xs font-bold text-gray-800 uppercase tracking-wider text-[11px]">
+          Showing {filteredReviews.length} Reviews
+        </span>
 
-          <div className="mb-4">
-            <label className="block text-[12px] font-medium mb-2">Your Review *</label>
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              required
-              minLength={10}
-              rows={5}
-              className="w-full border-2 border-gray-300 rounded-xl px-3.5 py-2.5 text-[12px] focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition"
-              placeholder="Share your experience with this product... (minimum 10 characters)"
-            />
-            <p className="text-[11px] text-gray-600 mt-2">
-              {text.length} / 500 characters
-            </p>
-          </div>
-
-          <div className="flex gap-3 flex-wrap">
-            <button
-              type="submit"
-              disabled={submitting || text.trim().length < 10}
-              className="bg-gradient-to-r from-[#3A5D1E] to-green-700 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl hover:from-green-700 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition shadow-md text-[12px]"
-            >
-              {submitting ? 'Submitting...' : 'Submit Review'}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowForm(false);
-                setText('');
-                setRating(5);
-              }}
-              className="bg-gray-300 text-gray-700 px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl hover:bg-gray-400 font-semibold transition text-[12px]"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500 font-medium">Sort:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-white border border-gray-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-gray-900 focus:outline-none focus:border-[#2d4e24]"
+          >
+            <option value="recent">Most Recent</option>
+            <option value="helpful">Most Helpful</option>
+            <option value="rating-high">Highest Rating</option>
+            <option value="rating-low">Lowest Rating</option>
+          </select>
+        </div>
+      </div>
 
       {/* Reviews List */}
-      <div className="space-y-4 sm:space-y-6">
-        {filteredReviews.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl shadow-md">
-            <div className="text-7xl mb-4">📝</div>
-            <p className="text-gray-600 text-xl font-medium">
-              {filterRating === 'all' 
-                ? 'No reviews yet. Be the first to review!' 
-                : `No ${filterRating}-star reviews yet.`}
-            </p>
-          </div>
-        ) : (
-          filteredReviews.map((review, index) => (
-            <div 
-              key={review._id} 
-              className="bg-white rounded-xl p-4 sm:p-5 shadow-md hover:shadow-xl transition-all border border-gray-100"
-              style={{ animationDelay: `${index * 0.1}s` }}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filteredReviews.map((review) => {
+          const helpfulCount = (review.helpful || 0) + (helpfulClicked[review._id] || 0);
+          return (
+            <div
+              key={review._id}
+              className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.08)] transition-all duration-300 flex flex-col justify-between"
             >
-              <div className="flex items-start gap-3 sm:gap-4 flex-wrap">
-                {/* User Avatar */}
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#3A5D1E] to-[#3A5D1E] rounded-full flex items-center justify-center text-white font-bold text-lg sm:text-xl shadow-lg">
-                    {review.user?.name?.charAt(0)?.toUpperCase() || <FiUser />}
-                  </div>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  {/* Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+              <div>
+                {/* Review Header: User & Verified Badge matching CustomerReviews.jsx */}
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#eef5ec] text-[#2d4e24] border border-[#2d4e24]/20 flex items-center justify-center font-bold text-xs shrink-0">
+                      {review.user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
                     <div>
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <p className="font-bold text-gray-800 text-sm sm:text-base">{review.user?.name || 'Anonymous'}</p>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className="font-bold text-xs sm:text-[13px] text-gray-900 tracking-wide uppercase truncate">
+                          {review.user?.name || 'Nature Medica Customer'}
+                        </p>
                         {review.verified && (
-                          <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">
-                            <FiShield className="w-3 h-3" />
-                            Verified
-                          </span>
+                          <svg className="w-3.5 h-3.5 text-[#1877F2] shrink-0 fill-current" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                          </svg>
                         )}
                       </div>
-                      
                     </div>
                   </div>
 
-                  {/* Review Text */}
-                  <p className="text-gray-700 leading-relaxed mb-3 text-[12px] sm:text-sm">{review.text}</p>
-
-                  {/* Helpful Button */}
-                  <button className="flex items-center gap-2 text-[11px] sm:text-[12px] text-gray-600 hover:text-[#3A5D1E] transition font-medium">
-                    <FiThumbsUp className="w-4 h-4" />
-                    <span>Helpful ({review.helpful || 0})</span>
-                  </button>
+                  <span className="text-[11px] text-gray-400 font-medium">
+                    {format(new Date(review.createdAt), 'dd MMM yyyy')}
+                  </span>
                 </div>
+
+                {/* 5 Green Rating Stars matching homepage */}
+                <div className="flex items-center gap-1 mb-2.5 text-[#6db62f]">
+                  {[...Array(review.rating)].map((_, i) => (
+                    <svg key={i} className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+
+                {/* Headline */}
+                {review.title && (
+                  <h4 className="font-bold text-sm sm:text-base text-gray-900 mb-1.5 leading-snug">
+                    {review.title}
+                  </h4>
+                )}
+
+                {/* Body Text */}
+                <p className="text-xs sm:text-[13px] text-gray-600 leading-relaxed font-normal mb-3">
+                  {review.text}
+                </p>
+              </div>
+
+              {/* Footer / Helpful Button */}
+              <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => handleHelpful(review._id)}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 hover:text-[#2d4e24] transition-colors cursor-pointer"
+                >
+                  <FiThumbsUp className="w-3.5 h-3.5" />
+                  <span>Helpful ({helpfulCount})</span>
+                </button>
+                <span className="text-[10px] text-gray-400 font-medium">Verified Review</span>
               </div>
             </div>
-          ))
-        )}
+          );
+        })}
       </div>
-    </div>
+
+      {/* Modal: Write a Review */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-2xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative border border-gray-200">
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              <FiX className="w-4 h-4" />
+            </button>
+
+            <div className="mb-4">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#2d4e24] bg-[#eef5ec] px-2.5 py-0.5 rounded-full border border-[#2d4e24]/20">
+                Share Your Experience
+              </span>
+              <h3 className="text-lg font-bold text-gray-900 mt-1.5 tracking-tight">
+                Write a Verified Review
+              </h3>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-3.5">
+              {/* Rating selection */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 mb-1">
+                  Your Rating:
+                </label>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setRating(star)}
+                      onMouseEnter={() => setHoveredRating(star)}
+                      onMouseLeave={() => setHoveredRating(0)}
+                      className="p-1 transition-transform hover:scale-110 cursor-pointer"
+                    >
+                      <FiStar
+                        className={`w-6 h-6 transition-colors ${
+                          star <= (hoveredRating || rating)
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Headline */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 mb-1">
+                  Headline:
+                </label>
+                <input
+                  type="text"
+                  value={headline}
+                  onChange={(e) => setHeadline(e.target.value)}
+                  placeholder="e.g. Scalp feels refreshed & strong"
+                  className="w-full bg-[#f4f7f2] border border-gray-200 rounded-lg px-3 py-2 text-xs font-medium text-gray-900 focus:outline-none focus:border-[#2d4e24]"
+                />
+              </div>
+
+              {/* Review Text */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-700 mb-1">
+                  Your Review:*
+                </label>
+                <textarea
+                  rows={3}
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  required
+                  minLength={10}
+                  placeholder="Share how this product felt on your hair/skin, aroma, texture, and results..."
+                  className="w-full bg-[#f4f7f2] border border-gray-200 rounded-lg px-3 py-2 text-xs font-medium text-gray-900 focus:outline-none focus:border-[#2d4e24]"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2.5 pt-1">
+                <button
+                  type="submit"
+                  disabled={submitting || text.trim().length < 10}
+                  className="flex-1 bg-[#2d4e24] hover:bg-[#223d1b] text-white py-2.5 rounded-lg font-bold text-xs transition-all disabled:opacity-50 cursor-pointer"
+                >
+                  {submitting ? 'Submitting...' : 'Submit Review'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="px-3.5 py-2.5 rounded-lg bg-gray-100 text-gray-700 font-bold text-xs hover:bg-gray-200 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

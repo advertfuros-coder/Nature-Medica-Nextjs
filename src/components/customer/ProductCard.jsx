@@ -167,7 +167,7 @@ export default function ProductCard({ product }) {
            ========================================= */}
         <div className="pt-3.5 pb-1 px-1 space-y-1">
           {/* Main Title (Personality style in brand color) */}
-          <h3 className="text-lg sm:text-xl font-semibold tracking-tight text-[#2d4e24] group-hover:text-[#1e3617] transition-colors line-clamp-2 leading-snug">
+          <h3 className="text-xs sm:text-sm font-semibold tracking-tight text-[#2d4e24] group-hover:text-[#1e3617] transition-colors line-clamp-2 leading-snug">
             {product.title}
           </h3>
 
