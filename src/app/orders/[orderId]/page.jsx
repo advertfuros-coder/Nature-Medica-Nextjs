@@ -568,7 +568,7 @@ export default function OrderDetailsPage() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <a
-              href="tel:+918400043322"
+              href="tel:+917080403322"
               className="flex items-center gap-3 p-4 bg-white rounded-xl hover:shadow-lg transition-all border border-blue-200"
             >
               <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
@@ -576,7 +576,7 @@ export default function OrderDetailsPage() {
               </div>
               <div>
                 <p className="text-[9px] text-gray-600">Call Us</p>
-                <p className="font-semibold text-blue-900">+91 8400043322</p>
+                <p className="font-semibold text-blue-900">+91 70804 03322</p>
               </div>
             </a>
             <a

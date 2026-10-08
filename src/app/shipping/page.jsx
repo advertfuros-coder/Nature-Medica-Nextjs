@@ -415,9 +415,9 @@ export default function ShippingPolicyPage() {
           </p>
           
           <div className="space-y-3">
-            <a href="tel:+918400043322" className="block w-full bg-white text-[#3a5d1e] py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+            <a href="tel:+917080403322" className="block w-full bg-white text-[#3a5d1e] py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
               <Phone className="w-4 h-4 inline mr-2" />
-              Call: +91 8400043322
+              Call: +91 70804 03322
             </a>
             <a href="mailto:naturemedica09@gmail.com" className="block w-full bg-white/20 backdrop-blur-sm py-3 rounded-lg font-semibold hover:bg-white/30 transition-colors">
               <Mail className="w-4 h-4 inline mr-2" />

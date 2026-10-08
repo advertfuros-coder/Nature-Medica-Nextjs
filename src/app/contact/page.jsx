@@ -71,8 +71,8 @@ export default function ContactPage() {
     {
       icon: Phone,
       title: 'Phone',
-      value: '+91 8400043322',
-      link: 'tel:+918400043322',
+      value: '+91 70804 03322',
+      link: 'tel:+917080403322',
       color: 'bg-blue-50 text-blue-600'
     },
     {

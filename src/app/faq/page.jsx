@@ -56,7 +56,7 @@ export default function FAQPage() {
         - Click "Cancel Order" button
         - Once shipped, you'll need to return the product instead
         
-        For modifications, please contact us immediately at +91 8400043322`
+        For modifications, please contact us immediately at +91 70804 03322`
     },
     {
       category: 'orders',
@@ -145,7 +145,7 @@ export default function FAQPage() {
       category: 'shipping',
       question: 'Can I change my delivery address?',
       answer: `Yes, but only before the order is shipped:
-        - Contact us immediately at +91 8400043322
+        - Contact us immediately at +91 70804 03322
         - Provide your order number and new address
         - We'll update it if the order hasn't been dispatched
         - Once shipped, address cannot be changed`
@@ -176,7 +176,7 @@ export default function FAQPage() {
       category: 'returns',
       question: 'How do I return a product?',
       answer: `To return a product:
-        1. Email naturemedica09@gmail.com or call +91 8400043322
+        1. Email naturemedica09@gmail.com or call +91 70804 03322
         2. Provide order number and reason for return
         3. We'll approve and send return instructions
         4. Pack securely with invoice and ship to our address
@@ -239,7 +239,7 @@ export default function FAQPage() {
       question: 'Can I get product recommendations?',
       answer: `Absolutely! Get personalized recommendations:
         - Chat with our wellness experts
-        - Call us at +91 8400043322
+        - Call us at +91 70804 03322
         - Email your health goals to naturemedica09@gmail.com
         - Check our blog for wellness guides
         - Note: We provide guidance, not medical advice`
@@ -447,7 +447,7 @@ export default function FAQPage() {
             
             <div className="grid grid-cols-2 gap-3">
               <a
-                href="tel:+918400043322"
+                href="tel:+917080403322"
                 className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm py-3 rounded-lg font-medium hover:bg-white/30 transition-colors"
               >
                 <Phone className="w-4 h-4" />

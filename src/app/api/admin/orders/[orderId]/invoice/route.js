@@ -139,7 +139,7 @@ async function generateCustomInvoice(order) {
     color: white
   });
   
-  page.drawText('Phone: +91 8400043322 | Email: support@naturemedica.com', {
+  page.drawText('Phone: +91 70804 03322 | Email: support@naturemedica.com', {
     x: 50,
     y: height - 108,
     size: 10,
@@ -514,7 +514,7 @@ async function generateCustomInvoice(order) {
     color: gray
   });
   
-  page.drawText('For queries: +91 8400043322 or support@naturemedica.com', {
+  page.drawText('For queries: +91 70804 03322 or support@naturemedica.com', {
     x: 130,
     y: 65,
     size: 8,

@@ -269,7 +269,7 @@ export default function RefundPolicyPage() {
               <div>
                 <p className="font-medium text-gray-900">Contact Us</p>
                 <p className="text-sm text-gray-600 mt-1">
-                  Email us at naturemedica09@gmail.com or call +91 8400043322 within 7 days of delivery
+                  Email us at naturemedica09@gmail.com or call +91 70804 03322 within 7 days of delivery
                 </p>
               </div>
             </li>
@@ -383,9 +383,9 @@ export default function RefundPolicyPage() {
           </p>
           
           <div className="space-y-3 mb-4">
-            <a href="tel:+918400043322" className="block w-full bg-white text-[#3a5d1e] py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+            <a href="tel:+917080403322" className="block w-full bg-white text-[#3a5d1e] py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
               <Phone className="w-4 h-4 inline mr-2" />
-              Call: +91 8400043322
+              Call: +91 70804 03322
             </a>
             <a href="mailto:naturemedica09@gmail.com" className="block w-full bg-white/20 backdrop-blur-sm py-3 rounded-lg font-semibold hover:bg-white/30 transition-colors">
               <Mail className="w-4 h-4 inline mr-2" />

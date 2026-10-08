@@ -70,7 +70,7 @@ export async function POST(req) {
       source: {
         address: {
           first_name: process.env.BUSINESS_NAME || "Nature Medica",
-          phone: process.env.PICKUP_PHONE || "8400043322",
+          phone: process.env.PICKUP_PHONE || "7080403322",
           email: process.env.PICKUP_EMAIL || "naturemedica09@gmail.com",
           address_line_1: process.env.PICKUP_ADDRESS,
           city: process.env.PICKUP_CITY || "Lucknow",

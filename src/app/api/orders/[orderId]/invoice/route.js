@@ -243,7 +243,7 @@ const InvoiceDocument = ({ order }) => (
         <Text style={styles.companyName}>NATURE MEDICA</Text>
         <Text style={styles.companyTagline}>Natural Wellness & Ayurvedic Products</Text>
         <Text style={styles.companyAddress}>
-          1st Floor, LHPS Building, Sector-7, Kamla Nehru Nagar, Lucknow - 226022 | +91 8400043322 | support@naturemedica.com
+          1st Floor, LHPS Building, Sector-7, Kamla Nehru Nagar, Lucknow - 226022 | +91 70804 03322 | support@naturemedica.com
         </Text>
       </View>
 
@@ -360,7 +360,7 @@ const InvoiceDocument = ({ order }) => (
       <View style={styles.footer}>
         <Text style={styles.footerBold}>Thank you for shopping with Nature Medica!</Text>
         <Text style={styles.footerText}>
-          For queries: +91 8400043322 or support@naturemedica.com
+          For queries: +91 70804 03322 or support@naturemedica.com
         </Text>
         <Text style={styles.footerText}>
           This is a computer-generated invoice and does not require a signature.

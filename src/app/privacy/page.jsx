@@ -182,7 +182,7 @@ export default function PrivacyPolicyPage() {
         <p class="mb-2">To exercise any of these rights, please:</p>
         <ul class="list-disc pl-6 space-y-1">
           <li>Email us at: <a href="mailto:naturemedica09@gmail.com" class="text-[#3a5d1e] underline">naturemedica09@gmail.com</a></li>
-          <li>Call us at: <a href="tel:+918400043322" class="text-[#3a5d1e] underline">+91 8400043322</a></li>
+          <li>Call us at: <a href="tel:+917080403322" class="text-[#3a5d1e] underline">+91 70804 03322</a></li>
           <li>Access your account settings directly</li>
         </ul>
       `
@@ -305,7 +305,7 @@ export default function PrivacyPolicyPage() {
             
             <div class="flex items-start gap-2">
               <span class="font-medium text-gray-700 min-w-[80px]">Phone:</span>
-              <a href="tel:+918400043322" class="text-[#3a5d1e] underline">+91 8400043322</a>
+              <a href="tel:+917080403322" class="text-[#3a5d1e] underline">+91 70804 03322</a>
             </div>
             
             <div class="flex items-start gap-2">

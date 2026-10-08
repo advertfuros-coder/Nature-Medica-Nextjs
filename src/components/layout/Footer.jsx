@@ -161,9 +161,9 @@ export default function Footer() {
               )}
 
               <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-500">
-                <span className="flex items-center gap-1">
-                  <FiPhone className="w-3 h-3 text-[#2d4e24]" /> +91 8400043322
-                </span>
+                <a href="tel:+917080403322" className="flex items-center gap-1 hover:text-[#2d4e24] transition-colors">
+                  <FiPhone className="w-3 h-3 text-[#2d4e24]" /> +91 70804 03322
+                </a>
                 <span className="flex items-center gap-1">
                   <FiMail className="w-3 h-3 text-[#2d4e24]" /> Support 24/7
                 </span>
