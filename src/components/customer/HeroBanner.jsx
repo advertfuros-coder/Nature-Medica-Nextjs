@@ -9,13 +9,28 @@ import { Sparkles, ArrowUpRight } from 'lucide-react';
 const leftSlides = [
   {
     type: 'image',
+    image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1792066735/naturemedica/banners/hero-sea-buckthorn-juice.png',
+    badge: 'Rich in Vitamin C & Omega 3,6,7,9',
+    title: 'Pure Sea Buckthorn Juice',
+    subtitle: 'Potent natural antioxidants for heart, skin & vitality',
+    link: '/products/sea-buckthorn-juice-500ml-nature-medica',
+  },
+  {
+    type: 'image',
+    image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1792066750/naturemedica/banners/hero-omega-capsule.png',
+    badge: '100% Pure & Natural',
+    title: 'Omega-3 Fish Oil Capsules',
+    subtitle: 'Supports heart health, promotes brain function & active vitality',
+    link: '/products/omega-3-fish-oil-capsules-1000mg-30-capsules',
+  },
+  {
+    type: 'image',
     image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359374/naturemedica/banners/hero-glutathione-wash.png',
     badge: '100% Ayurvedic & Natural',
     title: 'Pure Herbal Formulations',
     subtitle: 'Crafted for daily radiance & deep nourishment',
     link: '/products',
   },
-   
   {
     type: 'image',
     image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359371/naturemedica/banners/hero-glow-wellness.png',
@@ -28,6 +43,18 @@ const leftSlides = [
 
 // Right Side Media (Smaller Rectangle) - Product & Face care spotlight
 const rightSlides = [
+  {
+    image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1792066735/naturemedica/banners/hero-sea-buckthorn-juice.png',
+    tagline: 'nourish your body from within with pure sea buckthorn',
+    category: 'Sea Buckthorn Juice',
+    link: '/products/sea-buckthorn-juice-500ml-nature-medica',
+  },
+  {
+    image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1792066750/naturemedica/banners/hero-omega-capsule.png',
+    tagline: 'fuel your heart and mind with pure omega vitality',
+    category: 'Omega-3 Capsules',
+    link: '/products/omega-3-fish-oil-capsules-1000mg-30-capsules',
+  },
   {
     image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359369/naturemedica/banners/hero-face-care-serums.png',
     tagline: "products that work hard, so you don't have to",
