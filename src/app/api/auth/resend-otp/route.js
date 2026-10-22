@@ -2,9 +2,16 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import { sendOTPEmail } from '@/lib/email';
+import { applyRateLimit } from '@/lib/rateLimit';
 
 export async function POST(req) {
   try {
+    // 🛡️ Security Rate Limiter: Max 3 resend attempts per 10 minutes
+    const rateLimitResponse = applyRateLimit(req, 'resend_otp', 3, 10 * 60 * 1000);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     await connectDB();
 
     const { email, type } = await req.json(); // type: 'verification' or 'reset'

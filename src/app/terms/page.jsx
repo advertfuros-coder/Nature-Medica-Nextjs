@@ -435,14 +435,12 @@ export default function TermsPage() {
                 )}
               </button>
 
-              {isExpanded && (
-                <div className="px-4 pb-4">
+                <div className={`px-4 pb-4 ${isExpanded ? 'block' : 'hidden md:block'}`}>
                   <div 
                     className="text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none"
                     dangerouslySetInnerHTML={{ __html: section.content }}
                   />
                 </div>
-              )}
             </div>
           );
         })}

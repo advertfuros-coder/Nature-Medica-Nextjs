@@ -3,9 +3,16 @@ import connectDB from "@/lib/mongodb";
 import FranchiseInquiry from "@/models/FranchiseInquiry";
 import Settings from "@/models/Settings";
 import { sendFranchiseNotificationEmail } from "@/lib/email";
+import { applyRateLimit } from "@/lib/rateLimit";
 
 export async function POST(req) {
   try {
+    // 🛡️ Anti-spam Rate Limiter: Max 5 inquiries per 15 minutes per IP
+    const rateLimitResponse = applyRateLimit(req, "franchise_form", 5, 15 * 60 * 1000);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     await connectDB();
 
     const data = await req.json();

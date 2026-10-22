@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import { Sparkles, ArrowUpRight } from 'lucide-react';
 
-// Left Side Media (Larger Rectangle) - Video & Lifestyle visuals
-const leftSlides = [
+// Fallback slides in case database has no entries
+const fallbackLeftSlides = [
   {
-    type: 'image',
     image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1792066735/naturemedica/banners/hero-sea-buckthorn-juice.png',
     badge: 'Rich in Vitamin C & Omega 3,6,7,9',
     title: 'Pure Sea Buckthorn Juice',
@@ -16,7 +15,6 @@ const leftSlides = [
     link: '/products/sea-buckthorn-juice-500ml-nature-medica',
   },
   {
-    type: 'image',
     image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1792066750/naturemedica/banners/hero-omega-capsule.png',
     badge: '100% Pure & Natural',
     title: 'Omega-3 Fish Oil Capsules',
@@ -24,7 +22,6 @@ const leftSlides = [
     link: '/products/omega-3-fish-oil-capsules-1000mg-30-capsules',
   },
   {
-    type: 'image',
     image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359374/naturemedica/banners/hero-glutathione-wash.png',
     badge: '100% Ayurvedic & Natural',
     title: 'Pure Herbal Formulations',
@@ -32,7 +29,6 @@ const leftSlides = [
     link: '/products',
   },
   {
-    type: 'image',
     image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359371/naturemedica/banners/hero-glow-wellness.png',
     badge: 'Clean & Toxin-Free',
     title: 'Glow That Speaks For Itself',
@@ -41,47 +37,77 @@ const leftSlides = [
   },
 ];
 
-// Right Side Media (Smaller Rectangle) - Product & Face care spotlight
-const rightSlides = [
+const fallbackRightSlides = [
   {
     image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1792066735/naturemedica/banners/hero-sea-buckthorn-juice.png',
     tagline: 'nourish your body from within with pure sea buckthorn',
-    category: 'Sea Buckthorn Juice',
+    categoryName: 'Sea Buckthorn Juice',
     link: '/products/sea-buckthorn-juice-500ml-nature-medica',
   },
   {
     image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1792066750/naturemedica/banners/hero-omega-capsule.png',
     tagline: 'fuel your heart and mind with pure omega vitality',
-    category: 'Omega-3 Capsules',
+    categoryName: 'Omega-3 Capsules',
     link: '/products/omega-3-fish-oil-capsules-1000mg-30-capsules',
   },
   {
     image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359369/naturemedica/banners/hero-face-care-serums.png',
     tagline: "products that work hard, so you don't have to",
-    category: 'Face Care & Serums',
+    categoryName: 'Face Care & Serums',
     link: '/products',
   },
   {
     image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359367/naturemedica/banners/hero-daily-skincare.png',
     tagline: 'pure natural ingredients, real lasting glow',
-    category: 'Daily Skincare Routine',
+    categoryName: 'Daily Skincare Routine',
     link: '/products',
   },
   {
     image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359378/naturemedica/banners/hero-herbal-hydration.png',
     tagline: 'nourish your skin from deep within',
-    category: 'Herbal Hydration',
+    categoryName: 'Herbal Hydration',
     link: '/products?sort=bestseller',
   },
   {
     image: 'https://res.cloudinary.com/dnhak76jd/image/upload/v1788359383/naturemedica/banners/hero-mango-cream.png',
     tagline: 'experience authentic ayurvedic harmony',
-    category: 'Wellness & Body',
+    categoryName: 'Wellness & Body',
     link: '/products',
   },
 ];
 
-export default function HeroBanner({ banners }) {
+export default function HeroBanner({ banners = [], leftBanners = [], rightBanners = [], previewMode = false }) {
+  // Normalize incoming props:
+  // If leftBanners / rightBanners provided directly, use them.
+  // Otherwise filter from general banners list.
+  const activeLeft = leftBanners.length > 0
+    ? leftBanners
+    : (banners || []).filter((b) => b.type === 'hero_left' && b.active !== false);
+
+  const activeRight = rightBanners.length > 0
+    ? rightBanners
+    : (banners || []).filter((b) => b.type === 'hero_right' && b.active !== false);
+
+  // Map to uniform structure
+  const leftSlides = activeLeft.length > 0
+    ? activeLeft.map((b) => ({
+        image: b.image?.url || b.image,
+        badge: b.badge || '',
+        title: b.title || '',
+        subtitle: b.subtitle || '',
+        link: b.link || '/products',
+      }))
+    : fallbackLeftSlides;
+
+  const rightSlides = activeRight.length > 0
+    ? activeRight.map((b) => ({
+        image: b.image?.url || b.image,
+        tagline: b.tagline || '',
+        categoryName: b.categoryName || '',
+        link: b.link || '/products',
+      }))
+    : fallbackRightSlides;
+
   // Left Section State
   const [leftIndex, setLeftIndex] = useState(0);
   const [isLeftHovered, setIsLeftHovered] = useState(false);
@@ -90,42 +116,32 @@ export default function HeroBanner({ banners }) {
   const [rightIndex, setRightIndex] = useState(0);
   const [isRightHovered, setIsRightHovered] = useState(false);
 
-  const leftVideoRefs = useRef([]);
-
   // Auto-play Left Slides
   useEffect(() => {
-    if (isLeftHovered) return;
+    if (isLeftHovered || leftSlides.length <= 1) return;
     const interval = setInterval(() => {
       setLeftIndex((prev) => (prev + 1) % leftSlides.length);
     }, 6000);
     return () => clearInterval(interval);
-  }, [isLeftHovered]);
+  }, [isLeftHovered, leftSlides.length]);
 
-  // Handle Video Playback on Left Side
+  // Keep indices in bounds if slide array changes dynamically
   useEffect(() => {
-    leftVideoRefs.current.forEach((video, idx) => {
-      if (video) {
-        if (idx === leftIndex) {
-          video.currentTime = 0;
-          const playPromise = video.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(() => {});
-          }
-        } else {
-          video.pause();
-        }
-      }
-    });
-  }, [leftIndex]);
+    if (leftIndex >= leftSlides.length) setLeftIndex(0);
+  }, [leftSlides.length, leftIndex]);
+
+  useEffect(() => {
+    if (rightIndex >= rightSlides.length) setRightIndex(0);
+  }, [rightSlides.length, rightIndex]);
 
   // Auto-play Right Slides
   useEffect(() => {
-    if (isRightHovered) return;
+    if (isRightHovered || rightSlides.length <= 1) return;
     const interval = setInterval(() => {
       setRightIndex((prev) => (prev + 1) % rightSlides.length);
     }, 4500);
     return () => clearInterval(interval);
-  }, [isRightHovered]);
+  }, [isRightHovered, rightSlides.length]);
 
   const handlePrevLeft = (e) => {
     e.preventDefault();
@@ -139,19 +155,28 @@ export default function HeroBanner({ banners }) {
     setLeftIndex((prev) => (prev + 1) % leftSlides.length);
   };
 
+  const currentLeft = leftSlides[leftIndex] || leftSlides[0];
+  const currentRight = rightSlides[rightIndex] || rightSlides[0];
+
+  const LeftWrapper = previewMode ? 'div' : Link;
+  const RightWrapper = previewMode ? 'div' : Link;
+
   return (
-    <div className="w-full px-2 sm:px-3 lg:px-4 py-2 sm:py-3">
-      <div className="w-full flex flex-col lg:flex-row items-stretch gap-2.5 sm:gap-3.5 h-auto lg:h-[600px] xl:h-[660px]">
+    <div className={`w-full ${previewMode ? 'p-1' : 'px-2 sm:px-3 lg:px-4 py-2 sm:py-3'}`}>
+      <div className={`w-full flex flex-col lg:flex-row items-stretch gap-2.5 sm:gap-3.5 ${
+        previewMode ? 'h-auto lg:h-[380px]' : 'h-auto lg:h-[600px] xl:h-[660px]'
+      }`}>
         
         {/* =========================================
-            LEFT SECTION: Thoda sa Bada Rectangle (~58%)
+            LEFT SECTION: Large Hero Banner (~58%)
            ========================================= */}
         <div
-          className="w-full lg:w-[58%] h-[400px] sm:h-[480px] md:h-[540px] lg:h-full relative rounded-2xl sm:rounded-3xl overflow-hidden bg-neutral-900 shadow-sm group select-none"
+          className={`w-full lg:w-[58%] relative rounded-2xl sm:rounded-3xl overflow-hidden bg-neutral-900 shadow-sm group select-none ${
+            previewMode ? 'h-[260px] sm:h-[320px] lg:h-full' : 'h-[400px] sm:h-[480px] md:h-[540px] lg:h-full'
+          }`}
           onMouseEnter={() => setIsLeftHovered(true)}
           onMouseLeave={() => setIsLeftHovered(false)}
         >
-          {/* Media Slides (Videos with Fallback Images) */}
           {leftSlides.map((slide, idx) => (
             <div
               key={idx}
@@ -159,55 +184,77 @@ export default function HeroBanner({ banners }) {
                 idx === leftIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
               }`}
             >
-              {slide.type === 'video' ? (
-                <video
-                  ref={(el) => (leftVideoRefs.current[idx] = el)}
-                  src={slide.src}
-                  muted
-                  playsInline
-                  loop
-                  preload="metadata"
-                  poster={slide.fallbackImage}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <img
-                  src={slide.image || slide.fallbackImage}
-                  alt={slide.title}
-                  className="w-full h-full object-cover"
-                />
-              )}
+              <LeftWrapper
+                href={slide.link || '/products'}
+                className="block w-full h-full relative"
+              >
+                {slide.image && (
+                  <Image
+                    src={slide.image}
+                    alt={slide.title || 'Nature Medica Hero Banner'}
+                    fill
+                    priority={idx === 0}
+                    sizes="(max-width: 1024px) 100vw, 58vw"
+                    className="object-cover"
+                  />
+                )}
+              </LeftWrapper>
             </div>
           ))}
 
-      
+          {/* Navigation Arrows for Left Slider */}
+          {leftSlides.length > 1 && (
+            <div className="hidden sm:flex items-center gap-2 absolute bottom-6 right-6 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <button
+                type="button"
+                onClick={handlePrevLeft}
+                className="p-2.5 rounded-full bg-white/30 backdrop-blur-md hover:bg-white text-white hover:text-gray-900 transition-all shadow-md active:scale-90 cursor-pointer"
+                aria-label="Previous slide"
+              >
+                <FiChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleNextLeft}
+                className="p-2.5 rounded-full bg-white/30 backdrop-blur-md hover:bg-white text-white hover:text-gray-900 transition-all shadow-md active:scale-90 cursor-pointer"
+                aria-label="Next slide"
+              >
+                <FiChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
-          {/* Navigation Arrows (Desktop hover) */}
-          <div className="hidden sm:flex items-center gap-2 absolute bottom-6 right-6 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <button
-              onClick={handlePrevLeft}
-              className="p-2.5 rounded-full bg-white/30 backdrop-blur-md hover:bg-white text-white hover:text-gray-900 transition-all shadow-md active:scale-90"
-              aria-label="Previous slide"
-            >
-              <FiChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleNextLeft}
-              className="p-2.5 rounded-full bg-white/30 backdrop-blur-md hover:bg-white text-white hover:text-gray-900 transition-all shadow-md active:scale-90"
-              aria-label="Next slide"
-            >
-              <FiChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+          {/* Left Slide Pill Indicators */}
+          {leftSlides.length > 1 && (
+            <div className="absolute bottom-4 left-6 z-30 flex items-center gap-1.5">
+              {leftSlides.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setLeftIndex(idx);
+                  }}
+                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                    idx === leftIndex
+                      ? 'w-6 bg-white shadow-sm'
+                      : 'w-2 bg-white/40 hover:bg-white/70'
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
-
         {/* =========================================
-            RIGHT SECTION: Chota sa Rectangle (~42%)
-            (Matches D'you style reference image)
+            RIGHT SECTION: Spotlight Carousel (~42%)
            ========================================= */}
         <div
-          className="w-full lg:w-[42%] h-[400px] sm:h-[480px] md:h-[540px] lg:h-full relative rounded-2xl sm:rounded-3xl overflow-hidden bg-neutral-900 shadow-sm group select-none cursor-pointer"
+          className={`w-full lg:w-[42%] relative rounded-2xl sm:rounded-3xl overflow-hidden bg-neutral-900 shadow-sm group select-none cursor-pointer ${
+            previewMode ? 'h-[260px] sm:h-[320px] lg:h-full' : 'h-[400px] sm:h-[480px] md:h-[540px] lg:h-full'
+          }`}
           onMouseEnter={() => setIsRightHovered(true)}
           onMouseLeave={() => setIsRightHovered(false)}
         >
@@ -219,56 +266,68 @@ export default function HeroBanner({ banners }) {
                 idx === rightIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
               }`}
             >
-              <img
-                src={slide.image}
-                alt={slide.category}
-                className="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-transform duration-1000 ease-out"
-              />
+              {slide.image && (
+                <Image
+                  src={slide.image}
+                  alt={slide.categoryName || 'Nature Medica Spotlight'}
+                  fill
+                  priority={idx === 0}
+                  sizes="(max-width: 1024px) 100vw, 42vw"
+                  className="object-cover transform scale-100 group-hover:scale-105 transition-transform duration-1000 ease-out"
+                />
+              )}
             </div>
           ))}
 
-          {/* Subtle Bottom Vignette for Tagline Contrast */}
- 
-          {/* Right Section Content */}
-          <Link href={rightSlides[rightIndex].link} className="absolute inset-0 z-20 flex flex-col justify-between p-5 sm:p-7 md:p-8">
+          {/* Right Section Content & Overlay */}
+          <RightWrapper
+            href={currentRight?.link || '/products'}
+            className="absolute inset-0 z-20 flex flex-col justify-between p-5 sm:p-7 md:p-8 bg-gradient-to-t from-black/40 via-transparent to-black/10"
+          >
             {/* Top Category Tag */}
             <div className="flex justify-end">
-              <span className="text-[11px] sm:text-xs font-semibold   backdrop-blur-md border border-white/20 text-white">
-               </span>
+              {currentRight?.categoryName && (
+                <span className="text-[10px] sm:text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-md bg-black/30 border border-white/20 text-white shadow-sm">
+                  {currentRight.categoryName}
+                </span>
+              )}
             </div>
 
             {/* Bottom Tagline & Slide Pill Indicators */}
-            <div className="text-center space-y-4 pb-2">
-              <h3 className="text-2xl sm:text-3xl md:text-4xl font-serif italic text-white tracking-wide leading-tight drop-shadow-lg px-2 max-w-lg mx-auto">
-                &ldquo;{rightSlides[rightIndex].tagline}&rdquo;
-              </h3>
+            <div className="text-center space-y-3 pb-2">
+              {currentRight?.tagline && (
+                <h3 className={`${previewMode ? 'text-lg sm:text-xl' : 'text-2xl sm:text-3xl md:text-4xl'} font-serif italic text-white tracking-wide leading-tight drop-shadow-lg px-2 max-w-lg mx-auto`}>
+                  &ldquo;{currentRight.tagline}&rdquo;
+                </h3>
+              )}
 
-              {/* Minimalist Pill Progress Indicators (Exact D'you reference design) */}
-              <div className="flex items-center justify-center gap-1.5 pt-1">
-                {rightSlides.map((_, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setRightIndex(idx);
-                    }}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      idx === rightIndex
-                        ? 'w-7 bg-white shadow-sm'
-                        : 'w-2 bg-white/50 hover:bg-white/80'
-                    }`}
-                    aria-label={`Go to slide ${idx + 1}`}
-                  />
-                ))}
-              </div>
+              {/* Minimalist Pill Progress Indicators */}
+              {rightSlides.length > 1 && (
+                <div className="flex items-center justify-center gap-1.5 pt-1">
+                  {rightSlides.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setRightIndex(idx);
+                      }}
+                      className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                        idx === rightIndex
+                          ? 'w-7 bg-white shadow-sm'
+                          : 'w-2 bg-white/50 hover:bg-white/80'
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          </Link>
+          </RightWrapper>
         </div>
 
       </div>
     </div>
   );
 }
-

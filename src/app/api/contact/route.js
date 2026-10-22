@@ -2,11 +2,18 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import ContactMessage from "@/models/ContactMessage";
 import nodemailer from "nodemailer";
+import { applyRateLimit } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
 export async function POST(req) {
   try {
+    // 🛡️ Anti-spam Rate Limiter: Max 5 submissions per 15 minutes per IP
+    const rateLimitResponse = applyRateLimit(req, "contact_form", 5, 15 * 60 * 1000);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     await connectDB();
 
     const { name, email, phone, subject, message } = await req.json();

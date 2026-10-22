@@ -389,6 +389,26 @@ export async function GET(request, context) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
+    // 🛡️ IDOR Protection: Verify caller is the order owner or admin
+    try {
+      const { authenticate } = await import('@/middleware/auth');
+      const auth = await authenticate(request);
+
+      // If user is authenticated, check matching userId or admin role
+      if (auth.authenticated && auth.user) {
+        const isOwner = order.user && order.user.toString() === auth.user.userId;
+        const isAdmin = auth.user.role === 'admin';
+        if (!isOwner && !isAdmin) {
+          return NextResponse.json({ error: 'Access denied to this invoice' }, { status: 403 });
+        }
+      } else if (order.user) {
+        // Order belongs to a registered user but caller is unauthenticated
+        return NextResponse.json({ error: 'Authentication required to view invoice' }, { status: 401 });
+      }
+    } catch (authErr) {
+      console.warn('Invoice auth check notice:', authErr.message);
+    }
+
     console.log('✅ Order found:', order.orderId);
 
     // Option 1: Get invoice from Shiprocket if available

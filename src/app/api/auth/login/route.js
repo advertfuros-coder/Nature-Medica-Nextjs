@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server';
 import { UserService } from '@/lib/userService';
 import jwt from 'jsonwebtoken';
+import { applyRateLimit, resetRateLimit } from '@/lib/rateLimit';
 
 export async function POST(req) {
   try {
+    // 🛡️ Security Rate Limiter: Max 5 failed/login requests per 15 minutes per IP
+    const rateLimitResponse = applyRateLimit(req, 'login', 5, 15 * 60 * 1000);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     const { email, password } = await req.json();
 
     if (!email || !password) {
@@ -97,6 +104,9 @@ export async function POST(req) {
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60
     });
+
+    // Successful login: Reset rate limiter for this IP
+    resetRateLimit(req, 'login');
 
     return response;
 

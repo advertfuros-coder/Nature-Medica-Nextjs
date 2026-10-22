@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
+import { applyRateLimit } from "@/lib/rateLimit";
 
 export async function POST(req) {
   try {
+    // 🛡️ Anti-bot rate limiter: Max 5 newsletter subscriptions per 15 minutes per IP
+    const rateLimitResponse = applyRateLimit(req, "subscribe_form", 5, 15 * 60 * 1000);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     const { name, phone } = await req.json();
 
     // Replace with your Google Apps Script web app URL

@@ -3,9 +3,16 @@ import { UserService } from '@/lib/userService';
 import { sendWelcomeEmail } from '@/lib/email';
 import jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
+import { applyRateLimit, resetRateLimit } from '@/lib/rateLimit';
 
 export async function POST(req) {
   try {
+    // 🛡️ Security Rate Limiter: Max 5 OTP verification attempts per 10 minutes (prevents brute forcing)
+    const rateLimitResponse = applyRateLimit(req, 'verify_otp', 5, 10 * 60 * 1000);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     const { email, otp } = await req.json();
 
     if (!email || !otp) {

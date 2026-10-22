@@ -31,7 +31,7 @@ const menuItems = [
   { href: '/admin/categories', label: 'Categories', icon: Grid3x3 },
   { href: '/admin/coupons', label: 'Coupons', icon: Tag },
   { href: '/admin/reviews', label: 'Reviews', icon: Star },
-  // { href: '/admin/banners', label: 'Banners', icon: ImageIcon },
+  { href: '/admin/banners', label: 'Hero & Banners', icon: ImageIcon },
   { href: '/admin/contacts', label: 'Customer Inquiry', icon: Contact2 },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];

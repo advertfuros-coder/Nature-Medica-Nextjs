@@ -84,7 +84,8 @@ export async function POST(req) {
       );
     }
 
-    // Stock validation
+    // 🛡️ Security Check: Server-side Pricing & Stock Validation (Anti-Price Tampering)
+    let calculatedTotalPrice = 0;
     for (const item of items) {
       const product = await Product.findById(item.product);
       if (!product) {
@@ -103,6 +104,20 @@ export async function POST(req) {
           { status: 400 }
         );
       }
+      // Sum authoritative price from database
+      calculatedTotalPrice += (product.price || 0) * item.quantity;
+    }
+
+    // Verify calculated subtotal does not deviate wildly from client claim
+    if (Math.abs(calculatedTotalPrice - Number(totalPrice)) > 2) {
+      console.warn(`⚠️ Price tampering detected! Client claimed: ${totalPrice}, Server calculated: ${calculatedTotalPrice}`);
+      return NextResponse.json(
+        {
+          error: "Cart total calculation mismatch. Please refresh cart.",
+          code: "PRICE_TAMPER_DETECTED"
+        },
+        { status: 400 }
+      );
     }
 
     // CRITICAL VALIDATION: Prevent order creation for unverified online payments

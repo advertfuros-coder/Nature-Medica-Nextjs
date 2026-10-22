@@ -30,7 +30,7 @@ export default function ShippingPolicyPage() {
       name: 'Standard Delivery',
       icon: Truck,
       duration: '3-7 business days',
-      cost: 'FREE on orders ₹499+',
+      cost: 'FREE on orders ₹499+ (₹49 on orders below ₹499)',
       color: 'bg-blue-50 text-blue-600'
     },
     {
@@ -116,10 +116,10 @@ export default function ShippingPolicyPage() {
         <div className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-xl shadow-lg p-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Gift className="w-6 h-6 text-white" />
-            <h3 className="text-lg font-bold text-white">FREE SHIPPING</h3>
+            <h3 className="text-lg font-bold text-white">FREE PAN-INDIA SHIPPING</h3>
           </div>
           <p className="text-white text-sm font-medium">
-            On all orders above ₹1499
+            On all prepaid and standard orders above ₹499
           </p>
         </div>
       </div>

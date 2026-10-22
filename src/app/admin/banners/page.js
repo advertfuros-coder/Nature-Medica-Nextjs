@@ -1,19 +1,24 @@
 import connectDB from "@/lib/mongodb";
 import Banner from "@/models/Banner";
-import BannerList from "@/components/admin/BannerList";
+import BannerManager from "@/components/admin/BannerManager";
 
-// Force dynamic rendering to avoid build-time DB queries
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export const metadata = {
+  title: "Hero & Banner Management | Nature Medica Admin",
+};
 
 export default async function AdminBannersPage() {
   await connectDB();
 
-  const banners = await Banner.find().sort({ order: 1 }).lean();
+  const banners = await Banner.find()
+    .sort({ order: 1, createdAt: -1 })
+    .lean();
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-8">Banners</h1>
-      <BannerList banners={JSON.parse(JSON.stringify(banners))} />
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+      <BannerManager initialBanners={JSON.parse(JSON.stringify(banners))} />
     </div>
   );
 }

@@ -33,10 +33,11 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   await connectDB();
 
-  const homeBanners = await Banner.find({ type: "home", active: true })
-    .sort({ order: 1 })
-    .limit(5)
-    .lean();
+  const [leftBanners, rightBanners, homeBanners] = await Promise.all([
+    Banner.find({ type: "hero_left", active: true }).sort({ order: 1, createdAt: -1 }).lean(),
+    Banner.find({ type: "hero_right", active: true }).sort({ order: 1, createdAt: -1 }).lean(),
+    Banner.find({ type: "home", active: true }).sort({ order: 1 }).limit(5).lean()
+  ]);
 
   const categories = await Category.find({ active: true })
     .sort({ name: 1 })
@@ -62,7 +63,10 @@ export default async function HomePage() {
 
       {/* Hero Banner */}
       <section className="relative">
-        <HeroBanner banners={JSON.parse(JSON.stringify(homeBanners))} />
+        <HeroBanner 
+          leftBanners={JSON.parse(JSON.stringify(leftBanners))} 
+          rightBanners={JSON.parse(JSON.stringify(rightBanners))} 
+        />
       </section>
 
             <BrandMarquee />

@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server';
 import { UserService } from '@/lib/userService';
 import { sendOTPEmail } from '@/lib/email';
+import { applyRateLimit } from '@/lib/rateLimit';
 
 export async function POST(req) {
   try {
+    // 🛡️ Security Rate Limiter: Max 5 signups per hour per IP to prevent spam accounts
+    const rateLimitResponse = applyRateLimit(req, 'signup', 5, 60 * 60 * 1000);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     const body = await req.json();
     console.log('📥 Signup request:', { email: body.email, name: body.name });
 

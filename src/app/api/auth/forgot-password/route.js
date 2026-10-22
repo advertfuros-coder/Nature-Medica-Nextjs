@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server';
 import { UserService } from '@/lib/userService';
 import { sendOTPEmail } from '@/lib/email';
+import { applyRateLimit } from '@/lib/rateLimit';
 
 export async function POST(req) {
   try {
+    // 🛡️ Security Rate Limiter: Max 3 password reset attempts per 15 minutes per IP
+    const rateLimitResponse = applyRateLimit(req, 'forgot_password', 3, 15 * 60 * 1000);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     const { email } = await req.json();
 
     if (!email) {
