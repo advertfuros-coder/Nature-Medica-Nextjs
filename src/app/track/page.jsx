@@ -1,289 +1,244 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  FiPackage, 
-  FiTruck, 
-  FiHome, 
-  FiCheck,
+import {
+  FiSearch,
+  FiTruck,
+  FiPackage,
   FiMapPin,
-  FiBox,
+  FiShield,
   FiClock,
-  FiAlertCircle
+  FiAlertCircle,
+  FiArrowRight,
+  FiRefreshCw,
+  FiHelpCircle,
+  FiCheckCircle,
 } from 'react-icons/fi';
+import OrderTrackerView from '@/components/customer/OrderTrackerView';
 
-export default function TrackShipmentPage() {
-  const params = useParams();
-  const { awb } = params;
+function TrackPageContent() {
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get('orderId') || searchParams.get('awb') || searchParams.get('q') || '';
 
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const [activeQuery, setActiveQuery] = useState('');
   const [tracking, setTracking] = useState(null);
   const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
 
+  // Auto-track if query param exists on load
   useEffect(() => {
-    if (awb) {
-      fetchTracking();
+    if (initialQuery) {
+      performTracking(initialQuery);
     }
-  }, [awb]);
+  }, [initialQuery]);
 
-  const fetchTracking = async () => {
-    console.log('🔍 Fetching tracking for:', awb);
-    setLoading(true);
-    setError('');
+  const performTracking = async (codeToTrack, isSilentRefresh = false) => {
+    const cleanCode = (codeToTrack || searchQuery || '').trim();
+    if (!cleanCode) {
+      setError('Please enter a valid Order ID or AWB Tracking Number.');
+      return;
+    }
+
+    if (isSilentRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+      setError('');
+    }
 
     try {
-      const res = await fetch(`/api/shipments/track/${awb}`);
-      console.log('📡 Response status:', res.status);
-      
+      const res = await fetch(`/api/shipments/track/${encodeURIComponent(cleanCode)}`, {
+        cache: 'no-store',
+      });
       const data = await res.json();
-      console.log('📦 Response ', data);
 
-      if (res.ok) {
+      if (res.ok && data.success && data.tracking) {
         setTracking(data.tracking);
-        setOrder(data.order);
+        setOrder(data.order || null);
+        setActiveQuery(cleanCode);
+        setError('');
       } else {
-        setError(data.message || data.error || 'Tracking information not available');
+        setTracking(null);
+        setOrder(null);
+        setError(
+          data.message ||
+            data.error ||
+            `No tracking information found for "${cleanCode}". Please verify your Order ID or AWB number.`
+        );
       }
-    } catch (error) {
-      console.error('❌ Fetch error:', error);
-      setError('Unable to connect to tracking service. Please try again.');
+    } catch (err) {
+      console.error('Track lookup error:', err);
+      setError('Unable to reach the tracking service right now. Please check your internet or try again in a few moments.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="relative w-20 h-20 mx-auto mb-4">
-            <div className="absolute inset-0 border-4 border-[#3a5d1e] border-t-transparent rounded-full animate-spin"></div>
-            <FiPackage className="absolute inset-0 m-auto w-8 h-8 text-[#3a5d1e]" />
-          </div>
-          <p className="text-gray-700 font-semibold text-lg mb-2">Tracking Your Order</p>
-          <p className="text-gray-500 text-sm">AWB: {awb}</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FiAlertCircle className="w-10 h-10 text-red-600" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-3">Tracking Not Available</h1>
-          <p className="text-gray-600 mb-2">{error}</p>
-          <p className="text-sm text-gray-500 mb-6">Tracking Number: {awb}</p>
-          <div className="flex gap-3 justify-center">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 bg-[#3a5d1e] text-white px-6 py-3 rounded-xl hover:bg-[#2d4818] transition-all font-semibold"
-            >
-              <FiHome className="w-4 h-4" />
-              Home
-            </Link>
-            <Link
-              href="/orders"
-              className="inline-flex items-center gap-2 border-2 border-[#3a5d1e] text-[#3a5d1e] px-6 py-3 rounded-xl hover:bg-[#3a5d1e] hover:text-white transition-all font-semibold"
-            >
-              <FiBox className="w-4 h-4" />
-              My Orders
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Success state
-  const currentStatus = tracking?.current_status || 'Processing';
-  const courierName = tracking?.courier_name || 'Courier Service';
-  const activities = tracking?.activities || [];
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    performTracking(searchQuery);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-14 h-14 bg-[#3a5d1e] bg-opacity-10 rounded-full flex items-center justify-center">
-              <FiTruck className="w-7 h-7 text-[#3a5d1e]" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Track Your Shipment</h1>
-              <p className="text-gray-600">Nature Medica - Ayurvedic Wellness</p>
-            </div>
+    <div className="min-h-screen bg-[#fafaf8] py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Header / Hero Section */}
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#2d4e24]/10 text-[#2d4e24] text-xs font-bold tracking-wide uppercase">
+            <span className="w-2 h-2 rounded-full bg-[#2d4e24] animate-pulse"></span>
+            Real-Time Courier Intelligence
           </div>
+          <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">
+            Track Your Nature Medica Order
+          </h1>
+          <p className="text-gray-600 text-sm sm:text-base max-w-xl mx-auto">
+            Get instant, real-time live location updates and journey milestones for Ekart, Shiprocket, and partner couriers.
+          </p>
+        </div>
 
-          {/* Tracking Number */}
-          <div className="bg-gray-50 rounded-xl p-4 mb-4">
-            <p className="text-sm text-gray-600 mb-1">Tracking Number (AWB)</p>
-            <p className="font-mono font-bold text-xl text-gray-900">{awb}</p>
-          </div>
-
-          {/* Status Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-blue-50 rounded-xl p-4 border-2 border-blue-100">
-              <div className="flex items-center gap-2 mb-2">
-                <FiPackage className="w-5 h-5 text-blue-600" />
-                <p className="text-sm font-medium text-blue-900">Current Status</p>
-              </div>
-              <p className="font-bold text-lg text-blue-900">{currentStatus}</p>
+        {/* Search Input Box */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-4 sm:p-6 transition-all focus-within:ring-4 focus-within:ring-[#2d4e24]/10 focus-within:border-[#2d4e24]">
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Enter Order ID (e.g. NM000179) or AWB Tracking Number..."
+                className="w-full pl-12 pr-4 py-3.5 bg-gray-50/70 border border-gray-200 rounded-2xl text-sm sm:text-base font-medium text-gray-900 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:border-[#2d4e24] transition-all"
+              />
             </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#2d4e24] hover:bg-[#1e3415] text-white rounded-2xl text-sm sm:text-base font-bold shadow-md shadow-[#2d4e24]/20 transition-all disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <FiRefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Locating Package...</span>
+                </>
+              ) : (
+                <>
+                  <span>Track Live</span>
+                  <FiArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
 
-            <div className="bg-green-50 rounded-xl p-4 border-2 border-green-100">
-              <div className="flex items-center gap-2 mb-2">
-                <FiTruck className="w-5 h-5 text-green-600" />
-                <p className="text-sm font-medium text-green-900">Courier Partner</p>
-              </div>
-              <p className="font-bold text-lg text-green-900">{courierName}</p>
+          {/* Quick tips */}
+          <div className="flex flex-wrap items-center justify-between gap-2 mt-4 pt-3 border-t border-gray-100 text-[11px] sm:text-xs text-gray-500">
+            <span>
+              💡 Hint: You can find your Order ID in your order confirmation SMS or WhatsApp.
+            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-gray-400">Supported:</span>
+              <span className="font-semibold text-gray-700">Ekart</span>
+              <span>•</span>
+              <span className="font-semibold text-gray-700">Shiprocket</span>
+              <span>•</span>
+              <span className="font-semibold text-gray-700">All Carriers</span>
             </div>
           </div>
         </div>
 
-        {/* Order Details */}
-        {order && (
-          <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <FiBox className="w-5 h-5 text-[#3a5d1e]" />
-              Order Details
-            </h2>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <p className="text-sm text-gray-600">Order ID</p>
-                <p className="font-semibold">{order.orderId}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Total Amount</p>
-                <p className="font-semibold text-lg">₹{order.totalAmount?.toLocaleString('en-IN')}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Customer</p>
-                <p className="font-semibold">{order.customerName}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Order Date</p>
-                <p className="font-semibold">
-                  {new Date(order.orderDate).toLocaleDateString('en-IN')}
-                </p>
-              </div>
+        {/* Error message card */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-3xl p-6 text-center space-y-3">
+            <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center mx-auto text-red-600">
+              <FiAlertCircle className="w-6 h-6" />
             </div>
-
-            {/* Items */}
-            {order.items && order.items.length > 0 && (
-              <div>
-                <p className="text-sm font-semibold mb-2">Items</p>
-                <div className="space-y-2">
-                  {order.items.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-3 bg-gray-50 rounded-lg p-2">
-                      {item.image && (
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="w-12 h-12 object-cover rounded"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{item.title}</p>
-                        <p className="text-xs text-gray-600">
-                          Qty: {item.quantity} × ₹{item.price}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <h3 className="text-base font-bold text-red-900">Shipment Not Located</h3>
+            <p className="text-xs sm:text-sm text-red-700 max-w-md mx-auto">{error}</p>
+            <div className="pt-2 flex flex-wrap justify-center gap-3">
+              <Link
+                href="/orders"
+                className="px-4 py-2 bg-white border border-red-200 text-red-800 rounded-xl text-xs font-bold hover:bg-red-50 transition-colors"
+              >
+                View My Orders
+              </Link>
+              <a
+                href="https://wa.me/919999999999?text=Hi%2C%20I%20need%20help%20locating%20my%20order%20tracking"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold hover:bg-emerald-800 transition-colors"
+              >
+                WhatsApp Support
+              </a>
+            </div>
           </div>
         )}
 
-        {/* Tracking Timeline */}
-        <div className="bg-white rounded-2xl shadow-xl p-6">
-          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-            <FiMapPin className="w-5 h-5 text-[#3a5d1e]" />
-            Shipment Journey
-          </h2>
+        {/* Tracking Details View (when found) */}
+        {tracking && (
+          <OrderTrackerView
+            tracking={tracking}
+            order={order}
+            onRefresh={() => performTracking(activeQuery, true)}
+            isRefreshing={refreshing}
+          />
+        )}
 
-          <div className="relative">
-            <div className="absolute left-6 top-8 bottom-8 w-0.5 bg-gray-200"></div>
+        {/* Initial Empty State / Value Proposition (Before searching) */}
+        {!tracking && !error && !loading && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+            <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-2xs space-y-3 text-center sm:text-left">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto sm:mx-0">
+                <FiMapPin className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-gray-900 text-base">Live Hub Location</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Know the exact city, processing hub, or delivery facility your Ayurvedic parcel is currently passing through.
+              </p>
+            </div>
 
-            <div className="space-y-6">
-              {activities.length > 0 ? (
-                activities.map((activity, index) => (
-                  <div key={index} className="relative flex gap-4">
-                    <div className={`relative z-10 w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      index === 0 
-                        ? 'bg-[#3a5d1e] text-white' 
-                        : 'bg-gray-200 text-gray-600'
-                    }`}>
-                      {index === 0 ? (
-                        <FiCheck className="w-6 h-6" />
-                      ) : (
-                        <FiMapPin className="w-5 h-5" />
-                      )}
-                    </div>
+            <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-2xs space-y-3 text-center sm:text-left">
+              <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center mx-auto sm:mx-0">
+                <FiTruck className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-gray-900 text-base">End-to-End Milestones</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Track every stage from warehouse packaging, dispatch, in-transit movements, to out-for-delivery in real time.
+              </p>
+            </div>
 
-                    <div className="flex-1 pb-6">
-                      <div className={`rounded-xl p-4 ${
-                        index === 0 ? 'bg-green-50 border-2 border-[#3a5d1e]' : 'bg-gray-50'
-                      }`}>
-                        <div className="flex items-start justify-between mb-2">
-                          <h3 className="font-semibold text-gray-900">{activity.activity}</h3>
-                          <span className="text-sm text-gray-600">
-                            {new Date(activity.date).toLocaleTimeString('en-IN', {
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </span>
-                        </div>
-                        <p className="text-gray-600 text-sm mb-1">{activity.location}</p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(activity.date).toLocaleDateString('en-IN', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric'
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <FiClock className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p>Tracking updates will appear here soon</p>
-                </div>
-              )}
+            <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-2xs space-y-3 text-center sm:text-left">
+              <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-800 flex items-center justify-center mx-auto sm:mx-0">
+                <FiShield className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-gray-900 text-base">Return & Delivery Security</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Full transparency if an attempt fails or if a return (RTO) is in progress, with instant WhatsApp support.
+              </p>
             </div>
           </div>
-        </div>
-
-        {/* Actions */}
-        <div className="mt-6 flex gap-4 justify-center">
-          <Link
-            href="/orders"
-            className="inline-flex items-center gap-2 bg-[#3a5d1e] text-white px-8 py-3 rounded-xl hover:bg-[#2d4818] transition-all font-semibold shadow-lg"
-          >
-            <FiBox />
-            My Orders
-          </Link>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 border-2 border-[#3a5d1e] text-[#3a5d1e] px-8 py-3 rounded-xl hover:bg-[#3a5d1e] hover:text-white transition-all font-semibold"
-          >
-            <FiHome />
-            Home
-          </Link>
-        </div>
+        )}
       </div>
     </div>
+  );
+}
+
+export default function PublicTrackingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#fafaf8] flex items-center justify-center p-4">
+          <div className="text-center space-y-3">
+            <div className="w-12 h-12 border-4 border-[#2d4e24] border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-gray-600 text-sm font-semibold">Loading Tracking Portal...</p>
+          </div>
+        </div>
+      }
+    >
+      <TrackPageContent />
+    </Suspense>
   );
 }

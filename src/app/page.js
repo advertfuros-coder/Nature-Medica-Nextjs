@@ -58,9 +58,9 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen bg-white relative">
-    
-    
-
+      {/* Semantic H1 for Search Engine & Screen Reader Accessibility */}
+      <h1 className="sr-only">Nature Medica | Authentic Ayurvedic Wellness & Science-Backed Botanical Formulations</h1>
+      
       {/* Hero Banner */}
       <section className="relative">
         <HeroBanner 

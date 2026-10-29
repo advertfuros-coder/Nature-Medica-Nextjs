@@ -145,6 +145,37 @@ const OrderSchema = new mongoose.Schema(
     shiprocketOrderId: Number,
     shiprocketShipmentId: Number,
 
+    // Real-time shipment tracking details (Ekart, Shiprocket, etc.)
+    shipmentTracking: {
+      provider: {
+        type: String,
+        enum: ["ekart", "shiprocket", "delhivery", "manual"],
+      },
+      awb: String,
+      courierPartner: String,
+      currentStatus: String, // "MANIFESTED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED", "RTO_INITIATED", "RTO_IN_TRANSIT", "RTO_DELIVERED", "NDR", "CANCELLED"
+      statusCode: String,
+      currentLocation: String,
+      statusDescription: String,
+      isDelivered: { type: Boolean, default: false },
+      deliveredAt: Date,
+      isRTO: { type: Boolean, default: false },
+      rtoInitiatedAt: Date,
+      rtoDeliveredAt: Date,
+      rtoReason: String,
+      estimatedDeliveryDate: Date,
+      lastSyncAt: Date,
+      scans: [
+        {
+          date: Date,
+          location: String,
+          activity: String,
+          status: String,
+          statusCode: String,
+        },
+      ],
+    },
+
     // PhonePe/Razorpay/Cashfree payment IDs
     phonePeTransactionId: String,
     phonePePaymentId: String,
@@ -169,6 +200,8 @@ const OrderSchema = new mongoose.Schema(
 OrderSchema.index({ user: 1 });
 OrderSchema.index({ "ekart.trackingId": 1 });
 OrderSchema.index({ ekartTrackingId: 1 });
+OrderSchema.index({ "shipmentTracking.awb": 1 });
+OrderSchema.index({ "shipmentTracking.currentStatus": 1 });
 
 // Delete the model from cache in development to pick up schema changes
 if (process.env.NODE_ENV !== "production" && mongoose.models.Order) {

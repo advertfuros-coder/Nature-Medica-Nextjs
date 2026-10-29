@@ -58,6 +58,12 @@ export async function GET(req, { params }) {
       shiprocketShipmentId: order.shiprocketShipmentId,
       delhiveryWaybill: order.delhiveryWaybill,
       ekart: order.ekart, // Ekart shipment data
+      shippingProvider: order.shippingProvider,
+      shipmentTracking: order.shipmentTracking,
+      isManualShipment: order.isManualShipment,
+      manualTrackingId: order.manualTrackingId,
+      manualCourierName: order.manualCourierName,
+      manualShipmentNote: order.manualShipmentNote,
       razorpayOrderId: order.razorpayOrderId,
       razorpayPaymentId: order.razorpayPaymentId,
       razorpaySignature: order.razorpaySignature,

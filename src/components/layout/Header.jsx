@@ -24,6 +24,7 @@ import {
   ShieldCheck,
   PhoneCall,
   Grid,
+  Truck,
 } from 'lucide-react';
 import { logout } from '@/store/slices/userSlice';
 import { clearCart } from '@/store/slices/cartSlice';
@@ -216,6 +217,10 @@ export default function SearchFirstHeader() {
 
   const firstName = user?.name?.split(' ')[0] || 'User';
 
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/lp')) {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 bg-white   z-50 transition-all duration-300">
       {/* Top Pastel Announcement Bar (D'you Style in Sage Palette) */}
@@ -347,6 +352,16 @@ export default function SearchFirstHeader() {
             >
               CONTACT
             </Link>
+
+            <Link
+              href="/track"
+              className={`text-[13px] font-bold tracking-widest uppercase transition-colors inline-flex items-center gap-1.5 ${
+                pathname === '/track' ? 'text-[#2d4e24]' : 'text-gray-800 hover:text-[#2d4e24]'
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              TRACK ORDER
+            </Link>
           </nav>
 
           {/* =========================================
@@ -407,6 +422,15 @@ export default function SearchFirstHeader() {
                         >
                           <Package className="w-4 h-4 text-gray-400" />
                           <span>My Orders</span>
+                        </Link>
+
+                        <Link
+                          href="/track"
+                          className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl hover:bg-[#eef5ec] text-gray-700 hover:text-[#2d4e24] transition-colors"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Truck className="w-4 h-4 text-gray-400" />
+                          <span>Track Shipment</span>
                         </Link>
 
                         <Link
@@ -722,6 +746,21 @@ export default function SearchFirstHeader() {
               >
                 <span>FAQS</span>
                 <ChevronRight className="w-4 h-4 text-gray-400" />
+              </Link>
+
+              <Link
+                href="/track"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center justify-between p-3 rounded-xl bg-[#eef5ec]/70 hover:bg-[#eef5ec] text-[#2d4e24] font-bold text-xs border border-[#2d4e24]/10"
+              >
+                <span className="flex items-center gap-2.5">
+                  <Truck className="w-4 h-4 text-[#2d4e24]" />
+                  <span>TRACK ORDER</span>
+                </span>
+                <span className="text-[10px] bg-[#2d4e24] text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Live
+                </span>
               </Link>
 
               <Link

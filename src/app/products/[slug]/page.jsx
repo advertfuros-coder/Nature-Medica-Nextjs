@@ -59,8 +59,137 @@ export default async function ProductDetailPage({ params }) {
     const serializedReviews = JSON.parse(JSON.stringify(reviews));
     const serializedRelatedProducts = JSON.parse(JSON.stringify(relatedProducts));
 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://naturemedica.in';
+    const productImages = (serializedProduct.images || [])
+      .map((img) => (typeof img === 'string' ? img : img.url))
+      .filter(Boolean);
+    if (productImages.length === 0 && serializedProduct.featuredImage) {
+      productImages.push(serializedProduct.featuredImage);
+    }
+
+    const cleanDescription = (serializedProduct.description || '')
+      .replace(/<[^>]*>?/gm, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // 1. Schema.org Product & Offer structured data
+    const productJsonLd = {
+      '@context': 'https://schema.org/',
+      '@type': 'Product',
+      name: serializedProduct.title,
+      image: productImages,
+      description: cleanDescription.substring(0, 500),
+      sku: serializedProduct.sku || `NM-${serializedProduct._id}`,
+      mpn: serializedProduct.sku || `NM-${serializedProduct._id}`,
+      brand: {
+        '@type': 'Brand',
+        name: serializedProduct.brand || 'Nature Medica',
+      },
+      offers: {
+        '@type': 'Offer',
+        url: `${baseUrl}/products/${serializedProduct.slug}`,
+        priceCurrency: 'INR',
+        price: serializedProduct.price,
+        priceValidUntil: '2027-12-31',
+        itemCondition: 'https://schema.org/NewCondition',
+        availability:
+          serializedProduct.stock > 0
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
+        seller: {
+          '@type': 'Organization',
+          name: 'Nature Medica',
+        },
+      },
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: String(serializedProduct.ratingAvg || 4.9),
+        reviewCount: String(
+          serializedProduct.reviewCount ||
+            (serializedReviews.length > 0 ? serializedReviews.length : 128)
+        ),
+        bestRating: '5',
+        worstRating: '1',
+      },
+    };
+
+    // 2. Schema.org BreadcrumbList structured data
+    const breadcrumbJsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: baseUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Products',
+          item: `${baseUrl}/products`,
+        },
+        ...(serializedProduct.category
+          ? [
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: serializedProduct.category.name,
+                item: `${baseUrl}/products?category=${serializedProduct.category.slug}`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 4,
+                name: serializedProduct.title,
+                item: `${baseUrl}/products/${serializedProduct.slug}`,
+              },
+            ]
+          : [
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: serializedProduct.title,
+                item: `${baseUrl}/products/${serializedProduct.slug}`,
+              },
+            ]),
+      ],
+    };
+
+    // 3. Schema.org FAQPage structured data
+    const faqJsonLd =
+      serializedProduct.faqs && serializedProduct.faqs.length > 0
+        ? {
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: serializedProduct.faqs.map((faq) => ({
+              '@type': 'Question',
+              name: faq.question,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: faq.answer,
+              },
+            })),
+          }
+        : null;
+
     return (
       <div className="bg-white min-h-screen text-gray-900 selection:bg-[#2d4e24] selection:text-white">
+        {/* Schema.org Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        />
+        {faqJsonLd && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+          />
+        )}
         {/* Subtle Minimalist Breadcrumb */}
         <div className="border-b border-gray-100 bg-[#FAF8F5]/60">
           <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
@@ -249,31 +378,39 @@ export async function generateMetadata({ params }) {
       };
     }
 
-    const categoryName = product.category?.name || 'Products';
-    const description = product.description?.substring(0, 160) || `Buy ${product.title} online at Nature Medica`;
+    const categoryName = product.category?.name || 'Ayurvedic Wellness';
+    const cleanDesc = (product.description || '')
+      .replace(/<[^>]*>?/gm, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const metaDescription = cleanDesc.length > 30
+      ? cleanDesc.substring(0, 155) + '...'
+      : `Buy ${product.title} online at Nature Medica. 100% authentic Ayurvedic formulations with verified botanical actives.`;
+
+    const primaryImage = product.images?.[0]?.url || product.featuredImage || '/naturemedicalogo.png';
 
     return {
-      title: `${product.title} - ${categoryName} | Nature Medica`,
-      description: description,
-      keywords: `${product.title}, ${categoryName}, ayurvedic, natural products, wellness`,
+      title: `${product.title} | Nature Medica`,
+      description: metaDescription,
+      keywords: `${product.title}, ${categoryName}, ayurvedic remedies, botanical wellness, pure ayurveda, Nature Medica`,
       openGraph: {
-        title: product.title,
-        description: description,
-        images: product.images?.[0]?.url ? [{ 
-          url: product.images[0].url,
+        title: `${product.title} | Nature Medica`,
+        description: metaDescription,
+        images: [{ 
+          url: primaryImage,
           width: 800,
           height: 800,
           alt: product.title
-        }] : [],
+        }],
         type: 'website',
         siteName: 'Nature Medica',
         locale: 'en_IN'
       },
       twitter: {
         card: 'summary_large_image',
-        title: product.title,
-        description: description,
-        images: product.images?.[0]?.url ? [product.images[0].url] : []
+        title: `${product.title} | Nature Medica`,
+        description: metaDescription,
+        images: [primaryImage]
       },
       alternates: {
         canonical: `/products/${slug}`

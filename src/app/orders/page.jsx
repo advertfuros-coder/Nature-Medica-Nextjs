@@ -174,11 +174,17 @@ export default function OrdersPage() {
                             {statusConfig.label}
                           </span>
                         </div>
-
-                       
                       </div>
 
-                     
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/track/${encodeURIComponent(order.trackingId || order.ekart?.trackingId || order.orderId)}`}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#3a5d1e] hover:bg-[#2d4818] text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
+                        >
+                          <FiTruck className="w-3.5 h-3.5" />
+                          <span>Track Live</span>
+                        </Link>
+                      </div>
                     </div>
                   </div>
 

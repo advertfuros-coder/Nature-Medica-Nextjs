@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { 
   FiFacebook, 
   FiInstagram, 
@@ -14,9 +15,14 @@ import {
 } from 'react-icons/fi';
 
 export default function Footer() {
+  const pathname = usePathname();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/lp')) {
+    return null;
+  }
 
   const handleSubscribe = async (e) => {
     e.preventDefault();

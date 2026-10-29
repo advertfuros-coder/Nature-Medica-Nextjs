@@ -54,9 +54,10 @@ export default function OrderDetailsPage() {
       if (res.ok) {
         setOrder(data.order);
 
-        // If order has tracking ID, fetch tracking info
-        if (data.order.trackingId) {
-          fetchTrackingInfo(data.order.trackingId);
+        // If order has tracking ID or Order ID, fetch tracking info
+        const trackingCode = data.order.trackingId || data.order.ekart?.trackingId || data.order.orderId;
+        if (trackingCode) {
+          fetchTrackingInfo(trackingCode);
         }
       } else {
         alert("Order not found");
@@ -283,20 +284,45 @@ export default function OrderDetailsPage() {
         </div>
 
         {/* Tracking Timeline Section */}
-        {order.trackingId && (
+        {(order.trackingId || order.ekart?.trackingId || tracking) && (
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text- font-semibold text-gray-900 flex items-center gap-2">
-                <FiMapPin className="w-6 h-6 text-[#3a5d1e]" />
-                Shipment Timeline
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+              <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+                <FiMapPin className="w-5 h-5 text-[#3a5d1e]" />
+                Live Shipment Tracking
               </h2>
-              {trackingLoading && (
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#3a5d1e] border-t-transparent"></div>
-                  Loading tracking...
-                </div>
-              )}
+              <div className="flex items-center gap-3">
+                {trackingLoading && (
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-[#3a5d1e] border-t-transparent"></div>
+                    Updating live...
+                  </div>
+                )}
+                <Link
+                  href={`/track/${encodeURIComponent(order.trackingId || order.ekart?.trackingId || order.orderId)}`}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#3a5d1e] hover:bg-[#2d4818] text-white rounded-xl text-xs font-bold transition-all shadow-xs"
+                >
+                  <FiExternalLink className="w-3.5 h-3.5" />
+                  <span>Open Full Tracker</span>
+                </Link>
+              </div>
             </div>
+
+            {tracking?.current_location && (
+              <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                  <span className="text-xs font-bold text-emerald-950">
+                    Current Location: {tracking.current_location}
+                  </span>
+                </div>
+                {tracking.courier_name && (
+                  <span className="text-xs text-emerald-800 font-semibold">
+                    via {tracking.courier_name}
+                  </span>
+                )}
+              </div>
+            )}
 
             {activities.length > 0 ? (
               <div className="relative">

@@ -77,7 +77,7 @@ export default function CategoriesPage() {
               onMouseEnter={() => handleCategoryHover(category)}
               className="relative group"
             >
-              <Link href={`/category/${category.slug}`}>
+              <Link href={`/products?category=${category.slug}`}>
                 <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-[#3a5d1e] cursor-pointer">
                   {/* Icon/Emoji */}
                   <div className="text-5xl mb-3 text-center">
@@ -107,7 +107,7 @@ export default function CategoriesPage() {
                     {subcategories.map((subcat) => (
                       <li key={subcat._id}>
                         <Link
-                          href={`/category/${category.slug}/${subcat.slug}`}
+                          href={`/products?category=${subcat.slug}`}
                           className="flex items-center gap-2 text-sm text-gray-700 hover:text-[#3a5d1e] hover:bg-green-50 p-2 rounded-lg transition-colors"
                         >
                           <span className="text-lg">{subcat.icon}</span>

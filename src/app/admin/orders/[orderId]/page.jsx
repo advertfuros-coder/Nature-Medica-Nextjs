@@ -23,6 +23,7 @@ import {
   FiExternalLink,
   FiAlertCircle
 } from 'react-icons/fi';
+import LiveShipmentTracker from '@/components/admin/LiveShipmentTracker';
 
 export default function AdminOrderDetailsPage() {
   const params = useParams();
@@ -240,14 +241,18 @@ export default function AdminOrderDetailsPage() {
   const trackEkartShipment = async () => {
     setActionLoading(true);
     try {
-      const res = await fetch(`/api/admin/ekart/track?trackingId=${order.ekart.trackingId}`);
+      const res = await fetch(`/api/admin/orders/${order.orderId}/tracking?sync=true`);
       const data = await res.json();
 
-      if (res.ok) {
-        const tracking = data.trackingData;
-        alert(`📦 Ekart Tracking\n\nStatus: ${tracking.status}\nLocation: ${tracking.location || 'N/A'}\nDescription: ${tracking.desc}\nLast Updated: ${new Date(tracking.ctime).toLocaleString()}`);
+      if (res.ok && data.success && data.tracking) {
+        setOrder(prev => ({
+          ...prev,
+          shipmentTracking: data.tracking,
+          orderStatus: data.tracking.isDelivered ? 'Delivered' : prev.orderStatus
+        }));
+        alert(`📦 Ekart Live Tracking Updated!\n\nStatus: ${data.tracking.currentStatus}\nLocation: ${data.tracking.currentLocation || 'In Transit'}\nCheckpoints: ${data.tracking.scans?.length || 0} scans recorded.`);
       } else {
-        alert('❌ Failed to track shipment');
+        alert('❌ Failed to fetch live tracking: ' + (data.details || data.error || 'Server error'));
       }
     } catch (error) {
       console.error('Ekart track error:', error);
@@ -855,6 +860,38 @@ export default function AdminOrderDetailsPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {/* Real-time Shipment Tracker Component */}
+                    {(order.shipmentTracking?.awb || order.trackingId || order.ekart?.trackingId || order.delhiveryWaybill) && (
+                      <LiveShipmentTracker
+                        orderId={order.orderId}
+                        initialTracking={
+                          order.shipmentTracking || {
+                            provider: order.ekart?.trackingId
+                              ? 'ekart'
+                              : order.shiprocketOrderId
+                              ? 'shiprocket'
+                              : 'manual',
+                            awb:
+                              order.shipmentTracking?.awb ||
+                              order.ekart?.trackingId ||
+                              order.trackingId ||
+                              order.delhiveryWaybill,
+                            courierPartner: order.ekart?.vendor || order.courierName,
+                            currentStatus: order.shipmentTracking?.currentStatus || order.orderStatus,
+                            currentLocation: order.shipmentTracking?.currentLocation || 'In Transit',
+                            isRTO: Boolean(order.shipmentTracking?.isRTO),
+                            scans: order.shipmentTracking?.scans || [],
+                          }
+                        }
+                        onSyncComplete={(updatedTracking) => {
+                          setOrder((prev) => ({
+                            ...prev,
+                            shipmentTracking: updatedTracking,
+                            orderStatus: updatedTracking.isDelivered ? 'Delivered' : prev.orderStatus,
+                          }));
+                        }}
+                      />
+                    )}
                     {/* Delhivery Info */}
                     {order.delhiveryWaybill && (
                       <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
