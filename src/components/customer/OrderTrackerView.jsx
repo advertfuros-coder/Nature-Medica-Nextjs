@@ -422,85 +422,53 @@ export default function OrderTrackerView({
         </div>
       </div>
 
-      {/* Order Details & Shipping Destination Card */}
-      {order && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Items card */}
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-            <h4 className="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2">
+      {/* Order Items in Package (Destination Card Removed) */}
+      {order && order.items && order.items.length > 0 && (
+        <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-sm border border-gray-100">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+            <h4 className="font-bold text-gray-900 text-sm sm:text-base flex items-center gap-2">
               <FiBox className="w-4 h-4 text-[#2d4e24]" />
-              Items in this Package ({order.items?.length || 0})
+              Items in this Package ({order.items.length})
             </h4>
 
-            <div className="space-y-3">
-              {(order.items || []).map((item, idx) => (
-                <div key={idx} className="flex items-center gap-3.5 p-2 rounded-2xl bg-gray-50">
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-12 h-12 object-cover rounded-xl bg-white border border-gray-100 flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center flex-shrink-0 font-bold text-xs">
-                      NM
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-gray-900 truncate">{item.title}</p>
-                    <p className="text-[11px] text-gray-500">
-                      Qty: {item.quantity} {item.variant ? `• Variant: ${item.variant}` : ''}
-                    </p>
-                  </div>
-                  {item.price > 0 && (
-                    <p className="text-xs font-bold text-gray-900">
-                      ₹{(item.price * item.quantity).toLocaleString('en-IN')}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
+            <a
+              href="https://wa.me/917080403322?text=Hi%2C%20I%20need%20help%20with%20my%20order%20tracking"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900 transition-colors"
+            >
+              <FiMessageSquare className="w-3.5 h-3.5" />
+              <span>Have delivery questions? WhatsApp Support</span>
+            </a>
           </div>
 
-          {/* Delivery Address Card */}
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between">
-            <div>
-              <h4 className="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2">
-                <FiMapPin className="w-4 h-4 text-[#2d4e24]" />
-                Delivery Destination
-              </h4>
-
-              {order.shippingAddress ? (
-                <div className="space-y-1 text-xs text-gray-600">
-                  <p className="font-bold text-gray-900 text-sm">
-                    {order.customerName || 'Valued Customer'}
-                  </p>
-                  <p>{order.shippingAddress.street}</p>
-                  <p>
-                    {order.shippingAddress.city}, {order.shippingAddress.state} -{' '}
-                    <span className="font-mono font-bold text-gray-800">
-                      {order.shippingAddress.pincode}
-                    </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {order.items.map((item, idx) => (
+              <div key={idx} className="flex items-center gap-3.5 p-3 rounded-2xl bg-gray-50/80 border border-gray-100">
+                {item.image ? (
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-12 h-12 object-cover rounded-xl bg-white border border-gray-100 flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center flex-shrink-0 font-bold text-xs">
+                    NM
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-gray-900 truncate">{item.title}</p>
+                  <p className="text-[11px] text-gray-500">
+                    Qty: {item.quantity} {item.variant ? `• ${item.variant}` : ''}
                   </p>
                 </div>
-              ) : (
-                <p className="text-xs text-gray-500">Delivery address on file.</p>
-              )}
-            </div>
-
-            {/* Need help footer */}
-            <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
-              <span className="text-gray-500">Have delivery questions?</span>
-              <a
-                href="https://wa.me/919999999999?text=Hi%2C%20I%20need%20help%20with%20my%20order%20tracking"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 font-bold text-emerald-700 hover:text-emerald-900"
-              >
-                <FiMessageSquare className="w-3.5 h-3.5" />
-                <span>WhatsApp Support</span>
-              </a>
-            </div>
+                {item.price > 0 && (
+                  <p className="text-xs font-bold text-gray-900">
+                    ₹{(item.price * item.quantity).toLocaleString('en-IN')}
+                  </p>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}

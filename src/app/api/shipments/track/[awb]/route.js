@@ -84,9 +84,6 @@ export async function GET(req, { params }) {
         order: {
           orderId: order.orderId,
           orderDate: order.createdAt,
-          customerName: order.shippingAddress?.name,
-          customerEmail: order.userEmail,
-          customerPhone: order.shippingAddress?.phone,
           status: order.orderStatus,
           items: (order.items || []).map((item) => ({
             title: item.title,
@@ -96,12 +93,6 @@ export async function GET(req, { params }) {
             variant: item.variant || "",
           })),
           totalAmount: order.finalPrice,
-          shippingAddress: {
-            street: order.shippingAddress?.street,
-            city: order.shippingAddress?.city,
-            state: order.shippingAddress?.state,
-            pincode: order.shippingAddress?.pincode,
-          },
         },
       });
     }
