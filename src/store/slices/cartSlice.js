@@ -34,8 +34,16 @@ const loadCartFromStorage = () => {
       };
     }
 
+    // Filter out any expired or obsolete gifts
+    const sanitizedItems = (data.items || []).filter(item => {
+      if (item.variant === 'gift' && item.product?.slug === 'eco-bamboo-charcoal-brush-pack') {
+        return false;
+      }
+      return true;
+    });
+
     return {
-      items: data.items || [],
+      items: sanitizedItems,
       total: data.total || 0,
       discount: data.discount || 0,
       couponCode: data.couponCode || null
@@ -134,7 +142,7 @@ const cartSlice = createSlice({
       const { productId, variant } = action.payload;
       
       state.items = state.items.filter(item => {
-        const sameProduct = item.product._id === productId;
+        const sameProduct = item.product?._id === productId || item.product?.slug === productId;
         const sameVariant = variant 
           ? item.variant === variant 
           : !item.variant;

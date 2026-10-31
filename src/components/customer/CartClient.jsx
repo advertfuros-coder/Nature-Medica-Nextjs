@@ -3,7 +3,7 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { removeFromCart, updateQuantity, applyCoupon, removeCoupon } from '@/store/slices/cartSlice';
 import Link from 'next/link';
-import { FiTrash2, FiShoppingBag, FiX, FiTag, FiArrowLeft, FiLock } from 'react-icons/fi';
+import { FiTrash2, FiShoppingBag, FiX, FiTag, FiArrowLeft, FiLock, FiMinus, FiPlus, FiTruck, FiShield, FiRefreshCw, FiZap } from 'react-icons/fi';
 import { useState, useEffect } from 'react';
 import CartAddOn from './CartAddOn';
 import GiftProgress from './GiftProgress';
@@ -27,6 +27,9 @@ export default function CartClient() {
     const [couponInput, setCouponInput] = useState('');
     const [couponError, setCouponError] = useState('');
     const [loading, setLoading] = useState(false);
+    // The cart lives in localStorage, so render a neutral shell until the client has mounted
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
 
     const handleUpdateQuantity = (productId, variant, quantity) => {
         if (quantity < 1) return;
@@ -93,6 +96,10 @@ export default function CartClient() {
         setCouponError('');
     };
 
+    if (!mounted) {
+        return <div className="min-h-[60vh] bg-white" aria-busy="true" />;
+    }
+
     if (items.length === 0) {
         return (
             <div className="min-h-[30vh] flex items-center justify-center px-4">
@@ -122,138 +129,166 @@ export default function CartClient() {
     const shippingCharge = isFreeShipping ? 0 : 49;
     const finalPrice = cartTotal - discount + shippingCharge;
     const savings = discount;
+    const itemCount = items.reduce((n, item) => n + item.quantity, 0);
+
+    const trust = [
+        { icon: FiShield, label: 'Secure checkout' },
+        { icon: FiTruck, label: 'Free shipping ₹499+' },
+        { icon: FiRefreshCw, label: '7-day returns' },
+    ];
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Main Content */}
-            <div className="max-w-7xl mx-auto p-2 lg:px-8 py-3 lg:py-4">
-                <div className="mb-3 sm:mb-4">
+        <div className="min-h-screen bg-white pb-40 lg:pb-12">
+            {/* Header band */}
+            <section className="bg-gradient-to-b from-green-50/60 to-white">
+                <div className=" mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-5">
+                    <Link href="/products" className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2d4e24] hover:text-[#1e3418] mb-2">
+                        <FiArrowLeft className="w-3.5 h-3.5" /> Continue shopping
+                    </Link>
+                    <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+                        Your Bag <span className="text-gray-400 font-semibold text-lg sm:text-2xl">({itemCount} {itemCount === 1 ? 'item' : 'items'})</span>
+                    </h1>
+                </div>
+            </section>
+
+            <div className=" mx-auto px-4 sm:px-6 lg:px-8 pb-6">
+                <div className="mb-4">
                     <GiftProgress subtotal={cartTotal} />
                 </div>
 
                 <CartAddOn items={items} shortBy={amountNeeded} />
 
-                <div className="grid lg:grid-cols-3 gap-4">
+                <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 items-start">
                     {/* Cart Items */}
-                    <div className="lg:col-span-2 space-y-2">
-                        {items.map((item, index) => (
-                            <div
-                                key={`${item.product._id}-${item.variant}`}
-                                className="bg-white rounded-xl p-2.5 shadow hover:shadow-md transition-shadow duration-300 border border-gray-100"
-                            >
-                                <div className="flex gap-4">
-                                    {/* Product Image */}
-                                    <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-gray-50 flex-shrink-0">
+                    <ul className="lg:col-span-2 space-y-3">
+                        {items.map((item) => {
+                            const isGift = item.variant === 'gift';
+                            const unit = item.price ?? item.product.price;
+                            const mrp = item.product.mrp;
+                            return (
+                                <li
+                                    key={`${item.product._id}-${item.variant}`}
+                                    className="flex gap-4 bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.08)] transition-shadow duration-300"
+                                >
+                                    <Link
+                                        href={`/products/${item.product.slug || item.product._id}`}
+                                        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-[#f4f7f2] flex-shrink-0"
+                                    >
                                         <img
                                             src={item.product.images?.[0]?.url || '/placeholder.png'}
                                             alt={item.product.title}
                                             className="w-full h-full object-cover"
                                         />
-                                    </div>
+                                        {isGift && (
+                                            <span className="absolute top-1.5 left-1.5 bg-[#2d4e24] text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">
+                                                Gift
+                                            </span>
+                                        )}
+                                    </Link>
 
-                                    {/* Product Details */}
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between gap-4">
-                                            <div className="flex-1">
-                                                <h3 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
+                                    <div className="flex-1 min-w-0 flex flex-col">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <h3 className="font-bold text-gray-900 text-sm sm:text-base leading-snug line-clamp-2">
                                                     {item.product.title}
                                                 </h3>
-                                                {item.variant && (
-                                                    <p className="text-xs text-gray-500 mb-3">
-                                                        <span className="font-medium">Variant:</span> {item.variant}
+                                                {item.variant && !isGift && item.variant !== 'bump' && (
+                                                    <p className="text-xs text-gray-500 mt-0.5">{item.variant}</p>
+                                                )}
+                                                {item.variant === 'bump' && (
+                                                    <p className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wide text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
+                                                        Special add-on price
                                                     </p>
                                                 )}
                                             </div>
-                                            {item.variant !== 'gift' && (
                                             <button
-                                                onClick={() => handleRemove(item.product._id, item.variant)}
-                                                className="text-gray-400 hover:text-red-500 transition-colors h-fit"
+                                                onClick={() => handleRemove(item.product?._id || item.product?.slug, item.variant)}
+                                                className="p-1.5 -mr-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer flex-shrink-0"
                                                 aria-label="Remove item"
                                             >
-                                                <FiX className="text-xl" />
+                                                <FiTrash2 className="w-4 h-4" />
                                             </button>
-                                            )}
                                         </div>
 
-                                        <div className="flex items-center justify-between mt-4">
-                                            {item.variant === 'gift' ? (
-                                                <span className="text-xs font-bold text-[#2d4e24] bg-[#eef5ec] px-2.5 py-1 rounded-full">Free gift</span>
+                                        <div className="mt-auto pt-3 flex items-end justify-between gap-3">
+                                            {isGift ? (
+                                                <span className="text-xs font-bold text-[#2d4e24] bg-[#eef5ec] px-3 py-1.5 rounded-full">
+                                                    Free with your order
+                                                </span>
                                             ) : (
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-xs text-gray-500 font-medium">Qty:</span>
-                                                <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+                                                <div className="flex items-center rounded-full border border-gray-200 bg-white">
                                                     <button
                                                         onClick={() => handleUpdateQuantity(item.product._id, item.variant, item.quantity - 1)}
-                                                        className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 transition-colors text-gray-600"
                                                         disabled={item.quantity <= 1}
+                                                        className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-[#2d4e24] disabled:opacity-40 cursor-pointer"
+                                                        aria-label="Decrease quantity"
                                                     >
-                                                        -
+                                                        <FiMinus className="w-3.5 h-3.5" />
                                                     </button>
-                                                    <span className="w-10 h-8 flex items-center justify-center text-gray-900 font-medium border-x border-gray-200 text-xs">
-                                                        {item.quantity}
-                                                    </span>
+                                                    <span className="w-8 text-center text-sm font-bold text-gray-900">{item.quantity}</span>
                                                     <button
                                                         onClick={() => handleUpdateQuantity(item.product._id, item.variant, item.quantity + 1)}
-                                                        className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 transition-colors text-gray-600"
+                                                        className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-[#2d4e24] cursor-pointer"
+                                                        aria-label="Increase quantity"
                                                     >
-                                                        +
+                                                        <FiPlus className="w-3.5 h-3.5" />
                                                     </button>
                                                 </div>
-                                            </div>
                                             )}
 
-                                            {/* Price */}
                                             <div className="text-right">
-                                                {item.variant === 'gift' ? (
-                                                    <p className="text-sm font-semibold text-[#2d4e24]">FREE</p>
+                                                {isGift ? (
+                                                    <p className="text-base font-bold text-[#2d4e24]">FREE</p>
                                                 ) : (
                                                     <>
-                                                        <p className="text-sm font-semibold text-gray-900">
-                                                            ₹{((item.price || item.product.price) * item.quantity).toLocaleString('en-IN')}
+                                                        <p className="text-base sm:text-lg font-bold text-gray-900">
+                                                            ₹{(unit * item.quantity).toLocaleString('en-IN')}
                                                         </p>
-                                                        <p className="text-xs text-gray-500 mt-0.5">
-                                                            ₹{(item.price || item.product.price).toLocaleString('en-IN')} each
-                                                        </p>
+                                                        {mrp > unit && (
+                                                            <p className="text-xs text-gray-400 line-through">
+                                                                ₹{(mrp * item.quantity).toLocaleString('en-IN')}
+                                                            </p>
+                                                        )}
                                                     </>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
 
-                    {/* Order Summary - Sticky Sidebar */}
-                    <div className="lg:col-span-1">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden sticky top-4">
-                            <div className="p-2.5 border-b border-gray-100">
-                                <h2 className="text-base font-semibold text-gray-900">Order Summary</h2>
+                    {/* Order Summary */}
+                    <aside className="lg:col-span-1">
+                        <div className="bg-white rounded-2xl shadow-[0_6px_24px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden lg:sticky lg:top-24">
+                            <div className="px-5 py-4 bg-[#2d4e24] text-white">
+                                <h2 className="text-base font-bold tracking-tight">Order Summary</h2>
                             </div>
 
-                            <div className="p-2.5 space-y-2.5">
-                                {/* Coupon Section */}
+                            <div className="p-5 space-y-4">
+                                {/* Coupon */}
                                 {!couponCode ? (
                                     <div>
-                                        <label className="text-xs font-medium text-gray-700 mb-2 flex items-center gap-2">
-                                            <FiTag className="text-gray-400" />
+                                        <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">
+                                            <FiTag className="text-[#2d4e24]" />
                                             Have a coupon code?
                                         </label>
-                                        <div className="flex gap-2 mt-2">
+                                        <div className="flex gap-2">
                                             <input
                                                 type="text"
                                                 placeholder="Enter code"
                                                 value={couponInput}
                                                 onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                                                onKeyPress={(e) => e.key === 'Enter' && handleApplyCoupon()}
-                                                className="flex-1 border border-gray-200 rounded-lg px-4 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#415f2d] focus:border-transparent transition-all"
+                                                onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                                                className="flex-1 min-w-0 border border-gray-200 rounded-xl px-3.5 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2d4e24]/30 focus:border-[#2d4e24] transition-all"
                                             />
                                             <button
                                                 onClick={handleApplyCoupon}
                                                 disabled={loading || !couponInput.trim()}
-                                                className="bg-[#415f2d] text-white px-4 py-1.5 rounded-lg hover:bg-[#344b24] disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm"
+                                                className="bg-[#2d4e24] text-white px-4 py-2 rounded-xl hover:bg-[#223d1b] disabled:opacity-50 disabled:cursor-not-allowed transition-all font-bold text-sm cursor-pointer"
                                             >
-                                                {loading ? 'Applying...' : 'Apply'}
+                                                {loading ? '...' : 'Apply'}
                                             </button>
                                         </div>
                                         {couponError && (
@@ -264,93 +299,99 @@ export default function CartClient() {
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="bg-green-50 border border-green-200 rounded-lg p-2.5">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <FiTag className="text-green-600" />
-                                                <div>
-                                                    <p className="text-xs font-medium text-green-900">{couponCode}</p>
-                                                    <p className="text-[10px] text-green-700">Coupon applied successfully</p>
-                                                </div>
+                                    <div className="bg-[#eef5ec] border border-[#2d4e24]/20 rounded-xl p-3 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <FiTag className="text-[#2d4e24]" />
+                                            <div>
+                                                <p className="text-xs font-bold text-[#2d4e24]">{couponCode}</p>
+                                                <p className="text-[10px] text-gray-600">Coupon applied</p>
                                             </div>
-                                            <button
-                                                onClick={handleRemoveCoupon}
-                                                className="text-green-700 hover:text-green-900 transition-colors"
-                                                aria-label="Remove coupon"
-                                            >
-                                                <FiX className="text-lg" />
-                                            </button>
                                         </div>
+                                        <button onClick={handleRemoveCoupon} className="text-gray-500 hover:text-gray-900 cursor-pointer" aria-label="Remove coupon">
+                                            <FiX className="text-lg" />
+                                        </button>
                                     </div>
                                 )}
 
                                 {/* Price Breakdown */}
-                                <div className="space-y-2.5 pt-4 border-t border-gray-100">
-                                    <div className="flex justify-between text-sm text-gray-600">
-                                        <span>Subtotal</span>
-                                        <span className="font-medium">₹{cartTotal.toLocaleString('en-IN')}</span>
+                                <dl className="space-y-2.5 pt-4 border-t border-gray-100 text-sm">
+                                    <div className="flex justify-between text-gray-600">
+                                        <dt>Subtotal</dt>
+                                        <dd className="font-semibold text-gray-900">₹{cartTotal.toLocaleString('en-IN')}</dd>
                                     </div>
-
                                     {discount > 0 && (
-                                        <div className="flex justify-between text-sm text-green-600">
-                                            <span>Discount</span>
-                                            <span className="font-medium">-₹{discount.toLocaleString('en-IN')}</span>
+                                        <div className="flex justify-between text-[#2d4e24]">
+                                            <dt>Discount</dt>
+                                            <dd className="font-semibold">-₹{discount.toLocaleString('en-IN')}</dd>
                                         </div>
                                     )}
-
-                                    <div className="flex justify-between text-sm text-gray-600">
-                                        <span>Shipping</span>
-                                        <span className={`font-medium ${isFreeShipping ? 'text-green-600 font-semibold' : 'text-gray-900'}`}>
+                                    <div className="flex justify-between text-gray-600">
+                                        <dt>Shipping</dt>
+                                        <dd className={`font-semibold ${isFreeShipping ? 'text-[#2d4e24]' : 'text-gray-900'}`}>
                                             {isFreeShipping ? 'FREE' : '₹49'}
-                                        </span>
+                                        </dd>
                                     </div>
+                                    <div className="flex justify-between items-baseline pt-3 border-t border-gray-200">
+                                        <dt className="text-base font-bold text-gray-900">Total</dt>
+                                        <dd className="text-2xl font-bold text-gray-900">₹{finalPrice.toLocaleString('en-IN')}</dd>
+                                    </div>
+                                    {savings > 0 && (
+                                        <p className="text-xs text-[#2d4e24] font-semibold text-right">
+                                            You're saving ₹{savings.toLocaleString('en-IN')}
+                                        </p>
+                                    )}
+                                </dl>
 
-                                    <div className="pt-4 border-t border-gray-200">
-                                        <div className="flex justify-between items-baseline mb-1">
-                                            <span className="text-base font-semibold text-gray-900">Total</span>
-                                            <span className="text-lg font-semibold text-gray-900">
-                                                ₹{finalPrice.toLocaleString('en-IN')}
-                                            </span>
-                                        </div>
-                                        {savings > 0 && (
-                                            <p className="text-xs text-green-600 text-right">
-                                                You're saving ₹{savings.toLocaleString('en-IN')}
-                                            </p>
-                                        )}
-                                    </div>
+                                {/* Prepaid nudge */}
+                                <div className="p-3 rounded-xl bg-[#f4f7f2] border border-[#2d4e24]/15 text-[#2d4e24] text-xs flex items-center gap-2.5 font-semibold">
+                                    <span className="w-8 h-8 rounded-full bg-[#2d4e24] text-white flex items-center justify-center flex-shrink-0">
+                                        <FiZap className="w-4 h-4" />
+                                    </span>
+                                    <span>Pay online or by UPI at checkout and get an extra <strong>₹50 off</strong></span>
                                 </div>
 
                                 {/* Checkout Button */}
                                 <Link
                                     href="/checkout"
                                     onClick={() => trackBeginCheckout(items, finalPrice, couponCode)}
-                                    className="block w-full bg-[#415f2d] text-white text-center py-2.5 rounded-lg hover:bg-[#344b24] transition-all duration-300 font-semibold text-sm shadow-sm hover:translate-y-0.5 hover:shadow-md"
+                                    className="hidden lg:flex w-full items-center justify-center gap-2 bg-[#2d4e24] text-white py-3.5 rounded-xl hover:bg-[#223d1b] transition-all duration-300 font-bold text-sm shadow-md hover:shadow-lg"
                                 >
-                                    <span className="flex items-center justify-center gap-2">
-                                        <FiLock className="text-lg" />
-                                        Proceed to Checkout
-                                    </span>
+                                    <FiLock className="text-base" />
+                                    Proceed to Checkout
                                 </Link>
 
-                                {/* Trust Badges */}
-                                <div className="pt-4 space-y-2">
-                                    <div className="flex items-center gap-2 text-[11px] text-gray-600">
-                                        <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                        </svg>
-                                        <span>Secure checkout guaranteed</span>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 text-[11px] text-gray-600">
-                                        <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                        </svg>
-                                        <span>Easy returns within 7 days</span>
-                                    </div>
-                                </div>
+                                {/* Trust row */}
+                                <ul className="grid grid-cols-3 gap-2 pt-1">
+                                    {trust.map(({ icon: Icon, label }) => (
+                                        <li key={label} className="flex flex-col items-center text-center gap-1.5">
+                                            <span className="w-9 h-9 rounded-full bg-[#eef5ec] text-[#2d4e24] flex items-center justify-center">
+                                                <Icon className="w-4 h-4" />
+                                            </span>
+                                            <span className="text-[10px] font-semibold text-gray-600 leading-tight">{label}</span>
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
                         </div>
+                    </aside>
+                </div>
+            </div>
+
+            {/* Mobile sticky checkout bar (sits above the bottom navigation) */}
+            <div className="lg:hidden fixed bottom-[calc(60px+env(safe-area-inset-bottom,0px))] left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 p-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+                <div className="flex items-center justify-between gap-3">
+                    <div>
+                        <p className="text-[11px] text-gray-500 font-medium">Total</p>
+                        <p className="text-lg font-bold text-gray-900 leading-tight">₹{finalPrice.toLocaleString('en-IN')}</p>
                     </div>
+                    <Link
+                        href="/checkout"
+                        onClick={() => trackBeginCheckout(items, finalPrice, couponCode)}
+                        className="flex-1 max-w-[220px] flex items-center justify-center gap-2 bg-[#2d4e24] text-white py-3 rounded-xl font-bold text-sm active:scale-95 transition-all"
+                    >
+                        <FiLock className="text-base" />
+                        Checkout
+                    </Link>
                 </div>
             </div>
         </div>

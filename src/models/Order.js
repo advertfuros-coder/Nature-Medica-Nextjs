@@ -59,6 +59,8 @@ const OrderSchema = new mongoose.Schema(
       pincode: { type: String, required: true },
       landmark: String,
       type: { type: String, enum: ["home", "work", "other"], default: "home" },
+      addressScore: { type: Number, default: 0 },
+      addressQuality: { type: String, default: "Standard" },
     },
 
     paymentMode: {

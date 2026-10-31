@@ -42,6 +42,11 @@ export async function POST(req) {
       }
     }
 
+    // Validate street hygiene
+    if (addressData.street.trim().length < 5) {
+      return NextResponse.json({ error: 'Street address is too short. Please provide House/Flat No. and Street.' }, { status: 400 });
+    }
+
     // Validate pincode format
     if (!/^\d{6}$/.test(addressData.pincode)) {
       return NextResponse.json({ error: 'Pincode must be 6 digits' }, { status: 400 });
@@ -77,7 +82,9 @@ export async function POST(req) {
       pincode: addressData.pincode.trim(),
       landmark: addressData.landmark?.trim() || '',
       type: addressData.type || 'home',
-      isDefault: addressData.isDefault || false
+      isDefault: addressData.isDefault || false,
+      addressScore: addressData.addressScore || 0,
+      addressQuality: addressData.addressQuality || 'Standard'
     });
 
     user.markModified('addresses');

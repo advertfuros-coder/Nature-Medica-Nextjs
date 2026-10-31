@@ -11,6 +11,16 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.cloudinary.com',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'rukminim2.flixcart.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.flixcart.com',
+        pathname: '/**',
       }
     ],
     formats: ['image/avif', 'image/webp'],

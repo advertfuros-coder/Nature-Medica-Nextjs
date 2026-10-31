@@ -6,6 +6,7 @@ import Product from "@/models/Product";
 import User from "@/models/User";
 import Settings from "@/models/Settings";
 import { sendOrderNotificationEmail } from "@/lib/email";
+import { calculateAddressHygieneScore } from "@/lib/addressIntelligence";
 
 export async function POST(req) {
   try {
@@ -85,6 +86,27 @@ export async function POST(req) {
       );
     }
 
+    // 🚚 Address Hygiene & Deliverability Check (Ekart & Shiprocket Standards)
+    const addressHygiene = calculateAddressHygieneScore({
+      street: shippingAddress.street,
+      landmark: shippingAddress.landmark || "",
+      city: shippingAddress.city,
+      state: shippingAddress.state,
+      pincode: shippingAddress.pincode,
+      phone: shippingAddress.phone,
+    });
+
+    if (addressHygiene.isVague) {
+      return NextResponse.json(
+        {
+          error:
+            "Address is too incomplete (e.g., just 'Hostel' or 'Room 4'). Ekart and Shiprocket courier delivery boys require a complete House/Room No. and Street to enter premises.",
+          code: "ADDRESS_VAGUE",
+        },
+        { status: 400 }
+      );
+    }
+
     // 🛡️ Security Check: Server-side Pricing & Stock Validation (Anti-Price Tampering)
     let calculatedTotalPrice = 0;
     const giftLines = [];
@@ -113,7 +135,7 @@ export async function POST(req) {
       }
       // Checkout add-on items are sold at the product's configured bumpPrice
       const unitPrice =
-        item.variant === "bump" && product.bumpPrice > 0 && product.bumpPrice < product.price
+        item.variant === "bump" && product.bumpPrice > 0
           ? product.bumpPrice
           : product.price || 0;
       // Sum authoritative price from database
@@ -226,6 +248,8 @@ export async function POST(req) {
         pincode: shippingAddress.pincode,
         landmark: shippingAddress.landmark || "",
         type: shippingAddress.type || "home",
+        addressScore: addressHygiene?.score || 0,
+        addressQuality: addressHygiene?.tierLabel || "Standard",
       },
       paymentMode,
       paymentStatus,
@@ -244,6 +268,10 @@ export async function POST(req) {
       cashfreeOrderId: cashfreeOrderId || null,
       cashfreePaymentId: cashfreePaymentId || null,
       couponCode: couponCode || null,
+      manualShipmentNote:
+        paymentMode === "online"
+          ? "PREPAID PERK: Extra ₹50 Instant Discount + Free Ayurvedic Sample included in packaging"
+          : "",
       statusHistory: [
         {
           status:
@@ -257,7 +285,7 @@ export async function POST(req) {
           updatedAt: new Date(),
           note:
             paymentMode === "online" && paymentVerified
-              ? `Payment verified - Order placed (Cashfree ID: ${cashfreePaymentId})`
+              ? `Payment verified - Order placed (Cashfree ID: ${cashfreePaymentId}) | Prepaid Nudge: Extra ₹50 discount + Free Ayurvedic Sample applied`
               : paymentMode === "partial_cod" && paymentVerified
               ? `Partial payment verified - ₹${advancePaid} paid, ₹${codAmountToCollect} COD (Cashfree ID: ${cashfreePaymentId})`
               : paymentMode === "cod"

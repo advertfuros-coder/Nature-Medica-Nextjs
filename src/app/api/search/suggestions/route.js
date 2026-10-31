@@ -15,9 +15,10 @@ export async function GET(req) {
       return NextResponse.json({ suggestions: [] });
     }
 
-    // Get matching products (limit to top 8 results for autocomplete)
+    // Get matching products (limit to top 8 results for autocomplete, exclude cart bumps)
     const products = await Product.find({
       visibility: true,
+      isCartBumpOnly: { $ne: true },
       $or: [
         { title: { $regex: query, $options: "i" } },
         { brand: { $regex: query, $options: "i" } },

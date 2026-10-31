@@ -27,13 +27,26 @@ export default function GiftManager() {
   const subtotal = paidSubtotal(items);
 
   useEffect(() => {
+    // 1. Purge any stale or invalid gift lines (e.g. old deleted items or tiers customer no longer qualifies for)
+    items.forEach((item) => {
+      if (item.variant === 'gift') {
+        const itemSlug = item.product?.slug;
+        const matchingTier = GIFT_TIERS.find((t) => t.slug === itemSlug);
+        // If not in GIFT_TIERS or subtotal has dropped below the threshold, remove it
+        if (!matchingTier || subtotal < matchingTier.threshold) {
+          dispatch(removeFromCart({ productId: item.product?._id || item.product?.id, variant: 'gift' }));
+        }
+      }
+    });
+
     if (giftProducts.length === 0) return;
 
+    // 2. Add or sync eligible gifts for reached tiers
     GIFT_TIERS.forEach((tier) => {
       const product = giftProducts.find((p) => p.slug === tier.slug);
       if (!product) return;
 
-      const line = items.find((item) => item.product._id === product._id && item.variant === 'gift');
+      const line = items.find((item) => (item.product?._id === product._id || item.product?.slug === product.slug) && item.variant === 'gift');
       const eligible = subtotal >= tier.threshold;
 
       if (eligible && !line) {

@@ -101,6 +101,7 @@ const ProductSchema = new mongoose.Schema(
 
     // Merchandising & Visibility
     visibility: { type: Boolean, default: true },
+    isCartBumpOnly: { type: Boolean, default: false }, // Exclusive 1-Click Cart Drawer bump (hidden from main catalog)
     isBestSeller: { type: Boolean, default: false },
     isNewArrival: { type: Boolean, default: false },
     isFeatured: { type: Boolean, default: false },

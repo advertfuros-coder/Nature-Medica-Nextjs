@@ -18,7 +18,12 @@ export default async function ProductsPage({ searchParams: searchParamsPromise }
   const limit = 12;
   const skip = (page - 1) * limit;
 
-  let query = { visibility: true };
+  // Main catalog excludes exclusive 1-click cart bump items (Toothbrush, Toothpaste bump, Lip Balm)
+  let query = { 
+    visibility: true,
+    isCartBumpOnly: { $ne: true },
+    tags: { $nin: ['cart-bump-only', 'upsell-only'] }
+  };
   let selectedCategory = null;
 
   // Category filter

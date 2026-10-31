@@ -19,9 +19,10 @@ export async function GET(req) {
     // Build query
     let query = {};
     
-    // Only show visible products by default
+    // Only show visible products by default and exclude cart-bump-only upsell items from public catalogue
     if (visibility === 'true' || visibility === null) {
       query.visibility = true;
+      query.isCartBumpOnly = { $ne: true };
     }
 
     if (category) {

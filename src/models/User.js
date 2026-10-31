@@ -12,6 +12,8 @@ const addressSchema = new mongoose.Schema({
   landmark: { type: String, default: '' },
   type: { type: String, default: 'home' },
   isDefault: { type: Boolean, default: false },
+  addressScore: { type: Number, default: 0 },
+  addressQuality: { type: String, default: 'Standard' },
 }, { _id: true });
 
 const UserSchema = new mongoose.Schema({
