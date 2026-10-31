@@ -128,6 +128,13 @@ export default function ProductCard({ product }) {
           </div>
 
    
+          {/* Discount badge */}
+          {discountPercent > 0 && (
+            <span className="absolute top-3 left-3 z-20 bg-white/95 text-[#2d4e24] text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs">
+              {discountPercent}% OFF
+            </span>
+          )}
+
           {/* Toast Notification inside card */}
           {toast.show && (
             <div

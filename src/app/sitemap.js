@@ -1,6 +1,7 @@
 import connectDB from '@/lib/mongodb';
 import Product from '@/models/Product';
 import Category from '@/models/Category';
+import { articles } from '@/data/articles';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 86400; // Revalidate daily
@@ -20,11 +21,28 @@ export default async function sitemap() {
     '/refund',
     '/privacy',
     '/terms',
+    '/track',
+    '/lp/sea-buckthorn',
+    '/learn',
+    '/quiz',
+    ...articles.map((a) => `/learn/${a.slug}`),
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date().toISOString(),
-    changeFrequency: route === '' ? 'daily' : 'weekly',
-    priority: route === '' ? 1.0 : 0.7,
+    changeFrequency:
+      route === ''
+        ? 'daily'
+        : route === '/track'
+        ? 'monthly'
+        : 'weekly',
+    priority:
+      route === ''
+        ? 1.0
+        : route === '/lp/sea-buckthorn'
+        ? 0.8
+        : route === '/track'
+        ? 0.5
+        : 0.7,
   }));
 
   try {

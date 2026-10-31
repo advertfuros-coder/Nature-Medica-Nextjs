@@ -69,13 +69,11 @@ export default async function HomePage() {
         />
       </section>
 
-            <BrandMarquee />
-
+      <BrandMarquee />
 
       <CategoryGrid />
 
       {/* <TrustBadgesSection /> */}
-
 
       {/* <WellnessGoalCarousel /> */}
 
@@ -84,8 +82,7 @@ export default async function HomePage() {
       <BestSellerSectionWrapper />
       {/* <FacewashSection /> */}
       {/* <PromoBanner /> */}
-            <LearnWellness />
-
+      <LearnWellness />
 
       <NewArrivalSectionWrapper />
       <FeaturedSectionWrapper />
@@ -105,7 +102,6 @@ export default async function HomePage() {
       {/* Customer Reviews */}
       <CustomerReviews />
 
-
       {/* <HomeBlogCarousel/> */}
       {/* <InfoStrip /> */}
 
@@ -117,7 +113,6 @@ export default async function HomePage() {
             alt="Nature Medica Products"
             className="w-full h-full object-contain"
           />
- 
         </div>
       </section>
 

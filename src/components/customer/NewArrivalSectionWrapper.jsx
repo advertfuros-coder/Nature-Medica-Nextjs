@@ -8,7 +8,7 @@ export const revalidate = 0;
 export default async function NewArrivalSectionWrapper() {
   await connectDB();
 
-  const products = await Product.find({
+  let products = await Product.find({
     isNewArrival: true,
     visibility: true,
     stock: { $gt: 0 }
@@ -17,6 +17,18 @@ export default async function NewArrivalSectionWrapper() {
     .sort({ createdAt: -1 })
     .limit(12)
     .lean();
+
+  // Fallback to recent products if none explicitly marked as new arrival
+  if (!products || products.length === 0) {
+    products = await Product.find({
+      visibility: true,
+      stock: { $gt: 0 }
+    })
+      .populate('category', 'name')
+      .sort({ createdAt: -1 })
+      .limit(8)
+      .lean();
+  }
 
   if (!products || products.length === 0) {
     return null;

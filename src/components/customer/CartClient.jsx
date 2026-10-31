@@ -5,6 +5,9 @@ import { removeFromCart, updateQuantity, applyCoupon, removeCoupon } from '@/sto
 import Link from 'next/link';
 import { FiTrash2, FiShoppingBag, FiX, FiTag, FiArrowLeft, FiLock } from 'react-icons/fi';
 import { useState, useEffect } from 'react';
+import CartAddOn from './CartAddOn';
+import GiftProgress from './GiftProgress';
+import { FREE_SHIPPING_THRESHOLD } from '@/lib/giftTiers';
 import { trackRemoveFromCart, trackViewCart, trackBeginCheckout } from '@/utils/analytics';
 
 export default function CartClient() {
@@ -113,13 +116,23 @@ export default function CartClient() {
         );
     }
 
-    const finalPrice = cartTotal - discount + 49;
+    const isFreeShipping = cartTotal >= FREE_SHIPPING_THRESHOLD;
+    const amountNeeded = Math.max(0, FREE_SHIPPING_THRESHOLD - cartTotal);
+
+    const shippingCharge = isFreeShipping ? 0 : 49;
+    const finalPrice = cartTotal - discount + shippingCharge;
     const savings = discount;
 
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Main Content */}
-            <div className="max-w-7xl mx-auto  p-2 lg:px-8 py-3 lg:py-4">
+            <div className="max-w-7xl mx-auto p-2 lg:px-8 py-3 lg:py-4">
+                <div className="mb-3 sm:mb-4">
+                    <GiftProgress subtotal={cartTotal} />
+                </div>
+
+                <CartAddOn items={items} shortBy={amountNeeded} />
+
                 <div className="grid lg:grid-cols-3 gap-4">
                     {/* Cart Items */}
                     <div className="lg:col-span-2 space-y-2">
@@ -151,6 +164,7 @@ export default function CartClient() {
                                                     </p>
                                                 )}
                                             </div>
+                                            {item.variant !== 'gift' && (
                                             <button
                                                 onClick={() => handleRemove(item.product._id, item.variant)}
                                                 className="text-gray-400 hover:text-red-500 transition-colors h-fit"
@@ -158,10 +172,13 @@ export default function CartClient() {
                                             >
                                                 <FiX className="text-xl" />
                                             </button>
+                                            )}
                                         </div>
 
                                         <div className="flex items-center justify-between mt-4">
-                                            {/* Quantity Controls */}
+                                            {item.variant === 'gift' ? (
+                                                <span className="text-xs font-bold text-[#2d4e24] bg-[#eef5ec] px-2.5 py-1 rounded-full">Free gift</span>
+                                            ) : (
                                             <div className="flex items-center gap-3">
                                                 <span className="text-xs text-gray-500 font-medium">Qty:</span>
                                                 <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
@@ -183,15 +200,22 @@ export default function CartClient() {
                                                     </button>
                                                 </div>
                                             </div>
+                                            )}
 
                                             {/* Price */}
                                             <div className="text-right">
-                                                <p className="text-sm font-semibold text-gray-900">
-                                                    ₹{((item.price || item.product.price) * item.quantity).toLocaleString('en-IN')}
-                                                </p>
-                                                <p className="text-xs text-gray-500 mt-0.5">
-                                                    ₹{(item.price || item.product.price).toLocaleString('en-IN')} each
-                                                </p>
+                                                {item.variant === 'gift' ? (
+                                                    <p className="text-sm font-semibold text-[#2d4e24]">FREE</p>
+                                                ) : (
+                                                    <>
+                                                        <p className="text-sm font-semibold text-gray-900">
+                                                            ₹{((item.price || item.product.price) * item.quantity).toLocaleString('en-IN')}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 mt-0.5">
+                                                            ₹{(item.price || item.product.price).toLocaleString('en-IN')} each
+                                                        </p>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -276,7 +300,9 @@ export default function CartClient() {
 
                                     <div className="flex justify-between text-sm text-gray-600">
                                         <span>Shipping</span>
-                                        <span className="font-medium text-green-600">₹49</span>
+                                        <span className={`font-medium ${isFreeShipping ? 'text-green-600 font-semibold' : 'text-gray-900'}`}>
+                                            {isFreeShipping ? 'FREE' : '₹49'}
+                                        </span>
                                     </div>
 
                                     <div className="pt-4 border-t border-gray-200">

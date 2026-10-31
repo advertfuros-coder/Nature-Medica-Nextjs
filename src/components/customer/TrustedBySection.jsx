@@ -1,7 +1,6 @@
 'use client';
 
-import Image from 'next/image';
-import { Check } from 'lucide-react';
+import { Check, ShieldCheck } from 'lucide-react';
 
 export default function TrustedByBanner() {
   const features = [
@@ -12,15 +11,19 @@ export default function TrustedByBanner() {
 
   return (
     <section className="bg-gradient-to-r from-[#3C5D27]/5 to-white py-6 border-y border-gray-200">
-      <div className="  mx-auto px-4">
+      <div className="mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-6">
-          {/* Image */}
-          <div className="relative w-32 h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-4 border-white shadow-lg flex-shrink-0">
-            <img
-              src="https://img4.hkrtcdn.com/35085/bnr_3508403_o.jpg"
-              alt="Trusted customers"
-              className="object-cover w-full h-full"
-            />
+          {/* Trust Badge Visual */}
+          <div className="relative w-32 h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-4 border-white shadow-lg flex-shrink-0 bg-gradient-to-br from-[#2d4e24] via-[#3C5D27] to-[#1e3418] flex flex-col items-center justify-center text-center p-3 text-white">
+            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-white/15 flex items-center justify-center mb-1.5 backdrop-blur-xs border border-white/20">
+              <ShieldCheck className="w-5 h-5 lg:w-6 lg:h-6 text-amber-300" />
+            </div>
+            <span className="text-[11px] lg:text-xs font-extrabold tracking-wider uppercase text-white leading-tight">
+              100% Ayurvedic
+            </span>
+            <span className="text-[9px] lg:text-[10px] text-emerald-100 font-medium tracking-tight mt-0.5">
+              Verified Pure & Safe
+            </span>
           </div>
 
           {/* Content */}

@@ -1,3 +1,4 @@
+import { GIFT_TIERS } from "@/lib/giftTiers";
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Order from "@/models/Order";
@@ -86,6 +87,7 @@ export async function POST(req) {
 
     // 🛡️ Security Check: Server-side Pricing & Stock Validation (Anti-Price Tampering)
     let calculatedTotalPrice = 0;
+    const giftLines = [];
     for (const item of items) {
       const product = await Product.findById(item.product);
       if (!product) {
@@ -104,8 +106,31 @@ export async function POST(req) {
           { status: 400 }
         );
       }
+      // Free gifts are priced at zero but validated below against the paid subtotal
+      if (item.variant === "gift") {
+        giftLines.push({ product, quantity: item.quantity });
+        continue;
+      }
+      // Checkout add-on items are sold at the product's configured bumpPrice
+      const unitPrice =
+        item.variant === "bump" && product.bumpPrice > 0 && product.bumpPrice < product.price
+          ? product.bumpPrice
+          : product.price || 0;
       // Sum authoritative price from database
-      calculatedTotalPrice += (product.price || 0) * item.quantity;
+      calculatedTotalPrice += unitPrice * item.quantity;
+    }
+
+    for (const gift of giftLines) {
+      const tier = GIFT_TIERS.find((t) => t.slug === gift.product.slug);
+      if (!tier || gift.quantity !== 1 || calculatedTotalPrice < tier.threshold) {
+        return NextResponse.json(
+          {
+            error: "Free gift is not available for this cart. Please refresh your cart.",
+            code: "GIFT_NOT_ELIGIBLE",
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Verify calculated subtotal does not deviate wildly from client claim

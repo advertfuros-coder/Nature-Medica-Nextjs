@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
-import { clearCart, applyCoupon, removeCoupon, removeFromCart, updateQuantity } from '@/store/slices/cartSlice';
+import { clearCart, applyCoupon, removeCoupon, removeFromCart, updateQuantity, addToCart } from '@/store/slices/cartSlice';
 import { Check, MapPin, Plus, Shield, Truck, Package, X, CreditCard, Loader2, Tag, Trash2, Minus } from 'lucide-react';
 import Script from 'next/script';
 import { trackPurchase, trackAddShippingInfo, trackAddPaymentInfo, trackBeginCheckout } from '@/utils/analytics';
@@ -16,6 +16,8 @@ function chooseDefaultAddressId(addresses) {
   const defaultAddr = addresses.find(a => a.isDefault);
   return defaultAddr ? defaultAddr._id : addresses[0]._id;
 }
+
+const PREPAID_DISCOUNT = 50;
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -35,6 +37,7 @@ export default function CheckoutPage() {
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' or 'cod' (partial_cod removed)
+  const [bumpProduct, setBumpProduct] = useState(null); // one-click add-on offer
   const [isOrderPlacing, setIsOrderPlacing] = useState(false); // Flag to prevent cart redirect during order placement
 
   // Guest user details
@@ -179,10 +182,25 @@ export default function CheckoutPage() {
     }
   }, [addresses, selectedAddressId]);
 
+  // Load the checkout add-on offer (product with a bumpPrice configured)
+  useEffect(() => {
+    let cancelled = false;
+    const ownedIds = items.filter((item) => item.variant !== 'bump').map((item) => item.product._id).join(',');
+    fetch(`/api/products/bump?exclude=${ownedIds}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setBumpProduct(data.product || null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Track begin_checkout on page load
   useEffect(() => {
     if (items && items.length > 0) {
-      const deliveryCharge = 49;
+      const deliveryCharge = totalPrice >= 499 ? 0 : 49;
       const finalPrice = totalPrice - discount + deliveryCharge;
       trackBeginCheckout(items.map(item => ({ ...item.product, quantity: item.quantity })), finalPrice, couponCode || '');
     }
@@ -191,7 +209,7 @@ export default function CheckoutPage() {
   // Track payment method selection
   useEffect(() => {
     if (items && items.length > 0 && paymentMethod) {
-      const deliveryCharge = 49;
+      const deliveryCharge = totalPrice >= 499 ? 0 : 49;
       const finalPrice = totalPrice - discount + deliveryCharge;
       trackAddPaymentInfo(items.map(item => ({ ...item.product, quantity: item.quantity })), finalPrice, paymentMethod, couponCode || '');
     }
@@ -378,7 +396,7 @@ export default function CheckoutPage() {
           variant: item.variant || '',
         })),
         totalPrice,
-        discount,
+        discount: discount + prepaidDiscount,
         finalPrice,
         shippingAddress,
         paymentMode: paymentMethod, // 'online', 'cod', or 'partial_cod'
@@ -519,7 +537,7 @@ export default function CheckoutPage() {
   // Allow rendering for both authenticated users and guests, just check for items
   if (items.length === 0) return null;
 
-  const deliveryCharge = 49;
+  const deliveryCharge = totalPrice >= 499 ? 0 : 49;
 
   // Calculate total MRP and savings
   const totalMRP = items.reduce((sum, item) => {
@@ -530,7 +548,29 @@ export default function CheckoutPage() {
   const mrpSavings = totalMRP - totalPrice; // Savings from MRP to selling price
   const totalSavings = mrpSavings + discount; // Total savings including coupon discount
 
-  const finalPrice = totalPrice - discount + deliveryCharge;
+  // Flat incentive for paying online (UPI / cards / net banking) instead of COD
+  const bumpInCart = bumpProduct
+    ? items.find((item) => item.product._id === bumpProduct._id)
+    : null;
+
+  const toggleBump = () => {
+    if (!bumpProduct) return;
+    if (bumpInCart) {
+      dispatch(removeFromCart({ productId: bumpProduct._id, variant: bumpInCart.variant }));
+    } else if (bumpProduct.offerPrice < bumpProduct.price) {
+      // Special price: the 'bump' variant tells the server to apply bumpPrice
+      dispatch(addToCart({
+        product: { ...bumpProduct, price: bumpProduct.offerPrice },
+        quantity: 1,
+        variant: 'bump',
+      }));
+    } else {
+      dispatch(addToCart({ product: bumpProduct, quantity: 1 }));
+    }
+  };
+
+  const prepaidDiscount = paymentMethod === 'online' ? PREPAID_DISCOUNT : 0;
+  const finalPrice = totalPrice - discount - prepaidDiscount + deliveryCharge;
 
   return (
     <>
@@ -827,6 +867,28 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="p-4 space-y-3">
+                  {/* UPI nudge: pull COD buyers towards prepaid */}
+                  {paymentMethod !== 'online' ? (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('online')}
+                      className="w-full text-left flex items-center justify-between gap-3 p-3 rounded-lg bg-gradient-to-r from-[#415f2d] to-[#2d4e24] text-white shadow-md cursor-pointer"
+                    >
+                      <span>
+                        <span className="block text-[10px] font-bold uppercase tracking-wide text-amber-300">Instant offer</span>
+                        <span className="block text-xs font-bold">Pay via UPI & save ₹{PREPAID_DISCOUNT}</span>
+                      </span>
+                      <span className="text-[11px] font-bold bg-white text-[#2d4e24] px-3 py-1 rounded-full flex-shrink-0">
+                        Switch
+                      </span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-[#eef5ec] border border-[#415f2d]/20 text-[#2d4e24] text-xs font-bold">
+                      <Check className="w-4 h-4" />
+                      You are saving ₹{PREPAID_DISCOUNT} by paying online
+                    </div>
+                  )}
+
                   {/* Online Payment Option */}
                   <div
                     onClick={() => setPaymentMethod('online')}
@@ -843,7 +905,12 @@ export default function CheckoutPage() {
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-1">
                           <div className="flex-1">
-                            <p className="font-semibold text-gray-900 mb-1 text-[11px]">Online Payment</p>
+                            <p className="font-semibold text-gray-900 mb-1 text-[11px] flex items-center gap-2">
+                              Online Payment
+                              <span className="bg-[#415f2d] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                                Save ₹{PREPAID_DISCOUNT}
+                              </span>
+                            </p>
                             <p className="text-[10px] text-gray-600 mb-2">Pay full amount now - UPI, Cards, Net Banking</p>
                             {/* UPI Logos */}
                             <div className="mt-2">
@@ -1074,6 +1141,46 @@ export default function CheckoutPage() {
                     )}
                   </div>
 
+                  {/* One-click add-on offer */}
+                  {bumpProduct && (
+                    <label
+                      className={`flex items-center gap-3 p-3 mb-3 rounded-lg border-2 border-dashed cursor-pointer transition-all ${
+                        bumpInCart ? 'border-[#415f2d] bg-[#415f2d]/5' : 'border-amber-300 bg-amber-50/60'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={Boolean(bumpInCart)}
+                        onChange={toggleBump}
+                        className="w-4 h-4 accent-[#415f2d] flex-shrink-0"
+                      />
+                      <div className="relative w-10 h-10 rounded-md overflow-hidden bg-white border border-gray-100 flex-shrink-0">
+                        <Image
+                          src={bumpProduct.images?.[0]?.url || '/placeholder.png'}
+                          alt={bumpProduct.title}
+                          fill
+                          sizes="40px"
+                          className="object-contain p-0.5"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-amber-800">
+                          Special add-on
+                        </p>
+                        <p className="text-[11px] font-semibold text-gray-900 truncate">{bumpProduct.title}</p>
+                        <p className="text-[11px]">
+                          <span className="font-bold text-[#415f2d]">₹{bumpProduct.offerPrice.toLocaleString('en-IN')}</span>{' '}
+                          <span className="text-gray-400 line-through">₹{(bumpProduct.mrp || bumpProduct.price).toLocaleString('en-IN')}</span>
+                          {(bumpProduct.mrp || bumpProduct.price) > bumpProduct.offerPrice && (
+                            <span className="ml-1.5 font-bold text-green-600">
+                              Save ₹{((bumpProduct.mrp || bumpProduct.price) - bumpProduct.offerPrice).toLocaleString('en-IN')}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </label>
+                  )}
+
                   {/* Price Breakdown */}
                   <div className="space-y-2 pt-3 border-t border-gray-100">
                     <div className="flex justify-between text-gray-600 text-[11px]">
@@ -1081,6 +1188,12 @@ export default function CheckoutPage() {
                       <span className="font-semibold">₹{totalPrice.toLocaleString('en-IN')}</span>
                     </div>
 
+                    {prepaidDiscount > 0 && (
+                      <div className="flex justify-between text-[11px] text-green-600">
+                        <span>Online payment discount</span>
+                        <span className="font-semibold">-₹{prepaidDiscount.toLocaleString('en-IN')}</span>
+                      </div>
+                    )}
                     {discount > 0 && (
                       <div className="flex justify-between text-green-600 text-[11px]">
                         <span>Discount {couponCode && `(${couponCode})`}</span>
@@ -1090,7 +1203,7 @@ export default function CheckoutPage() {
 
                     <div className="flex justify-between text-gray-600 text-[11px]">
                       <span>Delivery Charge</span>
-                      <span className="font-semibold">₹{deliveryCharge.toLocaleString('en-IN')}</span>
+                      <span className="font-semibold">{deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge.toLocaleString('en-IN')}`}</span>
                     </div>
 
                     <div className="pt-2 border-t border-gray-200">

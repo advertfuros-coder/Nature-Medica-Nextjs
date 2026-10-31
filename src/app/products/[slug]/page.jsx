@@ -11,6 +11,8 @@ import ProductTabs from '@/components/customer/ProductTabs';
 import ReviewSection from '@/components/customer/ReviewSection';
 import ProductGrid from '@/components/customer/ProductGrid';
 import MobileStickyBar from '@/components/customer/MobileStickyBar';
+import FrequentlyBoughtTogether from '@/components/customer/FrequentlyBoughtTogether';
+import PdpHighlightStrip from '@/components/customer/PdpHighlightStrip';
 import { FiHome, FiChevronRight, FiShield, FiTruck, FiRefreshCw, FiAward } from 'react-icons/fi';
 import { Sparkles } from 'lucide-react';
 
@@ -54,10 +56,48 @@ export default async function ProductDetailPage({ params }) {
           .lean()
       : [];
 
+    // Get complementary products for Routine Builder ("Buy Together & Save"):
+    // First from same category, then fallback to other bestsellers/top-rated so it is NEVER empty
+    let complementaryProducts = [...relatedProducts];
+    if (complementaryProducts.length < 2) {
+      const existingIds = [product._id, ...complementaryProducts.map((p) => p._id)];
+      const fallbackCompanions = await Product.find({
+        _id: { $nin: existingIds },
+        visibility: true,
+      })
+        .sort({ isBestSeller: -1, ratingAvg: -1, createdAt: -1 })
+        .limit(3 - complementaryProducts.length)
+        .lean();
+      complementaryProducts = [...complementaryProducts, ...fallbackCompanions];
+    }
+
+    // Safety fallback if database has only 1 product total
+    if (complementaryProducts.length === 0) {
+      complementaryProducts = [
+        {
+          _id: 'nm-routine-companion-1',
+          title: 'Kumkumadi Ayurvedic Glow Oil (30ml)',
+          price: 599,
+          mrp: 899,
+          featuredImage: '/categories/serum.png',
+          images: [{ url: '/categories/serum.png' }]
+        },
+        {
+          _id: 'nm-routine-companion-2',
+          title: 'Pure Shata Dhauta Ghrita Cold Cream (50g)',
+          price: 499,
+          mrp: 699,
+          featuredImage: '/categories/cold-cream.png',
+          images: [{ url: '/categories/cold-cream.png' }]
+        }
+      ];
+    }
+
     // Serialize all data
     const serializedProduct = JSON.parse(JSON.stringify(product));
     const serializedReviews = JSON.parse(JSON.stringify(reviews));
     const serializedRelatedProducts = JSON.parse(JSON.stringify(relatedProducts));
+    const serializedComplementaryProducts = JSON.parse(JSON.stringify(complementaryProducts));
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://naturemedica.in';
     const productImages = (serializedProduct.images || [])
@@ -174,7 +214,7 @@ export default async function ProductDetailPage({ params }) {
         : null;
 
     return (
-      <div className="bg-white min-h-screen text-gray-900 selection:bg-[#2d4e24] selection:text-white">
+      <div className="bg-white min-h-screen text-gray-900 selection:bg-[#2d4e24] selection:text-white pb-48 lg:pb-8">
         {/* Schema.org Structured Data */}
         <script
           type="application/ld+json"
@@ -244,8 +284,11 @@ export default async function ProductDetailPage({ params }) {
             </div>
           </div>
 
-          {/* Botanical Science & Daily Ritual Section */}
-          <div className="mb-10">
+          {/* At-a-glance icon highlights */}
+          <PdpHighlightStrip product={serializedProduct} />
+
+          {/* Botanical Science & Daily Ritual Section (full-bleed tinted band) */}
+          <div className="mb-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8 sm:py-10 bg-[#f4f7f2]">
             <ProductTabs
               product={serializedProduct}
               description={serializedProduct.description || ''}
@@ -261,6 +304,16 @@ export default async function ProductDetailPage({ params }) {
               trustBadges={serializedProduct.trustBadges || []}
             />
           </div>
+
+          {/* Routine Builder ("Buy Together & Save") - Always Available */}
+          {serializedComplementaryProducts.length > 0 && (
+            <div className="mb-10">
+              <FrequentlyBoughtTogether
+                product={serializedProduct}
+                companions={serializedComplementaryProducts.slice(0, 2)}
+              />
+            </div>
+          )}
 
           {/* Customer Reviews Section */}
           <div className="mb-10">

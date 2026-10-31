@@ -39,6 +39,8 @@ const ProductSchema = new mongoose.Schema(
     price: { type: Number, required: true },
     mrp: { type: Number, required: true },
     costPerItem: { type: Number, default: 0 },
+    // Special price when offered as a one-click checkout add-on (0 = not offered)
+    bumpPrice: { type: Number, default: 0 },
     discountPercent: { type: Number, default: 0 },
     gstSlab: { type: Number, default: 18 },
     hsnCode: { type: String, default: '3304' },
@@ -51,6 +53,8 @@ const ProductSchema = new mongoose.Schema(
     // Ayurvedic & Skincare Science
     netQuantity: { type: String, default: '30 ml' },
     shelfLife: { type: String, default: '24 Months' },
+    // Link to the third-party lab report (COA); shown on the product page when set
+    labReportUrl: { type: String, default: '' },
     skinTypes: [{ type: String }],
     skinConcerns: [{ type: String }],
     keyActives: [

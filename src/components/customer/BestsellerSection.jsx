@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import ProductCard from '@/components/customer/ProductCard';
+import Link from 'next/link';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 export default function BestSellerSection({ products }) {
@@ -78,16 +79,21 @@ export default function BestSellerSection({ products }) {
   }
 
   return (
-    <section className="bg-white [#DCE9D8] ">
-      <div className="  mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <section className="bg-gradient-to-b from-white to-leaf-50/70">
+      <div className="  mx-auto px-4 py-10 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-end justify-between mb-8">
           <div>
-            <h2 className="text-lg sm:text-xl   font-bold text-gray-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
               Best Sellers
             </h2>
-            <p className="text-gray-600 text-xs">Our most loved products by customers</p>
+            <span className="block w-12 h-1 rounded-full bg-gold-400 mt-2.5" />
+            <p className="text-gray-600 text-xs sm:text-sm mt-2.5">Our most loved products by customers</p>
           </div>
+
+          <Link href="/products?sort=bestseller" className="lg:hidden text-xs font-bold text-brand underline decoration-gold-400 underline-offset-4">
+            Shop all
+          </Link>
 
           {/* Desktop Navigation Arrows */}
           <div className="hidden lg:flex items-center gap-2">

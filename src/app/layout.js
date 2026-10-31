@@ -1,6 +1,8 @@
 import Script from "next/script";
 import StoreProvider from "@/components/StoreProvider";
 import CartHydrator from "@/components/CartHydrator";
+import CartDrawer from "@/components/customer/CartDrawer";
+import GiftManager from "@/components/customer/GiftManager";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Montserrat } from "next/font/google";
@@ -138,6 +140,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <StoreProvider>
           <Header />
           <CartHydrator />
+          <GiftManager />
+          <CartDrawer />
           {children}
           <Footer />
         </StoreProvider>

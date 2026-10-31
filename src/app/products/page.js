@@ -2,14 +2,16 @@ import connectDB from "@/lib/mongodb";
 import Product from "@/models/Product";
 import Category from "@/models/Category";
 import ProductList from "@/components/customer/ProductList";
-import FilterSidebar from "@/components/customer/FilterSidebar";
+import ProductsToolbar from "@/components/customer/ProductsToolbar";
+import ClinicalTrustRibbon from "@/components/customer/ClinicalTrustRibbon";
 import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 
-export default async function ProductsPage({ searchParams }) {
+export default async function ProductsPage({ searchParams: searchParamsPromise }) {
+  const searchParams = await searchParamsPromise;
   await connectDB();
 
   const page = parseInt(searchParams.page) || 1;
@@ -48,6 +50,7 @@ export default async function ProductsPage({ searchParams }) {
   if (searchParams.sort === "price-asc") sort = { price: 1 };
   if (searchParams.sort === "price-desc") sort = { price: -1 };
   if (searchParams.sort === "rating") sort = { ratingAvg: -1 };
+  if (searchParams.sort === "bestseller") sort = { reviewCount: -1 };
 
   const products = await Product.find(query)
     .sort(sort)
@@ -88,71 +91,70 @@ export default async function ProductsPage({ searchParams }) {
       `Explore our collection of natural ${selectedCategory.name.toLowerCase()} products`
     : "Discover our complete range of natural wellness and Ayurvedic products";
 
+  const heading = selectedCategory
+    ? selectedCategory.name
+    : searchParams.search
+    ? `Results for "${searchParams.search}"`
+    : "All Products";
+
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-8">
-        {/* Breadcrumbs */}
-        <nav className="mb-4 lg:mb-6" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2 text-sm">
-            <li>
-              <Link
-                href="/"
-                className="flex items-center text-gray-500 hover:text-[#4D6F36] transition-colors"
-              >
-                <Home className="w-4 h-4" />
-              </Link>
-            </li>
-            <li className="flex items-center">
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-              <Link
-                href="/products"
-                className={`ml-2 ${
-                  !selectedCategory
-                    ? "text-[#4D6F36] font-semibold"
-                    : "text-gray-500 hover:text-[#4D6F36]"
-                } transition-colors`}
-              >
-                Products
-              </Link>
-            </li>
-            {selectedCategory && (
-              <li className="flex items-center">
-                <ChevronRight className="w-4 h-4 text-gray-400" />
-                <span className="ml-2 text-[#4D6F36] font-semibold">
-                  {selectedCategory.name}
-                </span>
+    <div className="bg-white min-h-screen">
+      {/* Hero band */}
+      <section className="bg-gradient-to-b from-green-50/60 to-white">
+        <div className="px-4 sm:px-6 lg:px-10 pt-5 pb-6 sm:pb-8">
+          {/* Breadcrumbs */}
+          <nav className="mb-3" aria-label="Breadcrumb">
+            <ol className="flex items-center gap-2 text-xs sm:text-sm">
+              <li>
+                <Link href="/" className="flex items-center text-gray-500 hover:text-[#2d4e24] transition-colors" aria-label="Home">
+                  <Home className="w-4 h-4" />
+                </Link>
               </li>
-            )}
-          </ol>
-        </nav>
+              <li className="flex items-center gap-2">
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+                <Link
+                  href="/products"
+                  className={!selectedCategory ? "text-[#2d4e24] font-semibold" : "text-gray-500 hover:text-[#2d4e24] transition-colors"}
+                >
+                  Products
+                </Link>
+              </li>
+              {selectedCategory && (
+                <li className="flex items-center gap-2">
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                  <span className="text-[#2d4e24] font-semibold">{selectedCategory.name}</span>
+                </li>
+              )}
+            </ol>
+          </nav>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 lg:gap-8">
-          {/* Sidebar - Hidden on mobile, shows as drawer */}
-          <aside className="lg:col-span-1">
-            <FilterSidebar
-              categories={JSON.parse(JSON.stringify(categories))}
-              currentFilters={searchParams}
-            />
-          </aside>
-
-          {/* Main Product Grid */}
-          <main className="lg:col-span-3">
-            <ProductList
-              products={JSON.parse(JSON.stringify(products))}
-              currentPage={page}
-              totalPages={totalPages}
-              totalProducts={totalProducts}
-            />
-          </main>
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight">{heading}</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1.5 max-w-2xl">{pageDescription}</p>
         </div>
+      </section>
+
+      <ClinicalTrustRibbon />
+
+      <ProductsToolbar
+        categories={JSON.parse(JSON.stringify(categories))}
+        totalProducts={totalProducts}
+      />
+
+      <div className="px-4 sm:px-6 lg:px-10 pb-12">
+        <ProductList
+          products={JSON.parse(JSON.stringify(products))}
+          currentPage={page}
+          totalPages={totalPages}
+          totalProducts={totalProducts}
+        />
       </div>
     </div>
   );
 }
 
 // Generate metadata for SEO
-export async function generateMetadata({ searchParams }) {
+export async function generateMetadata({ searchParams: searchParamsPromise }) {
+  const searchParams = await searchParamsPromise;
   await connectDB();
 
   let title = "Natural Wellness Products | Nature Medica";

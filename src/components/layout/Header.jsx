@@ -247,7 +247,7 @@ export default function SearchFirstHeader() {
                 src={logo}
                 alt="Nature Medica"
                 priority
-                className="h-9 sm:h-12 w-auto object-contain"
+                className="h-9 sm:h-12 w-auto scale-150 ml-4 object-contain"
               />
             </Link>
           </div>
@@ -318,6 +318,15 @@ export default function SearchFirstHeader() {
                 </div>
               )}
             </div>
+
+            <Link
+              href="/quiz"
+              className={`text-[13px] font-bold tracking-widest uppercase transition-colors ${
+                pathname === '/quiz' ? 'text-[#2d4e24]' : 'text-gray-800 hover:text-[#2d4e24]'
+              }`}
+            >
+              AYURVEDIC QUIZ
+            </Link>
 
             <Link
               href="/about"
@@ -749,6 +758,15 @@ export default function SearchFirstHeader() {
               </Link>
 
               <Link
+                href="/quiz"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center justify-between p-3 rounded-xl hover:bg-[#f4f7f2] text-gray-800 font-bold text-xs"
+              >
+                <span>AYURVEDIC QUIZ</span>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </Link>
+
+              <Link
                 href="/track"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center justify-between p-3 rounded-xl bg-[#eef5ec]/70 hover:bg-[#eef5ec] text-[#2d4e24] font-bold text-xs border border-[#2d4e24]/10"
@@ -787,7 +805,7 @@ export default function SearchFirstHeader() {
       />
 
       {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-2 py-1.5">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-2 py-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom,0px))]">
         <div className="flex justify-around items-center h-12">
           <Link
             href="/"

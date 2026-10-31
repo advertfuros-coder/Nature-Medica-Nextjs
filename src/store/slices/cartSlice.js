@@ -84,7 +84,8 @@ const initialState = {
   total: 0,
   totalPrice: 0, // Alias for compatibility
   discount: 0,
-  couponCode: null
+  couponCode: null,
+  drawerOpen: false // slide-in cart drawer
 };
 
 const cartSlice = createSlice({
@@ -116,7 +117,17 @@ const cartSlice = createSlice({
 
       state.total = calculateTotal(state.items);
       state.totalPrice = state.total; // Keep both for compatibility
+      // Open the drawer for customer adds, not for automatic gift or checkout add-on lines
+      if (variant !== 'gift' && variant !== 'bump') state.drawerOpen = true;
       saveCartToStorage(state.items, state.total, state.discount, state.couponCode);
+    },
+
+    openDrawer: (state) => {
+      state.drawerOpen = true;
+    },
+
+    closeDrawer: (state) => {
+      state.drawerOpen = false;
     },
 
     removeFromCart: (state, action) => {
@@ -193,6 +204,8 @@ const cartSlice = createSlice({
 
 export const { 
   addToCart, 
+  openDrawer,
+  closeDrawer,
   removeFromCart, 
   updateQuantity, 
   applyCoupon,

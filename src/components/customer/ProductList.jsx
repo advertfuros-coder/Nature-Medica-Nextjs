@@ -35,20 +35,8 @@ export default function ProductList({ products, currentPage, totalPages, totalPr
 
   return (
     <div>
-      {/* Results Header */}
-      <div className="bg-white lg:rounded-2xl p-4 lg:shadow-sm lg:border border-gray-100 mb-4 lg:mb-6">
-        <div className="flex items-center justify-between">
-          <p className="text-sm lg:text-base text-gray-600">
-            Showing <span className="font-semibold text-gray-900">{products.length}</span> products
-            {totalPages > 1 && (
-              <span> (Page {currentPage} of {totalPages})</span>
-            )}
-          </p>
-        </div>
-      </div>
-
-      {/* Product Grid - 2 columns on mobile, 3 on desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6 px-2 lg:px-0 pb-24 lg:pb-0">
+      {/* Product Grid - 2 columns on mobile, up to 5 on wide screens */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-x-3 gap-y-6 sm:gap-x-5 sm:gap-y-8">
         {products.map((product) => (
           <ProductCard key={product._id} product={product} />
         ))}
@@ -56,7 +44,7 @@ export default function ProductList({ products, currentPage, totalPages, totalPr
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-8 lg:mt-12 flex items-center justify-center gap-2 pb-24 lg:pb-0">
+        <div className="mt-10 lg:mt-14 flex items-center justify-center gap-2">
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
